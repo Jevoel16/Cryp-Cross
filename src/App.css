@@ -12,10 +12,6 @@
     --nav-text: #fff;
     --card-bg: #fff;
     --card-border: #e1e6f2;
-    /* NEW: Status Colors for Project Log */
-    --status-pending: #f59e0b;      /* Amber */
-    --status-inprogress: #3b82f6;   /* Blue */
-    --status-complete: #10b981;     /* Emerald */
 }
 
 /* Dark mode palette using the same color family */
@@ -27,10 +23,6 @@ body.dark-mode {
     --card-bg: #181f36;           /* Darker blue-grey for cards */
     --card-border: #38395e;       /* Subtle dark border */
     --accent: #8491D9;            /* Vista Blue accent remains for highlights */
-    /* NEW: Dark Mode Status Colors */
-    --status-pending: #fcd34d;      /* Lighter Amber */
-    --status-inprogress: #60a5fa;   /* Lighter Blue */
-    --status-complete: #34d399;     /* Lighter Emerald */
 }
 
 /* main design of the page */
@@ -179,47 +171,6 @@ footer p    {
     color: #dce3fc;
 }
 
-/* --- NEW: Project List Table and Status Styles --- */
-.project-table {
-    width: 100%;
-    border-collapse: collapse;
-    margin-top: 20px;
-    font-size: 0.95rem;
-}
-
-.project-table th, .project-table td {
-    padding: 12px 8px;
-    text-align: left;
-    border-bottom: 1px solid var(--card-border);
-    transition: background-color 0.3s ease, color 0.3s ease;
-}
-
-.project-table th {
-    background: var(--background);
-    color: var(--dark-imperial-blue);
-    font-weight: 700;
-    border-top: 2px solid var(--vista-blue);
-}
-
-/* Status class styles (applies color to the text) */
-.status-pending { color: var(--status-pending); font-weight: bold; }
-.status-inprogress { color: var(--status-inprogress); font-weight: bold; }
-.status-complete { color: var(--status-complete); font-weight: bold; }
-
-/* Status display on detail view (optional background/padding) */
-.status-display {
-    display: inline-block;
-    padding: 4px 10px;
-    border-radius: 4px;
-    font-size: 0.95em;
-    background: rgba(132, 145, 217, 0.1);
-    font-weight: 600; /* Added weight for better visibility */
-    margin-left: 8px;
-}
-body.dark-mode .status-display {
-    background: rgba(132, 145, 217, 0.05);
-}
-
 /* --- Interactive Button Styling (General and Table) --- */
 
 /* Style for the button used in Project Detail View and similar primary actions */
@@ -253,51 +204,6 @@ body.dark-mode .primary-btn:hover {
     background: var(--oxford-blue);
     color: white;
 }
-
-/* Button styling for "Change Status" in the table (smaller) */
-.project-table button, .projectButton {
-    background: var(--vista-blue);
-    color: var(--rich-black);
-    border: none;
-    padding: 6px 12px;
-    border-radius: 4px;
-    cursor: pointer;
-    transition: background 0.2s;
-    font-size: 0.85rem;
-    font-weight: 600;
-}
-
-.project-table button:hover {
-    background: var(--dark-imperial-blue);
-    color: white;
-}
-
-/* Link styling for "View Detail" */
-.details-link {
-    color: var(--accent);
-    text-decoration: none;
-    font-weight: 600;
-    font-size: 0.9rem;
-    padding: 4px 0;
-}
-
-.details-link:hover {
-    text-decoration: underline;
-}
-
-/* Dark Mode Overrides for Table elements */
-body.dark-mode .project-table th {
-    background: var(--card-bg);
-    color: var(--text);
-    border-top: 2px solid var(--accent);
-}
-
-body.dark-mode .project-table button {
-    background: var(--vista-blue);
-    color: var(--rich-black);
-}
-/* No need for dark mode hover for table button as primary-btn hover covers the desired effect */
-
 
 /* --- Team Carousel Styles (Adjusted for general use) --- */
 
@@ -500,47 +406,11 @@ body.dark-mode #themeToggle:hover {
         font-size: 1rem;
     }
 
-    /* Adjust table fonts for smaller screens */
-    .project-table {
-        font-size: 0.75rem;
-    }
-    
-    .project-table th, .project-table td {
-        padding: 8px 4px;
-    }
-    
-    .project-table button {
-        padding: 4px 6px;
-        font-size: 0.75rem;
-    }
-    
     /* Ensure general button shrinks on mobile */
     .primary-btn {
         padding: 6px 12px;
         font-size: 0.85rem;
     }
-}
-
-/* (Reverted) Project Log Layout removed */
-
-/* NEW: Create Form Styles */
-.create-form {
-    background: var(--card-bg);
-    border: 1px solid var(--card-border);
-    border-radius: 8px;
-    padding: 20px;
-    margin-bottom: 30px;
-}
-
-.create-form h2 {
-    margin-bottom: 20px;
-    color: var(--text);
-}
-
-.create-form form {
-    display: flex;
-    flex-direction: column;
-    gap: 15px;
 }
 
 .form-group {
@@ -636,54 +506,4 @@ body.dark-mode .form-message.success {
 body.dark-mode .form-message.error {
     background: #991b1b;
     color: #fee2e2;
-}
-
-/* Delete Button Styling */
-.delete-btn {
-    background: #ef4444;
-    color: white;
-}
-
-.delete-btn:hover {
-    background: #dc2626;
-}
-
-/* React app-specific rules (kept for compatibility) */
-.App {
-    text-align: center;
-}
-
-.App-logo {
-    height: 40vmin;
-    pointer-events: none;
-}
-
-@media (prefers-reduced-motion: no-preference) {
-    .App-logo {
-        animation: App-logo-spin infinite 20s linear;
-    }
-}
-
-.App-header {
-    background-color: var(--nav-bg);
-    min-height: 100vh;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    font-size: calc(10px + 2vmin);
-    color: var(--nav-text);
-}
-
-.App-link {
-    color: var(--accent);
-}
-
-@keyframes App-logo-spin {
-    from {
-        transform: rotate(0deg);
-    }
-    to {
-        transform: rotate(360deg);
-    }
 }

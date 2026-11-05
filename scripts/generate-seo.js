@@ -9,7 +9,6 @@ const PUBLIC_ROUTES = [
     { path: '/', priority: '1.0' },
     { path: '/idea', priority: '0.8' },
     { path: '/team', priority: '0.6' },
-    { path: '/projects', priority: '0.5' },
 ];
 
 function main() {
@@ -33,8 +32,7 @@ function main() {
         }
     }
 
-    const robots = ['User-agent: *', 'Allow: /', 'Disallow: /projects/'];
-    // /projects/* (detail and create pages) are per-entry and noindexed; /projects itself stays crawlable.
+    const robots = ['User-agent: *', 'Allow: /'];
 
     if (siteUrl) {
         const today = new Date().toISOString().slice(0, 10);

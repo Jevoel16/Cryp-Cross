@@ -5,7 +5,7 @@
 
   <h1>Cryp-Cross</h1>
 
-  <p><strong>A MERN showcase for a crypto crossword platform, with a full-stack project task log.</strong></p>
+  <p><strong>A MERN site for Cryp-Cross, a daily cryptographic crossword with player accounts (in development).</strong></p>
 
   <p>
     <img src="https://img.shields.io/badge/react-19.2.0-blue?style=flat" alt="React 19.2.0" />
@@ -20,7 +20,7 @@
     <img src="https://img.shields.io/badge/node-22-blue?style=flat" alt="Node 22" />
   </p>
   <p>
-    <img src="https://img.shields.io/badge/version-0.3.0-green?style=flat" alt="Version 0.3.0" />
+    <img src="https://img.shields.io/badge/version-0.4.0-green?style=flat" alt="Version 0.4.0" />
     <a href="LICENSE"><img src="https://img.shields.io/badge/license-Sprucetrap%20Source--Available-orange?style=flat" alt="License: Sprucetrap Source-Available" /></a>
     <img src="https://img.shields.io/badge/platform-web-lightgrey?style=flat" alt="Platform: web" />
     <a href="https://github.com/Jevoel16/Cryp-Cross/actions/workflows/ci.yml"><img src="https://github.com/Jevoel16/Cryp-Cross/actions/workflows/ci.yml/badge.svg" alt="CI status" /></a>
@@ -50,7 +50,7 @@
 
 ## About
 
-Cryp-Cross is a concept for a crossword platform that rewards players with blockchain-based tokens: a fresh puzzle every day, with correct answers recorded on a verifiable ledger. This repository is a MERN (MongoDB, Express, React, Node.js) web app that presents the concept (home, idea and team pages) and includes a **Project Log**, a full CRUD task tracker the team uses to log development work, backed by a REST API and MongoDB.
+Cryp-Cross is a concept for a crossword platform that rewards players with blockchain-based tokens: a fresh puzzle every day, with correct answers recorded on a verifiable ledger. This repository is a MERN (MongoDB, Express, React, Node.js) web app that presents the concept (home, idea and team pages). The game itself (a daily cipher crossword with accounts) is being built next; the earlier Project Log task tracker was removed in v0.4.0.
 
 <p align="right"><a href="#readme-top">back to top</a></p>
 
@@ -60,18 +60,14 @@ Cryp-Cross is a concept for a crossword platform that rewards players with block
 
 **Frontend (React)**
 - Concept pages: Home, Idea (problem statement, key features, emerging technology) and a Team carousel
-- Project Log list sorted by creation date, with create, status-cycle (Pending → InProgress → Complete) and delete
-- Project detail page per entry (`/projects/:id`)
 - Light/dark theme toggle, remembered in `localStorage`
 - Client-side routing with React Router and a 404 page
-- SEO: a unique title, description and canonical URL per page, `noindex` on per-entry and error pages, JSON-LD, Open Graph tags, `llms.txt`, and a `sitemap.xml` + `robots.txt` generated at build time
+- SEO: a unique title, description and canonical URL per page, `noindex` on the error page, JSON-LD, Open Graph tags, `llms.txt`, and a `sitemap.xml` + `robots.txt` generated at build time
 - Optimized assets: WebP team photos at display size and correctly sized app icons
 - Production security headers via `serve.json` (CSP, HSTS, `nosniff`, frame blocking) and long-term caching for hashed static files
 
 **Backend (Express)**
-- REST API with four endpoints: `GET`, `POST`, `PATCH`, `DELETE` on `/api/projects`
-- MongoDB through Mongoose, with schema validation and automatic `createdAt` / `updatedAt`
-- Server-side input validation (types, lengths, allowed statuses, id format) and a 10 KB body limit
+- Express API foundation for the upcoming puzzle and account endpoints, with a 10 KB JSON body limit
 - Security headers with `helmet`, a CORS allow-list (`CORS_ORIGINS`) and rate limiting (300 requests / 15 min per IP, 60 writes)
 - Generic error responses: no internal messages or stack traces reach clients
 - Environment-based configuration with `dotenv`
@@ -86,7 +82,7 @@ Cryp-Cross is a concept for a crossword platform that rewards players with block
 |-------|-----------|
 | Frontend | React 19, React Router 7, Vite 8 (build and dev server), plain CSS |
 | Frontend tooling | ESLint 10 (flat config, react-hooks plugin), Vitest 5 |
-| Backend | Node.js 22, Express 4, Mongoose 7, helmet, express-rate-limit, cors, dotenv |
+| Backend | Node.js 22, Express 4, Mongoose 7 (models arrive with the puzzle API), helmet, express-rate-limit, cors, dotenv |
 | Database | MongoDB (MongoDB Atlas recommended) |
 | Production frontend server | `serve` with `serve.json` (SPA rewrites) |
 | CI | GitHub Actions |
@@ -143,7 +139,7 @@ npm install --prefix server
 
 | Variable | Required | Description |
 |----------|----------|-------------|
-| `VITE_API_URL` | in production | Base URL of the deployed API. Defaults to `http://localhost:5000` in development and the site's own origin in production. |
+| `VITE_API_URL` | no | Base URL of the API when it is on another origin. Empty (default) means same origin: in development Vite proxies `/api` to `http://localhost:5000`. |
 | `VITE_SITE_URL` | in production | Public site URL (https, no trailing slash). Used for canonical links and to generate `sitemap.xml` / `robots.txt` after `npm run build`. `SITE_URL` also works for the sitemap step. Vite only exposes variables prefixed with `VITE_` to the browser bundle, so never put secrets in them. |
 
 See `.env.example` for a template.
@@ -181,46 +177,6 @@ The Vite dev server runs at `http://localhost:3000` and proxies `/api` requests 
 3. **Team** (`/team`): team member carousel.
 4. Use the theme toggle in the header to switch between light and dark mode.
 
-### Project Log flow (team member)
-
-| Action | How |
-|--------|-----|
-| Create | Open **Project Log** → **+ Create New Project**, fill in title, description and status, then submit. You're redirected to the list. |
-| Read | **Project Log** (`/projects`) lists all entries, newest first. **View Detail** opens `/projects/:id`. |
-| Update | **Change Status** cycles Pending → InProgress → Complete → Pending. |
-| Delete | **Delete**, then confirm the dialog. |
-
-<details>
-<summary><strong>API reference</strong></summary>
-
-Base URL: `http://localhost:5000` in development, or your deployed API URL.
-
-| Method | Path | Body | Description |
-|--------|------|------|-------------|
-| `GET` | `/` | none | API info and endpoint list |
-| `GET` | `/api/projects` | none | List all projects, newest first |
-| `POST` | `/api/projects` | `{ "title", "description", "status" }` | Create a project |
-| `PATCH` | `/api/projects/:id` | `{ "status" }` | Update a project |
-| `DELETE` | `/api/projects/:id` | none | Delete a project |
-
-Example:
-
-```bash
-curl -X POST http://localhost:5000/api/projects -H "Content-Type: application/json" -d '{"title":"New Project","description":"Project description","status":"Pending"}'
-```
-
-Validation rules: `title` (max 200 characters) and `description` (max 2000) are non-empty strings, `status` is one of `Pending`, `InProgress` or `Complete` and defaults to `Pending`, and `:id` must be a 24-character MongoDB ObjectId.
-
-| Status | Meaning |
-|--------|---------|
-| `400` | Invalid body, JSON or id. `message` explains why. |
-| `404` | Project or route not found |
-| `413` | Body larger than 10 KB |
-| `429` | Rate limit exceeded |
-| `500` | Server error (details only in server logs) |
-
-</details>
-
 <details>
 <summary><strong>Deployment notes</strong></summary>
 
@@ -245,17 +201,17 @@ Cryp-Cross/
 ├── scripts/
 │   └── generate-seo.js        # Post-build: writes build/sitemap.xml and build/robots.txt
 ├── src/
-│   ├── App.jsx                # Routes, pages and Project Log CRUD logic
+│   ├── App.jsx                # Router, theme and layout
+│   ├── components/            # NavBar, Footer, SectionWrapper, TeamCarousel
+│   ├── pages/                 # One file per route (Home, Idea, Team, 404)
 │   ├── App.css / index.css    # Styling
-│   ├── config.js              # API base URL, site URL and endpoints
+│   ├── config.js              # API base URL and site URL
 │   ├── usePageMeta.js         # Per-route title, description, canonical and robots tags
-│   ├── reportWebVitals.js     # Optional web-vitals reporting
 │   └── index.jsx              # React entry point
 ├── server/
 │   ├── server.js              # Entry point: connects to MongoDB and starts the API
-│   ├── app.js                 # Express app: routes, validation, security middleware
+│   ├── app.js                 # Express app: security middleware, error handling
 │   ├── test/                  # Backend tests (node:test, no database needed)
-│   ├── models/projectLog.js   # Mongoose schema
 │   └── .env.example           # Backend environment template
 ├── vite.config.js             # Vite: dev port and /api proxy, build/ output, Vitest settings
 ├── eslint.config.js           # ESLint flat config (react-hooks, react-refresh)
@@ -297,7 +253,7 @@ Cryp-Cross/
 
 ## Testing
 
-The backend has automated tests in `server/test/` (Node's built-in `node:test`). They cover validation, error handling, CORS and security headers, and need no database. The frontend has no automated tests yet; Vitest is set up for files named `src/**/*.test.{js,jsx}`. Every push and pull request to `main` runs [CI](.github/workflows/ci.yml): frontend install, lint, build, Vitest and `npm audit --audit-level=high`, then backend install, syntax check, tests and `npm audit --audit-level=high`.
+The backend has automated tests in `server/test/` (Node's built-in `node:test`). They cover error handling, CORS and security headers, and need no database. The frontend has no automated tests yet; Vitest is set up for files named `src/**/*.test.{js,jsx}`. Every push and pull request to `main` runs [CI](.github/workflows/ci.yml): frontend install, lint, build, Vitest and `npm audit --audit-level=high`, then backend install, syntax check, tests and `npm audit --audit-level=high`.
 
 Run the same checks locally:
 
@@ -328,12 +284,10 @@ npm audit --audit-level=high --prefix server
 **Manual checks**
 - [ ] The API starts and logs `Database Connected`
 - [ ] The frontend loads on port 3000; Home, Idea, Team and an unknown URL (404) render
-- [ ] Each page has its own browser-tab title; a project detail page opens from **View Detail**
-- [ ] With `SITE_URL` set, `build/sitemap.xml` lists the four public pages and `build/robots.txt` links to it
+- [ ] Each page has its own browser-tab title
+- [ ] With `SITE_URL` set, `build/sitemap.xml` lists the three public pages and `build/robots.txt` links to it
 - [ ] `npm run serve` responses include `Content-Security-Policy` and `Strict-Transport-Security` headers
 - [ ] The theme toggle works and persists after a refresh
-- [ ] Create, view detail, change status and delete a project
-- [ ] Data persists after a page refresh
 
 <p align="right"><a href="#readme-top">back to top</a></p>
 
@@ -343,7 +297,7 @@ npm audit --audit-level=high --prefix server
 
 | Problem | Cause | Fix |
 |---------|-------|-----|
-| `ECONNREFUSED` or "Cannot GET /api/projects" | API not running, or the wrong API URL | Start it with `npm start --prefix server`; check `VITE_API_URL` / `src/config.js` |
+| `ECONNREFUSED` on `/api` requests | API not running, or the wrong API URL | Start it with `npm start --prefix server`; check `VITE_API_URL` / `src/config.js` |
 | API URL or site URL from `.env` is ignored | Variables still use the old Create React App `REACT_APP_` prefix | Rename them to `VITE_API_URL` / `VITE_SITE_URL` (v0.3.0+) and restart or rebuild |
 | `Database connection error` | Wrong `DATABASE_URL` or IP not allowed | Check `server/.env`; add your IP to the MongoDB Atlas access list |
 | `DATABASE_URL is not set` on startup | Missing `server/.env` | Copy `server/.env.example` to `server/.env` and fill it in |
