@@ -21,7 +21,7 @@ export default function VerifyBanner() {
 
     return (
         <div className="notice" role="status">
-            <span>Check your inbox to verify <strong>{user.email}</strong> so you can submit puzzles.</span>{' '}
+            <span>Check your inbox to verify <strong>{user.email}</strong> so your solves count on the leaderboard.</span>{' '}
             <button type="button" className="link-btn" onClick={resend}>Resend email</button>
             {status && <span className="notice-status"> {status}</span>}
         </div>

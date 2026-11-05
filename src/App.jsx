@@ -20,27 +20,22 @@ import ArchivePage from './pages/ArchivePage';
 import AuthProvider from './auth/AuthProvider';
 import VerifyBanner from './components/VerifyBanner';
 
-// Theme choice is a per-browser convenience, so localStorage is fine; guarded for blocked storage.
-function readTheme() {
-    try {
-        return localStorage.getItem('theme') === 'dark';
-    } catch {
-        return false;
-    }
-}
+// public/theme.js sets data-theme before React loads (saved choice, else the system setting).
+const readTheme = () => (document.documentElement.getAttribute('data-theme') === 'light' ? 'light' : 'dark');
 
 export default function App() {
-    const [isDark, setIsDark] = useState(readTheme);
+    const [theme, setTheme] = useState(readTheme);
 
     useEffect(() => {
-        document.body.classList.toggle('dark-mode', isDark);
-    }, [isDark]);
+        document.documentElement.setAttribute('data-theme', theme);
+    }, [theme]);
 
+    // Theme choice is a per-browser convenience, so localStorage is fine; guarded for blocked storage.
     const handleToggleTheme = () => {
-        const next = !isDark;
-        setIsDark(next);
+        const next = theme === 'dark' ? 'light' : 'dark';
+        setTheme(next);
         try {
-            localStorage.setItem('theme', next ? 'dark' : 'light');
+            localStorage.setItem('theme', next);
         } catch {
             // Storage blocked: the choice just won't persist.
         }
@@ -49,8 +44,11 @@ export default function App() {
     return (
         <BrowserRouter>
             <AuthProvider>
-                <NavBar isDark={isDark} onToggleTheme={handleToggleTheme} />
-                <main>
+                <a className="skip-link" href="#content">
+                    Skip to content
+                </a>
+                <NavBar isDark={theme === 'dark'} onToggleTheme={handleToggleTheme} />
+                <main id="content">
                     <VerifyBanner />
                     <Routes>
                         <Route path="/" element={<HomePage />} />

@@ -59,8 +59,17 @@ export default function LeaderboardPage() {
                             </thead>
                             <tbody>
                                 {board.entries.map((row) => (
-                                    <tr key={row.rank} className={user?.username === row.username ? 'me' : undefined}>
-                                        <td>{row.rank}</td>
+                                    <tr
+                                        key={row.rank}
+                                        className={
+                                            [row.rank <= 3 ? `podium rank-${row.rank}` : '', user?.username === row.username ? 'me' : '']
+                                                .filter(Boolean)
+                                                .join(' ') || undefined
+                                        }
+                                    >
+                                        <td>
+                                            <span className="rank">{row.rank}</span>
+                                        </td>
                                         <td>{row.username}</td>
                                         <td>{formatDuration(row.timeMs)}</td>
                                     </tr>

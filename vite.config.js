@@ -16,6 +16,8 @@ export default defineConfig({
     build: {
         // Kept as build/ so `npm run serve`, serve.json and scripts/generate-seo.js work unchanged.
         outDir: 'build',
+        // Fonts are always emitted as files: the CSP (font-src 'self') blocks data: URIs.
+        assetsInlineLimit: (filePath) => (/\.woff2?$/.test(filePath) ? false : undefined),
     },
     test: {
         environment: 'node',

@@ -13,6 +13,8 @@
     <img src="https://img.shields.io/badge/vite-8.3.5-blue?style=flat" alt="Vite 8.3.5" />
     <img src="https://img.shields.io/badge/vitest-5.1.0-blue?style=flat" alt="Vitest 5.1.0" />
     <img src="https://img.shields.io/badge/eslint-10.14.0-blue?style=flat" alt="ESLint 10.14.0" />
+    <img src="https://img.shields.io/badge/@fontsource/space--grotesk-5.3.0-blue?style=flat" alt="@fontsource/space-grotesk 5.3.0" />
+    <img src="https://img.shields.io/badge/@fontsource/jetbrains--mono-5.3.0-blue?style=flat" alt="@fontsource/jetbrains-mono 5.3.0" />
     <img src="https://img.shields.io/badge/express-4.22.3-blue?style=flat" alt="Express 4.22.3" />
     <img src="https://img.shields.io/badge/mongoose-7.8.13-blue?style=flat" alt="Mongoose 7.8.13" />
     <img src="https://img.shields.io/badge/helmet-8.3.0-blue?style=flat" alt="helmet 8.3.0" />
@@ -25,7 +27,7 @@
     <img src="https://img.shields.io/badge/node-22-blue?style=flat" alt="Node 22" />
   </p>
   <p>
-    <img src="https://img.shields.io/badge/version-0.10.0-green?style=flat" alt="Version 0.10.0" />
+    <img src="https://img.shields.io/badge/version-0.11.0-green?style=flat" alt="Version 0.11.0" />
     <a href="LICENSE"><img src="https://img.shields.io/badge/license-Sprucetrap%20Source--Available-orange?style=flat" alt="License: Sprucetrap Source-Available" /></a>
     <img src="https://img.shields.io/badge/platform-web-lightgrey?style=flat" alt="Platform: web" />
     <a href="https://github.com/Jevoel16/Cryp-Cross/actions/workflows/ci.yml"><img src="https://github.com/Jevoel16/Cryp-Cross/actions/workflows/ci.yml/badge.svg" alt="CI status" /></a>
@@ -75,7 +77,12 @@ Cryp-Cross is a free daily crossword where every clue is encrypted. Each day the
 - Info pages: Home, How it works (`/idea`) and a Team carousel
 - Accounts: sign up, log in, log out, verify email, forgot/reset password and an account page; a banner reminds unverified players to confirm their email
 - **Sign in with GitHub or Google** (buttons appear only for providers configured on the API), plus **Connected accounts** on the Account page to connect or disconnect them, and a username you can change
-- Light/dark theme toggle, remembered in `localStorage`
+- **Dark cipher-terminal design**: deep ink background with a faint grid, glassy cards, a lime accent taken from the puzzle-piece logo and cyan cipher text; Space Grotesk for the interface and JetBrains Mono for ciphers and the grid. The logo appears in the header, the home hero and the footer.
+- Home page hero with a one-time "decrypt" animation of the tagline, today's cipher at a glance, and a Decode / Fill / Race walkthrough
+- Play page with a glowing cursor and active entry, right/wrong marks, a Ranked or Guest badge with a timer pill, and the decoder styled as a terminal pane that stays in view beside the grid
+- Leaderboard with gold, silver and bronze ranks and your own row highlighted; stat tiles on the Account page
+- Sticky header with a mobile menu, a skip link, visible focus rings and `prefers-reduced-motion` support (animations off)
+- Dark theme by default with a light theme toggle; the choice is remembered in `localStorage`, and without one the site follows the system setting. `public/theme.js` applies it before the app renders, so there is no flash.
 - Client-side routing with React Router and a 404 page
 - SEO: a unique title, description and canonical URL per page, `noindex` on the error page, JSON-LD, Open Graph tags, `llms.txt`, and a `sitemap.xml` + `robots.txt` generated at build time
 - Optimized assets: WebP team photos at display size and correctly sized app icons
@@ -104,7 +111,7 @@ Cryp-Cross is a free daily crossword where every clue is encrypted. Each day the
 
 | Layer | Technology |
 |-------|-----------|
-| Frontend | React 19, React Router 7, Vite 8 (build and dev server), plain CSS |
+| Frontend | React 19, React Router 7, Vite 8 (build and dev server), plain CSS with design tokens, self-hosted Space Grotesk and JetBrains Mono (Fontsource) |
 | Frontend tooling | ESLint 10 (flat config, react-hooks plugin), Vitest 5 |
 | Backend testing | node:test, mongodb-memory-server (in-memory MongoDB) |
 | Backend | Node.js 22, Express 4, Mongoose 7, express-session + connect-mongo, bcryptjs, nodemailer, helmet, express-rate-limit, cors, dotenv |
@@ -263,7 +270,7 @@ This starts the API on an in-memory database (nothing to install or configure, d
 1. **Home** (`/`): introduction to Cryp-Cross.
 2. **How it works** (`/idea`): the three ciphers and the features.
 3. **Team** (`/team`): team member carousel.
-4. Use the theme toggle in the header to switch between light and dark mode.
+4. Use the sun/moon button in the header to switch between the dark and light themes. On a phone, the menu button opens the page links.
 
 <details>
 <summary><strong>API reference</strong></summary>
@@ -338,18 +345,19 @@ Cryp-Cross/
 ├── .github/workflows/ci.yml   # GitHub Actions CI
 ├── index.html                 # Vite HTML entry (meta tags, JSON-LD)
 ├── public/                    # Static files copied as-is: manifest, icons, robots.txt, llms.txt
-│   └── img/                   # Team member photos (WebP)
+│   ├── theme.js               # Applies the saved/system theme before React renders (no flash)
+│   └── img/                   # Logo (logo-72.webp, logo-440.webp) and team photos (WebP)
 ├── scripts/
 │   └── generate-seo.js        # Post-build: writes build/sitemap.xml and build/robots.txt
 ├── src/
 │   ├── App.jsx                # Router, theme and layout
 │   ├── api.js                 # fetch wrapper (JSON, session cookie, errors)
 │   ├── auth/                  # AuthProvider and useAuth
-│   ├── components/            # CrosswordGrid, ClueList, CipherTool, PuzzleBoard, NavBar, Footer, VerifyBanner, ...
+│   ├── components/            # CrosswordGrid, ClueList, CipherTool, PuzzleBoard, NavBar, Footer, OAuthButtons, DecryptText, VerifyBanner, ...
 │   ├── hooks/useCrossword.js  # Grid state reducer (letters, cursor, keyboard)
 │   ├── lib/                   # Pure logic: ciphers.js (decoders), grid.js (board navigation), format.js
 │   ├── pages/                 # One file per route (Home, Play, Leaderboard, Archive, Idea, Team, auth pages, Account, 404)
-│   ├── App.css / index.css    # Styling
+│   ├── App.css / index.css    # Design tokens (dark and light themes) and component styles
 │   ├── config.js              # API base URL and site URL
 │   ├── usePageMeta.js         # Per-route title, description, canonical and robots tags
 │   └── index.jsx              # React entry point
@@ -450,7 +458,9 @@ npm audit --audit-level=high --prefix server
 - [ ] Each page has its own browser-tab title
 - [ ] With `SITE_URL` set, `build/sitemap.xml` lists the six public pages and `build/robots.txt` links to it
 - [ ] `npm run serve` responses include `Content-Security-Policy` and `Strict-Transport-Security` headers
-- [ ] The theme toggle works and persists after a refresh
+- [ ] The theme toggle switches between dark and light and persists after a refresh; with no saved choice the site follows the system theme
+- [ ] At 375px wide the header collapses into a menu button, and Home, Play and Account have no sideways scrolling
+- [ ] With "reduce motion" turned on in the OS, the tagline, logo and cursor do not animate
 
 <p align="right"><a href="#readme-top">back to top</a></p>
 

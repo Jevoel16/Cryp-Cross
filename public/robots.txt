@@ -1,4 +1,3 @@
 # Production builds overwrite this with a version that includes the sitemap (scripts/generate-seo.js).
 User-agent: *
 Allow: /
-Disallow: /projects/
