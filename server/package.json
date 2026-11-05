@@ -1,7 +1,7 @@
 {
   "name": "orbilla-mern-backend",
   "version": "1.0.0",
-  "description": "MERN Backend with Express, MongoDB, and CRUD operations",
+  "description": "Cryp-Cross API: daily cipher crossword generator, accounts, progress and leaderboard",
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
@@ -13,7 +13,8 @@
     "express",
     "mongodb",
     "mongoose",
-    "crud"
+    "crossword",
+    "cipher"
   ],
   "author": "Sprucetrap (https://github.com/Jevoel16)",
   "license": "SEE LICENSE IN ../LICENSE",

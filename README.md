@@ -17,10 +17,15 @@
     <img src="https://img.shields.io/badge/mongoose-7.8.13-blue?style=flat" alt="Mongoose 7.8.13" />
     <img src="https://img.shields.io/badge/helmet-8.3.0-blue?style=flat" alt="helmet 8.3.0" />
     <img src="https://img.shields.io/badge/express--rate--limit-7.5.1-blue?style=flat" alt="express-rate-limit 7.5.1" />
+    <img src="https://img.shields.io/badge/express--session-1.19.0-blue?style=flat" alt="express-session 1.19.0" />
+    <img src="https://img.shields.io/badge/connect--mongo-6.0.0-blue?style=flat" alt="connect-mongo 6.0.0" />
+    <img src="https://img.shields.io/badge/bcryptjs-3.0.3-blue?style=flat" alt="bcryptjs 3.0.3" />
+    <img src="https://img.shields.io/badge/nodemailer-10.3.1-blue?style=flat" alt="nodemailer 10.3.1" />
+    <img src="https://img.shields.io/badge/mongodb--memory--server-10.4.3-blue?style=flat" alt="mongodb-memory-server 10.4.3" />
     <img src="https://img.shields.io/badge/node-22-blue?style=flat" alt="Node 22" />
   </p>
   <p>
-    <img src="https://img.shields.io/badge/version-0.8.0-green?style=flat" alt="Version 0.8.0" />
+    <img src="https://img.shields.io/badge/version-0.8.1-green?style=flat" alt="Version 0.8.1" />
     <a href="LICENSE"><img src="https://img.shields.io/badge/license-Sprucetrap%20Source--Available-orange?style=flat" alt="License: Sprucetrap Source-Available" /></a>
     <img src="https://img.shields.io/badge/platform-web-lightgrey?style=flat" alt="Platform: web" />
     <a href="https://github.com/Jevoel16/Cryp-Cross/actions/workflows/ci.yml"><img src="https://github.com/Jevoel16/Cryp-Cross/actions/workflows/ci.yml/badge.svg" alt="CI status" /></a>
@@ -97,6 +102,7 @@ Cryp-Cross is a free daily crossword where every clue is encrypted. Each day the
 |-------|-----------|
 | Frontend | React 19, React Router 7, Vite 8 (build and dev server), plain CSS |
 | Frontend tooling | ESLint 10 (flat config, react-hooks plugin), Vitest 5 |
+| Backend testing | node:test, mongodb-memory-server (in-memory MongoDB) |
 | Backend | Node.js 22, Express 4, Mongoose 7, express-session + connect-mongo, bcryptjs, nodemailer, helmet, express-rate-limit, cors, dotenv |
 | Database | MongoDB (MongoDB Atlas recommended) |
 | Production frontend server | `serve` with `serve.json` (SPA rewrites) |
@@ -270,7 +276,9 @@ curl http://localhost:5000/api/puzzles/today
 <details>
 <summary><strong>Deployment notes</strong></summary>
 
-- **Backend** (e.g. Render or Railway): root directory `server`, start command `npm start`. Set `DATABASE_URL`, `NODE_ENV=production`, `CORS_ORIGINS=<your frontend URL>` and `TRUST_PROXY=1`. The host provides `PORT`.
+- **Backend** (e.g. Render or Railway): root directory `server`, start command `npm start`. Set `DATABASE_URL`, `NODE_ENV=production`, `SESSION_SECRET`, `APP_URL`, `SMTP_HOST` / `SMTP_PORT` / `SMTP_USER` / `SMTP_PASS`, `MAIL_FROM`, `CORS_ORIGINS=<your site origin>` and `TRUST_PROXY=1`. The host provides `PORT`. The API refuses to start in production without `SESSION_SECRET`, `SMTP_HOST` and `APP_URL`.
+- **Cookies**: the session cookie is `SameSite=Lax`, so the API must be on the same site as the frontend: the same origin behind a reverse proxy (leave `VITE_API_URL` empty and route `/api` to the API), or a subdomain of the same domain (e.g. `www.example.com` + `api.example.com`). An API on a different domain (such as a default `*.onrender.com` URL next to a `*.vercel.app` site) will not keep players logged in.
+- **Email**: any SMTP provider works (e.g. Resend, Postmark, Mailgun, SES). Verify your sending domain so verification emails don't land in spam.
 - **Frontend**: set `VITE_API_URL` and `VITE_SITE_URL` at build time, run `npm run build` (which also writes `sitemap.xml` and `robots.txt`), then `npm run serve`. That passes `-c ../serve.json` so the SPA rewrites and security headers apply. On another static host (e.g. Vercel), copy the headers from `serve.json` into that host's config.
 - **HTTPS**: hosts like Render, Railway and Vercel terminate TLS and redirect HTTP to HTTPS. `serve.json` adds HSTS so browsers stay on HTTPS. Add your API origin to the CSP `connect-src` in `serve.json` if you want to drop the generic `https:`.
 
@@ -355,7 +363,7 @@ Cryp-Cross/
 
 ## Testing
 
-The backend has automated tests in `server/test/` (Node's built-in `node:test`). They cover the ciphers, a year of generated puzzles (every answer spelled, no unclued letters, correct numbering), progress/check/submit, the leaderboard and streaks, the account flows (signup, verification, login, logout, password reset and expiry, session invalidation, enumeration resistance, CSRF and rate limits) and the puzzle API against an in-memory MongoDB (`mongodb-memory-server`, downloaded on first install), error handling, CORS and security headers. The frontend has Vitest tests (`src/**/*.test.js`) for the cipher decoders, board navigation the keyboard reducer (fast typing, Backspace, direction toggles, Tab) and time formatting. Every push and pull request to `main` runs [CI](.github/workflows/ci.yml): frontend install, lint, build, Vitest and `npm audit --audit-level=high`, then backend install, syntax check, tests and `npm audit --audit-level=high`.
+The backend has automated tests in `server/test/` (Node's built-in `node:test`). They cover the ciphers, a year of generated puzzles (every answer spelled, no unclued letters, correct numbering), progress/check/submit, the leaderboard and streaks, the account flows (signup, verification, login, logout, password reset and expiry, session invalidation, enumeration resistance, CSRF and rate limits) and the puzzle API against an in-memory MongoDB (`mongodb-memory-server`, downloaded on first install), error handling, CORS and security headers. The frontend has Vitest tests (`src/**/*.test.js`) for the cipher decoders, board navigation the keyboard reducer (fast typing, Backspace, direction toggles, Tab) and time formatting. Every push and pull request to `main` runs [CI](.github/workflows/ci.yml): frontend install, lint, build, Vitest and `npm audit --audit-level=high`, then backend install, syntax check, tests (with an in-memory MongoDB whose binary is cached between runs) and `npm audit --audit-level=high`.
 
 Run the same checks locally:
 
@@ -411,6 +419,12 @@ npm audit --audit-level=high --prefix server
 | `Database connection error` | Wrong `DATABASE_URL` or IP not allowed | Check `server/.env`; add your IP to the MongoDB Atlas access list |
 | `DATABASE_URL is not set` on startup | Missing `server/.env` | Copy `server/.env.example` to `server/.env` and fill it in |
 | Browser shows a CORS error | Frontend origin isn't in `CORS_ORIGINS` | Add the exact origin (scheme + host + port) to `CORS_ORIGINS` and restart the API |
+| Verification email never arrives | No SMTP configured, or it went to spam | In development, copy the link from the API terminal (`[dev mail]`). In production, check `SMTP_*` and the spam folder, then use **Resend email** in the banner. |
+| `403 Origin not allowed` when logging in or saving | The site's origin isn't in `CORS_ORIGINS` | Add the exact origin (e.g. `http://localhost:3001` if Vite picked another port) and restart the API |
+| Logged out after every API restart in development | No `SESSION_SECRET` set, so a random one is used per start | Set `SESSION_SECRET` in `server/.env` |
+| Logged out right after a password reset | By design: a reset signs out all other sessions | Log in with the new password |
+| No Check/Submit buttons on Play | Not logged in, or email not verified | Log in and verify your email |
+| Server tests hang on first run | `mongodb-memory-server` is downloading MongoDB (~100 MB, once) | Wait for the download; behind a proxy, see the mongodb-memory-server docs |
 | `429 Too many requests` | Rate limit reached | Wait 15 minutes; behind a proxy, set `TRUST_PROXY=1` so users aren't grouped under the proxy IP |
 | No `sitemap.xml` in `build/` | `SITE_URL` / `VITE_SITE_URL` not set | Set it and rebuild |
 | Security headers missing in production | Server started without the config | Use `npm run serve` (passes `-c ../serve.json`) |
