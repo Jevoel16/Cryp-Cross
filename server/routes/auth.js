@@ -3,9 +3,17 @@ const bcrypt = require('bcryptjs');
 const { rateLimit } = require('express-rate-limit');
 const User = require('../models/user');
 const { createToken, hashToken, isTokenShape } = require('../lib/tokens');
-const { validateSignup, validateLogin, validateEmailOnly, checkPassword, isObject } = require('../lib/validate');
+const {
+  validateSignup,
+  validateLogin,
+  validateEmailOnly,
+  validateUsername,
+  checkPassword,
+  isObject,
+} = require('../lib/validate');
 const mailer = require('../lib/mailer');
 const { requireAuth, loadSessionUser } = require('../middleware/auth');
+const { createOAuthRouter } = require('./oauth');
 
 const BCRYPT_ROUNDS = 12;
 const VERIFY_TTL_MS = 24 * 60 * 60 * 1000;
@@ -83,8 +91,9 @@ function createAuthRouter() {
     if (errors.length) return badRequest(res, errors);
     try {
       const user = await User.findOne({ email: data.email });
-      const ok = await bcrypt.compare(data.password, user ? user.passwordHash : DUMMY_HASH);
-      if (!user || !ok) return res.status(401).json({ success: false, message: 'Wrong email or password' });
+      // Accounts that only use GitHub/Google have no password and always fail here.
+      const ok = await bcrypt.compare(data.password, user?.passwordHash || DUMMY_HASH);
+      if (!user || !user.passwordHash || !ok) return res.status(401).json({ success: false, message: 'Wrong email or password' });
       await startSession(req, user);
       res.json({ success: true, data: user.toPublic() });
     } catch (error) {
@@ -137,6 +146,24 @@ function createAuthRouter() {
     }
   });
 
+  router.put('/username', requireAuth, async (req, res, next) => {
+    const { errors, data } = validateUsername(req.body);
+    if (errors.length) return badRequest(res, errors);
+    try {
+      if (data.username !== req.user.username) {
+        if (await User.exists({ username: data.username })) {
+          return res.status(409).json({ success: false, message: 'That username is taken' });
+        }
+        req.user.username = data.username;
+        await req.user.save();
+      }
+      res.json({ success: true, data: req.user.toPublic() });
+    } catch (error) {
+      if (error.code === 11000) return res.status(409).json({ success: false, message: 'That username is taken' });
+      next(error);
+    }
+  });
+
   router.post('/forgot-password', authLimiter, async (req, res, next) => {
     const { errors, data } = validateEmailOnly(req.body);
     if (errors.length) return badRequest(res, errors);
@@ -171,7 +198,12 @@ function createAuthRouter() {
       user.passwordHash = await bcrypt.hash(password, BCRYPT_ROUNDS);
       user.resetTokenHash = undefined;
       user.resetTokenExpires = undefined;
-      // Reaching the inbox proves ownership of the email.
+      // Reaching the inbox proves ownership of the email. On an account that was never
+      // verified, providers were linked by whoever created it, so they are removed too.
+      if (!user.emailVerified) {
+        user.githubId = undefined;
+        user.googleId = undefined;
+      }
       user.emailVerified = true;
       user.passwordChangedAt = new Date();
       await user.save();
@@ -180,6 +212,8 @@ function createAuthRouter() {
       next(error);
     }
   });
+
+  router.use(createOAuthRouter({ authLimiter, startSession }));
 
   return router;
 }

@@ -1,6 +1,7 @@
 require('dotenv').config();
 const mongoose = require('mongoose');
 const { createApp } = require('./app');
+const { halfConfiguredProviders } = require('./lib/oauth');
 
 const PORT = Number(process.env.PORT) || 5000;
 
@@ -20,6 +21,11 @@ async function start() {
 
   if (process.env.NODE_ENV === 'production' && !process.env.CORS_ORIGINS) {
     console.warn('CORS_ORIGINS is not set: browsers on other origins will be blocked.');
+  }
+
+  const halfConfigured = halfConfiguredProviders();
+  if (halfConfigured.length) {
+    console.warn(`OAuth sign-in disabled for ${halfConfigured.join(', ')}: set both the client ID and the client secret.`);
   }
 
   try {

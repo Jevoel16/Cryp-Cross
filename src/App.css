@@ -906,3 +906,85 @@ body.dark-mode .submit-btn {
 .account-actions {
     margin-top: 24px;
 }
+
+/* --- Sign in with GitHub / Google --- */
+.oauth {
+    max-width: 420px;
+    margin: 0 auto 8px;
+}
+
+.oauth-buttons {
+    display: grid;
+    gap: 10px;
+}
+
+.oauth-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    padding: 10px 16px;
+    border: 1px solid var(--card-border);
+    border-radius: 8px;
+    color: var(--text);
+    font-weight: 600;
+    text-decoration: none;
+}
+
+.oauth-btn:hover {
+    border-color: var(--accent);
+}
+
+.provider-icon {
+    width: 20px;
+    height: 20px;
+    flex: none;
+}
+
+.oauth-divider {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin: 18px 0 4px;
+    opacity: 0.7;
+    font-size: 0.9em;
+}
+
+.oauth-divider::before,
+.oauth-divider::after {
+    content: '';
+    flex: 1;
+    border-top: 1px solid var(--card-border);
+}
+
+.connected-accounts {
+    list-style: none;
+    padding: 0;
+}
+
+.connected-accounts li {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 6px 0;
+}
+
+.connected-name {
+    min-width: 5em;
+}
+
+.inline-form {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+}
+
+.visually-hidden {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+}

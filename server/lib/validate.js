@@ -36,6 +36,20 @@ function validateSignup(body) {
   return { errors, data: { email, username, password } };
 }
 
+function validateUsername(body) {
+  if (!isObject(body)) return { errors: ['Request body must be a JSON object'], data: {} };
+  const value = typeof body.username === 'string' ? body.username.trim().toLowerCase() : '';
+  if (!USERNAME.test(value)) return { errors: ['username must be 3-20 letters, numbers or underscores'], data: {} };
+  return { errors: [], data: { username: value } };
+}
+
+// Where to send the browser after sign-in: a same-site path only, never another host.
+function safeRedirectPath(value, fallback = '/play') {
+  if (typeof value !== 'string' || value.length > 200) return fallback;
+  if (!value.startsWith('/') || value.startsWith('//') || /[\\\u0000-\u001f]/.test(value)) return fallback;
+  return value;
+}
+
 function validateLogin(body) {
   if (!isObject(body)) return { errors: ['Request body must be a JSON object'], data: {} };
   const errors = [];
@@ -51,4 +65,13 @@ function validateEmailOnly(body) {
   return { errors, data: { email } };
 }
 
-module.exports = { validateSignup, validateLogin, validateEmailOnly, checkPassword, isObject };
+module.exports = {
+  USERNAME,
+  validateSignup,
+  validateLogin,
+  validateEmailOnly,
+  validateUsername,
+  safeRedirectPath,
+  checkPassword,
+  isObject,
+};

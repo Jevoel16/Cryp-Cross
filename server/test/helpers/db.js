@@ -37,11 +37,18 @@ function createClient(base, { origin = 'http://localhost:3000' } = {}) {
     const headers = { Origin: origin };
     if (cookie) headers.Cookie = cookie;
     if (method !== 'GET') headers['Content-Type'] = 'application/json';
-    const res = await fetch(base + path, { method, headers, body: method === 'GET' ? undefined : JSON.stringify(body || {}) });
+    // Redirects are returned as-is so OAuth tests can follow them step by step.
+    const res = await fetch(base + path, {
+      method,
+      headers,
+      redirect: 'manual',
+      body: method === 'GET' ? undefined : JSON.stringify(body || {}),
+    });
     const setCookie = res.headers.get('set-cookie');
     if (setCookie) cookie = setCookie.split(';')[0];
     const text = await res.text();
-    return { status: res.status, body: text ? JSON.parse(text) : null, headers: res.headers };
+    const isJson = (res.headers.get('content-type') || '').includes('json');
+    return { status: res.status, body: text && isJson ? JSON.parse(text) : text || null, headers: res.headers };
   }
   return {
     get: (path) => request('GET', path),

@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import SectionWrapper from '../components/SectionWrapper';
 import FormMessage from '../components/FormMessage';
+import OAuthButtons from '../components/OAuthButtons';
 import usePageMeta from '../usePageMeta';
 import { api } from '../api';
 import { useAuth } from '../auth/authContext';
@@ -44,7 +45,8 @@ export default function SignupPage() {
     }
 
     return (
-        <SectionWrapper title="Sign Up">
+        <SectionWrapper title="Sign Up" className="auth-section">
+            <OAuthButtons from="/play" verb="Sign up" />
             <form className="auth-form" onSubmit={onSubmit}>
                 <div className="form-group">
                     <label htmlFor="email">Email</label>

@@ -25,7 +25,7 @@
     <img src="https://img.shields.io/badge/node-22-blue?style=flat" alt="Node 22" />
   </p>
   <p>
-    <img src="https://img.shields.io/badge/version-0.9.0-green?style=flat" alt="Version 0.9.0" />
+    <img src="https://img.shields.io/badge/version-0.10.0-green?style=flat" alt="Version 0.10.0" />
     <a href="LICENSE"><img src="https://img.shields.io/badge/license-Sprucetrap%20Source--Available-orange?style=flat" alt="License: Sprucetrap Source-Available" /></a>
     <img src="https://img.shields.io/badge/platform-web-lightgrey?style=flat" alt="Platform: web" />
     <a href="https://github.com/Jevoel16/Cryp-Cross/actions/workflows/ci.yml"><img src="https://github.com/Jevoel16/Cryp-Cross/actions/workflows/ci.yml/badge.svg" alt="CI status" /></a>
@@ -74,6 +74,7 @@ Cryp-Cross is a free daily crossword where every clue is encrypted. Each day the
 - **Account stats**: puzzles solved, current and best streak, best time and recent solves
 - Info pages: Home, How it works (`/idea`) and a Team carousel
 - Accounts: sign up, log in, log out, verify email, forgot/reset password and an account page; a banner reminds unverified players to confirm their email
+- **Sign in with GitHub or Google** (buttons appear only for providers configured on the API), plus **Connected accounts** on the Account page to connect or disconnect them, and a username you can change
 - Light/dark theme toggle, remembered in `localStorage`
 - Client-side routing with React Router and a 404 page
 - SEO: a unique title, description and canonical URL per page, `noindex` on the error page, JSON-LD, Open Graph tags, `llms.txt`, and a `sitemap.xml` + `robots.txt` generated at build time
@@ -87,6 +88,7 @@ Cryp-Cross is a free daily crossword where every clue is encrypted. Each day the
 - **Guest check** (`POST /api/puzzles/today/guest-check`): grades a grid per clue for anyone, stores nothing and never touches the leaderboard
 - **Attempts**: per-player progress, server-side answer checking, timed submissions (the timer starts only when a verified player opens the day with `GET /progress`; saving, checking and submitting require that, solves faster than `MIN_SOLVE_SECONDS` are refused, and the puzzle seed includes `PUZZLE_SECRET` so answers can't be computed in advance), a leaderboard that exposes only usernames and times, and streak stats
 - **Accounts**: email + username + password (bcrypt, cost 12), email verification and password reset with single-use, expiring links (only SHA-256 hashes stored), and sessions in MongoDB behind an `httpOnly`, `SameSite=Lax` cookie (`Secure` in production). A password reset signs out every other session.
+- **OAuth sign-in** (GitHub, Google): authorization-code flow with `state` and PKCE, written with Node's built-in `fetch` (no extra dependencies). Only a provider-verified email is trusted. A new user gets a verified account and a username from their GitHub login or Google name; a matching email signs into the existing account and links the provider. When that existing account was never verified, its password and any linked providers are removed first, so an account pre-registered with someone else's email can't be kept by its creator. Linking from the Account page requires a verified email, and the last way to sign in can't be disconnected. Access tokens are used once and never stored or logged.
 - Brute-force and abuse protection: 10 login/signup/reset attempts per 15 minutes per IP, constant-time login answers, and no account enumeration on signup or forgot-password
 - CSRF protection for cookie-authenticated writes: foreign `Origin` headers are refused and writes must be JSON
 - 10 KB JSON body limit
@@ -156,7 +158,10 @@ npm install --prefix server
 | `PORT` | no | Port for the Express API (default `5000`, which the frontend expects in development) |
 | `CORS_ORIGINS` | in production | Comma-separated frontend origins allowed to call the API and send cookie-authenticated writes; must include the site's own origin. Unset: `http://localhost:3000` in development, no browser origins in production. |
 | `SESSION_SECRET` | in production | Long random string that signs the session cookie. Development uses a random one per start (sessions end when the API restarts). |
-| `APP_URL` | in production | Public site URL used in email links (default `http://localhost:3000`) |
+| `APP_URL` | in production | Public site URL used in email links and as the destination after GitHub/Google sign-in (default `http://localhost:3000`) |
+| `API_URL` | no | Public origin of the API, used to build the OAuth callback URLs. Leave empty when the API is on the same origin as the site (or behind the Vite proxy in development); it then defaults to `APP_URL`. |
+| `GITHUB_CLIENT_ID`, `GITHUB_CLIENT_SECRET` | no | Enables **Continue with GitHub**. Both must be set; with one missing the button stays hidden and the API warns at startup. |
+| `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET` | no | Enables **Continue with Google**, same rules as GitHub |
 | `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASS` | in production | SMTP server for account emails (port 465 uses TLS). Empty `SMTP_HOST` in development prints emails to the API console. |
 | `MAIL_FROM` | no | Sender address for account emails |
 | `AUTH_RATE_LIMIT` | no | Login/signup/reset attempts per IP per 15 minutes (default `10`) |
@@ -174,6 +179,32 @@ npm install --prefix server
 | `VITE_SITE_URL` | in production | Public site URL (https, no trailing slash). Used for canonical links and to generate `sitemap.xml` / `robots.txt` after `npm run build`. `SITE_URL` also works for the sitemap step. Vite only exposes variables prefixed with `VITE_` to the browser bundle, so never put secrets in them. |
 
 See `.env.example` for a template.
+
+<details>
+<summary><strong>Setting up GitHub and Google sign-in</strong></summary>
+
+The callback URL is `<API_URL or APP_URL>/api/auth/oauth/<provider>/callback`. In development (Vite on port 3000 proxying `/api`) that is:
+
+- `http://localhost:3000/api/auth/oauth/github/callback`
+- `http://localhost:3000/api/auth/oauth/google/callback`
+
+In production use your real https origin, for example `https://cryp-cross.example.com/api/auth/oauth/github/callback`.
+
+**GitHub**
+1. Go to GitHub → Settings → Developer settings → OAuth Apps → **New OAuth App**.
+2. Homepage URL: your `APP_URL`. Authorization callback URL: the GitHub callback above.
+3. Create the app, then **Generate a new client secret**.
+4. Put the Client ID and secret in `server/.env` as `GITHUB_CLIENT_ID` and `GITHUB_CLIENT_SECRET`, and restart the API.
+
+**Google**
+1. In the Google Cloud console, open APIs & Services → **OAuth consent screen** and set it up (External, app name, support email; scopes `openid`, `email`, `profile`).
+2. APIs & Services → Credentials → **Create credentials → OAuth client ID**, type **Web application**.
+3. Authorized redirect URI: the Google callback above.
+4. Put the Client ID and secret in `server/.env` as `GOOGLE_CLIENT_ID` and `GOOGLE_CLIENT_SECRET`, and restart the API.
+
+Use separate OAuth apps (or at least separate redirect URIs) for development and production. Keep the secrets in `server/.env` or your host's secret settings, never in the frontend.
+
+</details>
 
 `.env` files are gitignored. Never commit real credentials.
 
@@ -224,7 +255,8 @@ This starts the API on an in-memory database (nothing to install or configure, d
 3. Open **Play**. Your letters now save to your account and the timer starts.
 4. **Check** marks each clue green (right) or red (wrong); editing clears the marks. **Submit** is enabled once every cell is filled.
 5. When solved, the grid locks and shows your time and rank. See **Leaderboard** and your streaks on your **Account** page (click your username).
-6. Forgot your password? **Log in** → *Forgot your password?* sends a reset link; resetting signs out your other sessions.
+6. Prefer GitHub or Google? Use **Continue with GitHub/Google** on Log in or Sign up (when configured). Your email is taken from the provider and already counts as verified, so you can play ranked straight away. Change the generated username on your **Account** page, where you can also connect or disconnect providers.
+7. Forgot your password? **Log in** → *Forgot your password?* sends a reset link; resetting signs out your other sessions.
 
 ### Visitor flow
 
@@ -243,11 +275,16 @@ Base URL: `http://localhost:5000` in development (the Vite dev server proxies `/
 | `POST` | `/api/auth/signup` | `{ email, username, password }`: creates the account, signs in and emails a verification link |
 | `POST` | `/api/auth/login` | `{ email, password }` |
 | `POST` | `/api/auth/logout` | Ends the session |
-| `GET` | `/api/auth/me` | The signed-in user (`username`, `email`, `emailVerified`) or `null` |
+| `GET` | `/api/auth/me` | The signed-in user (`username`, `email`, `emailVerified`, `hasPassword`, `providers`) or `null` |
 | `POST` | `/api/auth/verify-email` | `{ token }` from the email link |
 | `POST` | `/api/auth/resend-verification` | Signed in: sends a new verification link |
 | `POST` | `/api/auth/forgot-password` | `{ email }`: same answer whether or not the account exists |
 | `POST` | `/api/auth/reset-password` | `{ token, password }` |
+| `PUT` | `/api/auth/username` | Signed in: `{ username }`; `409` if taken |
+| `GET` | `/api/auth/providers` | Enabled sign-in providers, e.g. `["github", "google"]` |
+| `GET` | `/api/auth/oauth/:provider?from=/play` | Browser navigation: redirects to GitHub/Google. Add `link=1` while signed in (verified) to connect it to your account |
+| `GET` | `/api/auth/oauth/:provider/callback` | Provider redirect target; signs in and redirects to `APP_URL` + `from`, or to `/login?oauth=<error>` |
+| `POST` | `/api/auth/oauth/:provider/unlink` | Signed in: disconnect a provider (refused if it is your only way to sign in) |
 | `GET` | `/api/puzzles/today/progress` | Verified player: your saved `grid`, `startedAt`, `solvedAt`, `timeMs` (starts the timer on first call) |
 | `PUT` | `/api/puzzles/today/progress` | `{ date, grid }`: save letters (`409` until you have opened the puzzle with `GET`). `grid` is rows like the layout: `#` blocks, `A-Z` or space in open cells |
 | `POST` | `/api/puzzles/today/check` | `{ date, grid }` → `entries`: `right` / `wrong` / `incomplete` per clue |
@@ -322,8 +359,8 @@ Cryp-Cross/
 │   ├── data/words.txt         # Word bank: WORD|clue per line
 │   ├── puzzle/                # Generator, ciphers, PRNG, day key, puzzle service
 │   ├── models/                # Mongoose schemas (User, DailyPuzzle, Attempt)
-│   ├── routes/                # Express routers (auth, puzzles, play: progress/check/submit/leaderboard/stats)
-│   ├── lib/                   # Sessions, mailer, one-time tokens, validators
+│   ├── routes/                # Express routers (auth, oauth, puzzles, play: progress/check/submit/guest-check/leaderboard/stats)
+│   ├── lib/                   # Sessions, mailer, one-time tokens, validators, OAuth providers (oauth.js)
 │   ├── middleware/            # requireAuth, requireVerified
 │   ├── scripts/dev-memory.js  # Runs the API on a throwaway in-memory MongoDB
 │   ├── test/                  # Backend tests (node:test + in-memory MongoDB)
@@ -369,7 +406,7 @@ Cryp-Cross/
 
 ## Testing
 
-The backend has automated tests in `server/test/` (Node's built-in `node:test`). They cover the ciphers, a year of generated puzzles (every answer spelled, no unclued letters, correct numbering), progress/check/submit, the leaderboard and streaks, the account flows (signup, verification, login, logout, password reset and expiry, session invalidation, enumeration resistance, CSRF and rate limits) and the puzzle API against an in-memory MongoDB (`mongodb-memory-server`, downloaded on first install), error handling, CORS and security headers. The frontend has Vitest tests (`src/**/*.test.js`) for the cipher decoders, board navigation the keyboard reducer (fast typing, Backspace, direction toggles, Tab) and time formatting. Every push and pull request to `main` runs [CI](.github/workflows/ci.yml): frontend install, lint, build, Vitest and `npm audit --audit-level=high`, then backend install, syntax check, tests (with an in-memory MongoDB whose binary is cached between runs) and `npm audit --audit-level=high`.
+The backend has automated tests in `server/test/` (Node's built-in `node:test`). They cover the ciphers, a year of generated puzzles (every answer spelled, no unclued letters, correct numbering), progress/check/submit, the leaderboard and streaks, the account flows (signup, verification, login, logout, password reset and expiry, session invalidation, enumeration resistance, CSRF and rate limits), GitHub/Google sign-in against a fake OAuth provider (state and PKCE, account creation and linking, pre-registered account takeover, unsafe redirects, connect/disconnect, username changes), guest checks and the puzzle API against an in-memory MongoDB (`mongodb-memory-server`, downloaded on first install), error handling, CORS and security headers. The frontend has Vitest tests (`src/**/*.test.js`) for the cipher decoders, board navigation the keyboard reducer (fast typing, Backspace, direction toggles, Tab) and time formatting. Every push and pull request to `main` runs [CI](.github/workflows/ci.yml): frontend install, lint, build, Vitest and `npm audit --audit-level=high`, then backend install, syntax check, tests (with an in-memory MongoDB whose binary is cached between runs) and `npm audit --audit-level=high`.
 
 Run the same checks locally:
 
@@ -405,6 +442,8 @@ npm audit --audit-level=high --prefix server
 - [ ] On a phone-width window the grid fits without sideways scrolling
 - [ ] Sign up, open the verification link from the API terminal, and the banner disappears
 - [ ] As a guest, Check marks a wrong clue red, Submit on a full correct grid shows "not ranked", and the leaderboard is unchanged
+- [ ] With `GITHUB_CLIENT_ID`/`SECRET` set, **Continue with GitHub** signs in, creates a verified account, and returns to the page you came from; without them the button is hidden
+- [ ] On **Account**, change the username, connect a second provider and disconnect one; disconnecting the only sign-in method is refused
 - [ ] As a verified player, letters survive a refresh on another browser, Check marks a wrong clue red, and Submit records a time that appears on the leaderboard and Account page
 - [ ] After solving, the grid is locked and Submit is gone
 - [ ] Log out, forgot password and reset password work, and the old session is signed out after a reset
@@ -431,7 +470,11 @@ npm audit --audit-level=high --prefix server
 | Logged out after every API restart in development | No `SESSION_SECRET` set, so a random one is used per start | Set `SESSION_SECRET` in `server/.env` |
 | Logged out right after a password reset | By design: a reset signs out all other sessions | Log in with the new password |
 | "That solve was too fast to record" | Submitted sooner than `MIN_SOLVE_SECONDS` after opening the puzzle | Wait a few seconds and submit again |
-| No Check/Submit buttons on Play | Not logged in, or email not verified | Log in and verify your email |
+| My solve isn't on the leaderboard | Guests and unverified accounts play unranked | Sign up (or sign in with GitHub/Google) and verify your email |
+| No GitHub/Google buttons | The provider's client ID or secret isn't set on the API | Set both in `server/.env` and restart the API |
+| GitHub/Google shows "redirect_uri mismatch" | The callback URL registered with the provider differs from `<API_URL or APP_URL>/api/auth/oauth/<provider>/callback` | Register exactly that URL (scheme, host, port and path) |
+| "That sign-in link expired or was opened in another browser" | The sign-in took more than 10 minutes, or cookies are blocked | Try again in the same browser and allow cookies for the site |
+| "That account has no verified email we can use" | The GitHub primary email or Google email isn't verified | Verify it with the provider, or sign up with email |
 | Server tests hang on first run | `mongodb-memory-server` is downloading MongoDB (~100 MB, once) | Wait for the download; behind a proxy, see the mongodb-memory-server docs |
 | `429 Too many requests` | Rate limit reached | Wait 15 minutes; behind a proxy, set `TRUST_PROXY=1` so users aren't grouped under the proxy IP |
 | No `sitemap.xml` in `build/` | `SITE_URL` / `VITE_SITE_URL` not set | Set it and rebuild |

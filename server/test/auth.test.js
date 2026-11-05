@@ -36,7 +36,13 @@ describe('accounts', () => {
     const tab = createClient(api.base);
     const res = await tab.post('/api/auth/signup', ALICE);
     assert.equal(res.status, 201);
-    assert.deepEqual(res.body.data, { username: 'alice_1', email: 'alice@example.com', emailVerified: false });
+    assert.deepEqual(res.body.data, {
+      username: 'alice_1',
+      email: 'alice@example.com',
+      emailVerified: false,
+      hasPassword: true,
+      providers: [],
+    });
 
     const cookie = res.headers.get('set-cookie');
     assert.match(cookie, /cc\.sid=/);
