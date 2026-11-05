@@ -8,6 +8,8 @@ const BUILD_DIR = path.join(path.dirname(fileURLToPath(import.meta.url)), '..', 
 const PUBLIC_ROUTES = [
     { path: '/', priority: '1.0' },
     { path: '/play', priority: '0.9' },
+    { path: '/leaderboard', priority: '0.7' },
+    { path: '/puzzles', priority: '0.5' },
     { path: '/idea', priority: '0.8' },
     { path: '/team', priority: '0.6' },
 ];

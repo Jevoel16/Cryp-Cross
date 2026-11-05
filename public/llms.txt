@@ -6,6 +6,8 @@
 
 - [Home](/): What Cryp-Cross is
 - [Play](/play): Today's puzzle with the cipher decoder
+- [Leaderboard](/leaderboard): Today's fastest solves
+- [Past puzzles](/puzzles): Earlier days with answers
 - [How it works](/idea): The three ciphers and the features
 - [Team](/team): The people building Cryp-Cross
 

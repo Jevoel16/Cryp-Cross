@@ -20,7 +20,7 @@
     <img src="https://img.shields.io/badge/node-22-blue?style=flat" alt="Node 22" />
   </p>
   <p>
-    <img src="https://img.shields.io/badge/version-0.7.0-green?style=flat" alt="Version 0.7.0" />
+    <img src="https://img.shields.io/badge/version-0.8.0-green?style=flat" alt="Version 0.8.0" />
     <a href="LICENSE"><img src="https://img.shields.io/badge/license-Sprucetrap%20Source--Available-orange?style=flat" alt="License: Sprucetrap Source-Available" /></a>
     <img src="https://img.shields.io/badge/platform-web-lightgrey?style=flat" alt="Platform: web" />
     <a href="https://github.com/Jevoel16/Cryp-Cross/actions/workflows/ci.yml"><img src="https://github.com/Jevoel16/Cryp-Cross/actions/workflows/ci.yml/badge.svg" alt="CI status" /></a>
@@ -62,6 +62,10 @@ Cryp-Cross is a free daily crossword where every clue is encrypted. Each day the
 - **Play page** (`/play`): today's grid with keyboard and touch input (letters, Backspace, arrows, Space to switch direction, Tab/Enter for the next clue), across/down clue lists, and the current clue above the grid
 - **Decoder workbench** for the day's cipher: a Caesar shift slider with an "all 25 shifts" view, Atbash, and Vigenère with a keyword box and the plain key clue
 - Unsaved letters are kept per browser, so a refresh doesn't lose them
+- **For verified players**: progress saved to the server as you type, a running timer, **Check** (marks each clue right, wrong or unfinished without revealing answers) and **Submit** (one timed solve per day, then the grid locks)
+- **Leaderboard** (`/leaderboard`): today's fastest solves, or any past day with `?date=YYYY-MM-DD`
+- **Archive** (`/puzzles`, `/puzzles/:date`): past days with the solution, decoded clues and the cipher key
+- **Account stats**: puzzles solved, current and best streak, best time and recent solves
 - Info pages: Home, How it works (`/idea`) and a Team carousel
 - Accounts: sign up, log in, log out, verify email, forgot/reset password and an account page; a banner reminds unverified players to confirm their email
 - Light/dark theme toggle, remembered in `localStorage`
@@ -74,6 +78,7 @@ Cryp-Cross is a free daily crossword where every clue is encrypted. Each day the
 - **Daily cipher crossword generator**: each day (in `PUZZLE_TZ`) a crossword of 8–12 words is built from `server/data/words.txt`, deterministically from the date, and stored in MongoDB so it never changes afterwards
 - **Encrypted clues**: the day's cipher is Caesar (hidden shift), Atbash, or Vigenère (the key is the answer to an extra plain-text key clue)
 - Puzzle API: today's puzzle without answers or keys, plus an archive of past played days with answers revealed
+- **Attempts**: per-player progress, server-side answer checking, timed submissions (timer starts the first time a verified player opens the day), a leaderboard that exposes only usernames and times, and streak stats
 - **Accounts**: email + username + password (bcrypt, cost 12), email verification and password reset with single-use, expiring links (only SHA-256 hashes stored), and sessions in MongoDB behind an `httpOnly`, `SameSite=Lax` cookie (`Secure` in production). A password reset signs out every other session.
 - Brute-force and abuse protection: 10 login/signup/reset attempts per 15 minutes per IP, constant-time login answers, and no account enumeration on signup or forgot-password
 - CSRF protection for cookie-authenticated writes: foreign `Origin` headers are refused and writes must be JSON
@@ -201,6 +206,15 @@ This starts the API on an in-memory database (nothing to install or configure, d
 3. Decode it: move the Caesar slider until the clue reads as English, read the Atbash output, or (Vigenère) solve the plain key clue and type that keyword.
 4. Type the answer. Tab or Enter jumps to the next clue. Your letters stay after a refresh.
 
+### Player flow (account)
+
+1. **Sign up** (`/signup`) with email, username and password. You are signed in straight away.
+2. Open the link in the verification email. In development without SMTP, the email (and link) is printed in the API terminal.
+3. Open **Play**. Your letters now save to your account and the timer starts.
+4. **Check** marks each clue green (right) or red (wrong); editing clears the marks. **Submit** is enabled once every cell is filled.
+5. When solved, the grid locks and shows your time and rank. See **Leaderboard** and your streaks on your **Account** page (click your username).
+6. Forgot your password? **Log in** → *Forgot your password?* sends a reset link; resetting signs out your other sessions.
+
 ### Visitor flow
 
 1. **Home** (`/`): introduction to Cryp-Cross.
@@ -223,6 +237,12 @@ Base URL: `http://localhost:5000` in development (the Vite dev server proxies `/
 | `POST` | `/api/auth/resend-verification` | Signed in: sends a new verification link |
 | `POST` | `/api/auth/forgot-password` | `{ email }`: same answer whether or not the account exists |
 | `POST` | `/api/auth/reset-password` | `{ token, password }` |
+| `GET` | `/api/puzzles/today/progress` | Verified player: your saved `grid`, `startedAt`, `solvedAt`, `timeMs` (starts the timer on first call) |
+| `PUT` | `/api/puzzles/today/progress` | `{ date, grid }`: save letters. `grid` is rows like the layout: `#` blocks, `A-Z` or space in open cells |
+| `POST` | `/api/puzzles/today/check` | `{ date, grid }` → `entries`: `right` / `wrong` / `incomplete` per clue |
+| `POST` | `/api/puzzles/today/submit` | `{ date, grid }` → `{ solved: true, timeMs, rank }` or `{ solved: false, wrong, incomplete }`; `409` if already solved |
+| `GET` | `/api/leaderboard?date=` | Top 50 solves for a day (default today): `rank`, `username`, `timeMs` |
+| `GET` | `/api/me/stats` | Signed in: `solves`, `currentStreak`, `bestStreak`, `bestTimeMs`, last 30 solves |
 | `GET` | `/api/puzzles/today` | Today's puzzle: `layout` (`#` block, `.` open cell), numbered `entries` with encrypted `clue`s, and `cipher` (`type`, plus `keyClue` and `keyLength` for Vigenère). No answers or keys. |
 | `GET` | `/api/puzzles` | Past days that were played (up to 60), newest first |
 | `GET` | `/api/puzzles/:date` | One day (`YYYY-MM-DD`). Past days include `solution`, each entry's `answer` and `plainClue`, and the cipher key. Unplayed or future days return 404. |
@@ -238,7 +258,7 @@ curl http://localhost:5000/api/puzzles/today
 | `400` | Invalid body, JSON, date or token. `message` explains why. |
 | `401` | Not logged in, or wrong email/password |
 | `403` | Foreign `Origin`, or email not verified yet |
-| `409` | Username taken |
+| `409` | Username taken, or puzzle already solved |
 | `415` | Write request without a JSON body |
 | `404` | Puzzle or route not found |
 | `413` | Body larger than 10 KB |
@@ -276,8 +296,8 @@ Cryp-Cross/
 │   ├── auth/                  # AuthProvider and useAuth
 │   ├── components/            # CrosswordGrid, ClueList, CipherTool, PuzzleBoard, NavBar, Footer, VerifyBanner, ...
 │   ├── hooks/useCrossword.js  # Grid state reducer (letters, cursor, keyboard)
-│   ├── lib/                   # Pure logic: ciphers.js (decoders), grid.js (board navigation)
-│   ├── pages/                 # One file per route (Home, Play, Idea, Team, auth pages, Account, 404)
+│   ├── lib/                   # Pure logic: ciphers.js (decoders), grid.js (board navigation), format.js
+│   ├── pages/                 # One file per route (Home, Play, Leaderboard, Archive, Idea, Team, auth pages, Account, 404)
 │   ├── App.css / index.css    # Styling
 │   ├── config.js              # API base URL and site URL
 │   ├── usePageMeta.js         # Per-route title, description, canonical and robots tags
@@ -287,8 +307,8 @@ Cryp-Cross/
 │   ├── app.js                 # Express app: security middleware, error handling
 │   ├── data/words.txt         # Word bank: WORD|clue per line
 │   ├── puzzle/                # Generator, ciphers, PRNG, day key, puzzle service
-│   ├── models/                # Mongoose schemas (User, DailyPuzzle)
-│   ├── routes/                # Express routers (auth, puzzles)
+│   ├── models/                # Mongoose schemas (User, DailyPuzzle, Attempt)
+│   ├── routes/                # Express routers (auth, puzzles, play: progress/check/submit/leaderboard/stats)
 │   ├── lib/                   # Sessions, mailer, one-time tokens, validators
 │   ├── middleware/            # requireAuth, requireVerified
 │   ├── scripts/dev-memory.js  # Runs the API on a throwaway in-memory MongoDB
@@ -335,7 +355,7 @@ Cryp-Cross/
 
 ## Testing
 
-The backend has automated tests in `server/test/` (Node's built-in `node:test`). They cover the ciphers, a year of generated puzzles (every answer spelled, no unclued letters, correct numbering), the account flows (signup, verification, login, logout, password reset and expiry, session invalidation, enumeration resistance, CSRF and rate limits) and the puzzle API against an in-memory MongoDB (`mongodb-memory-server`, downloaded on first install), error handling, CORS and security headers. The frontend has Vitest tests (`src/**/*.test.js`) for the cipher decoders, board navigation and the keyboard reducer (fast typing, Backspace, direction toggles, Tab). Every push and pull request to `main` runs [CI](.github/workflows/ci.yml): frontend install, lint, build, Vitest and `npm audit --audit-level=high`, then backend install, syntax check, tests and `npm audit --audit-level=high`.
+The backend has automated tests in `server/test/` (Node's built-in `node:test`). They cover the ciphers, a year of generated puzzles (every answer spelled, no unclued letters, correct numbering), progress/check/submit, the leaderboard and streaks, the account flows (signup, verification, login, logout, password reset and expiry, session invalidation, enumeration resistance, CSRF and rate limits) and the puzzle API against an in-memory MongoDB (`mongodb-memory-server`, downloaded on first install), error handling, CORS and security headers. The frontend has Vitest tests (`src/**/*.test.js`) for the cipher decoders, board navigation the keyboard reducer (fast typing, Backspace, direction toggles, Tab) and time formatting. Every push and pull request to `main` runs [CI](.github/workflows/ci.yml): frontend install, lint, build, Vitest and `npm audit --audit-level=high`, then backend install, syntax check, tests and `npm audit --audit-level=high`.
 
 Run the same checks locally:
 
@@ -369,8 +389,12 @@ npm audit --audit-level=high --prefix server
 - [ ] On **Play**, typing fills cells and moves along the clue, Space/second click switches direction, Tab moves to the next clue, and letters survive a refresh
 - [ ] The decoder turns the selected clue into English with the right Caesar shift, Atbash, or the Vigenère keyword
 - [ ] On a phone-width window the grid fits without sideways scrolling
+- [ ] Sign up, open the verification link from the API terminal, and the banner disappears
+- [ ] As a verified player, letters survive a refresh on another browser, Check marks a wrong clue red, and Submit records a time that appears on the leaderboard and Account page
+- [ ] After solving, the grid is locked and Submit is gone
+- [ ] Log out, forgot password and reset password work, and the old session is signed out after a reset
 - [ ] Each page has its own browser-tab title
-- [ ] With `SITE_URL` set, `build/sitemap.xml` lists the four public pages and `build/robots.txt` links to it
+- [ ] With `SITE_URL` set, `build/sitemap.xml` lists the six public pages and `build/robots.txt` links to it
 - [ ] `npm run serve` responses include `Content-Security-Policy` and `Strict-Transport-Security` headers
 - [ ] The theme toggle works and persists after a refresh
 

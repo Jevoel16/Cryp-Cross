@@ -14,6 +14,9 @@ import ForgotPasswordPage from './pages/ForgotPasswordPage';
 import ResetPasswordPage from './pages/ResetPasswordPage';
 import AccountPage from './pages/AccountPage';
 import PlayPage from './pages/PlayPage';
+import LeaderboardPage from './pages/LeaderboardPage';
+import ArchiveListPage from './pages/ArchiveListPage';
+import ArchivePage from './pages/ArchivePage';
 import AuthProvider from './auth/AuthProvider';
 import VerifyBanner from './components/VerifyBanner';
 
@@ -52,6 +55,9 @@ export default function App() {
                     <Routes>
                         <Route path="/" element={<HomePage />} />
                         <Route path="/play" element={<PlayPage />} />
+                        <Route path="/leaderboard" element={<LeaderboardPage />} />
+                        <Route path="/puzzles" element={<ArchiveListPage />} />
+                        <Route path="/puzzles/:date" element={<ArchivePage />} />
                         <Route path="/idea" element={<IdeaPage />} />
                         <Route path="/team" element={<TeamPage />} />
                         <Route path="/login" element={<LoginPage />} />

@@ -4,6 +4,7 @@ const helmet = require('helmet');
 const { rateLimit } = require('express-rate-limit');
 const puzzleRoutes = require('./routes/puzzles');
 const { createAuthRouter } = require('./routes/auth');
+const { router: playRoutes } = require('./routes/play');
 const { createSessionMiddleware } = require('./lib/session');
 
 // Comma-separated allow-list; dev falls back to the Vite dev server only.
@@ -70,6 +71,8 @@ function createApp() {
 
   app.use('/api', createSessionMiddleware());
   app.use('/api/auth', createAuthRouter());
+  // Progress, check, submit, leaderboard and stats.
+  app.use('/api', playRoutes);
   app.use('/api/puzzles', puzzleRoutes);
 
   app.get('/', (req, res) => {
