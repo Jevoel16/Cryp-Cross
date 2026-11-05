@@ -5,7 +5,7 @@
 
   <h1>Cryp-Cross</h1>
 
-  <p><strong>A MERN site for Cryp-Cross, a daily cryptographic crossword with player accounts (in development).</strong></p>
+  <p><strong>A daily cryptographic crossword: decode the encrypted clues, fill the grid, keep your streak.</strong></p>
 
   <p>
     <img src="https://img.shields.io/badge/react-19.2.0-blue?style=flat" alt="React 19.2.0" />
@@ -20,7 +20,7 @@
     <img src="https://img.shields.io/badge/node-22-blue?style=flat" alt="Node 22" />
   </p>
   <p>
-    <img src="https://img.shields.io/badge/version-0.6.0-green?style=flat" alt="Version 0.6.0" />
+    <img src="https://img.shields.io/badge/version-0.7.0-green?style=flat" alt="Version 0.7.0" />
     <a href="LICENSE"><img src="https://img.shields.io/badge/license-Sprucetrap%20Source--Available-orange?style=flat" alt="License: Sprucetrap Source-Available" /></a>
     <img src="https://img.shields.io/badge/platform-web-lightgrey?style=flat" alt="Platform: web" />
     <a href="https://github.com/Jevoel16/Cryp-Cross/actions/workflows/ci.yml"><img src="https://github.com/Jevoel16/Cryp-Cross/actions/workflows/ci.yml/badge.svg" alt="CI status" /></a>
@@ -50,7 +50,7 @@
 
 ## About
 
-Cryp-Cross is a concept for a crossword platform that rewards players with blockchain-based tokens: a fresh puzzle every day, with correct answers recorded on a verifiable ledger. This repository is a MERN (MongoDB, Express, React, Node.js) web app that presents the concept (home, idea and team pages). The game itself (a daily cipher crossword with accounts) is being built next; the earlier Project Log task tracker was removed in v0.4.0.
+Cryp-Cross is a free daily crossword where every clue is encrypted. Each day the server generates one grid for everyone and hides its clues behind a classical cipher (Caesar, Atbash or Vigenère). Players crack the cipher with a built-in decoder, fill the grid and, with a free account, check answers, submit timed solves and climb the leaderboard. It is a MERN app (MongoDB, Express, React, Node.js).
 
 <p align="right"><a href="#readme-top">back to top</a></p>
 
@@ -59,7 +59,10 @@ Cryp-Cross is a concept for a crossword platform that rewards players with block
 ## Features
 
 **Frontend (React)**
-- Concept pages: Home, Idea (problem statement, key features, emerging technology) and a Team carousel
+- **Play page** (`/play`): today's grid with keyboard and touch input (letters, Backspace, arrows, Space to switch direction, Tab/Enter for the next clue), across/down clue lists, and the current clue above the grid
+- **Decoder workbench** for the day's cipher: a Caesar shift slider with an "all 25 shifts" view, Atbash, and Vigenère with a keyword box and the plain key clue
+- Unsaved letters are kept per browser, so a refresh doesn't lose them
+- Info pages: Home, How it works (`/idea`) and a Team carousel
 - Accounts: sign up, log in, log out, verify email, forgot/reset password and an account page; a banner reminds unverified players to confirm their email
 - Light/dark theme toggle, remembered in `localStorage`
 - Client-side routing with React Router and a 404 page
@@ -183,10 +186,25 @@ npm start
 
 The Vite dev server runs at `http://localhost:3000` and proxies `/api` requests to `http://localhost:5000`.
 
+### Try it without MongoDB
+
+```bash
+npm run dev:memory --prefix server
+```
+
+This starts the API on an in-memory database (nothing to install or configure, data is lost on exit). Then run `npm start` in a second terminal.
+
+### Player flow (guest)
+
+1. Open **Play** (`/play`). The title shows today's date; the decoder names today's cipher.
+2. Click a cell (click it again or press Space to switch across/down) and pick a clue from the lists. The decoder shows the selected clue.
+3. Decode it: move the Caesar slider until the clue reads as English, read the Atbash output, or (Vigenère) solve the plain key clue and type that keyword.
+4. Type the answer. Tab or Enter jumps to the next clue. Your letters stay after a refresh.
+
 ### Visitor flow
 
 1. **Home** (`/`): introduction to Cryp-Cross.
-2. **Idea** (`/idea`): problem statement, key features and blockchain integration.
+2. **How it works** (`/idea`): the three ciphers and the features.
 3. **Team** (`/team`): team member carousel.
 4. Use the theme toggle in the header to switch between light and dark mode.
 
@@ -256,8 +274,10 @@ Cryp-Cross/
 │   ├── App.jsx                # Router, theme and layout
 │   ├── api.js                 # fetch wrapper (JSON, session cookie, errors)
 │   ├── auth/                  # AuthProvider and useAuth
-│   ├── components/            # NavBar, Footer, SectionWrapper, TeamCarousel, VerifyBanner, FormMessage
-│   ├── pages/                 # One file per route (Home, Idea, Team, auth pages, Account, 404)
+│   ├── components/            # CrosswordGrid, ClueList, CipherTool, PuzzleBoard, NavBar, Footer, VerifyBanner, ...
+│   ├── hooks/useCrossword.js  # Grid state reducer (letters, cursor, keyboard)
+│   ├── lib/                   # Pure logic: ciphers.js (decoders), grid.js (board navigation)
+│   ├── pages/                 # One file per route (Home, Play, Idea, Team, auth pages, Account, 404)
 │   ├── App.css / index.css    # Styling
 │   ├── config.js              # API base URL and site URL
 │   ├── usePageMeta.js         # Per-route title, description, canonical and robots tags
@@ -271,6 +291,7 @@ Cryp-Cross/
 │   ├── routes/                # Express routers (auth, puzzles)
 │   ├── lib/                   # Sessions, mailer, one-time tokens, validators
 │   ├── middleware/            # requireAuth, requireVerified
+│   ├── scripts/dev-memory.js  # Runs the API on a throwaway in-memory MongoDB
 │   ├── test/                  # Backend tests (node:test + in-memory MongoDB)
 │   └── .env.example           # Backend environment template
 ├── vite.config.js             # Vite: dev port and /api proxy, build/ output, Vitest settings
@@ -305,6 +326,7 @@ Cryp-Cross/
 |--------|-------------|
 | `npm start` | Start the Express API |
 | `npm run dev` | Start the API and restart on file changes (`node --watch`) |
+| `npm run dev:memory` | Start the API on a throwaway in-memory MongoDB (no `DATABASE_URL` needed; data is lost on exit) |
 | `npm test` | Run the backend tests (starts an in-memory MongoDB) |
 
 <p align="right"><a href="#readme-top">back to top</a></p>
@@ -313,7 +335,7 @@ Cryp-Cross/
 
 ## Testing
 
-The backend has automated tests in `server/test/` (Node's built-in `node:test`). They cover the ciphers, a year of generated puzzles (every answer spelled, no unclued letters, correct numbering), the account flows (signup, verification, login, logout, password reset and expiry, session invalidation, enumeration resistance, CSRF and rate limits) and the puzzle API against an in-memory MongoDB (`mongodb-memory-server`, downloaded on first install), error handling, CORS and security headers. The frontend has no automated tests yet; Vitest is set up for files named `src/**/*.test.{js,jsx}`. Every push and pull request to `main` runs [CI](.github/workflows/ci.yml): frontend install, lint, build, Vitest and `npm audit --audit-level=high`, then backend install, syntax check, tests and `npm audit --audit-level=high`.
+The backend has automated tests in `server/test/` (Node's built-in `node:test`). They cover the ciphers, a year of generated puzzles (every answer spelled, no unclued letters, correct numbering), the account flows (signup, verification, login, logout, password reset and expiry, session invalidation, enumeration resistance, CSRF and rate limits) and the puzzle API against an in-memory MongoDB (`mongodb-memory-server`, downloaded on first install), error handling, CORS and security headers. The frontend has Vitest tests (`src/**/*.test.js`) for the cipher decoders, board navigation and the keyboard reducer (fast typing, Backspace, direction toggles, Tab). Every push and pull request to `main` runs [CI](.github/workflows/ci.yml): frontend install, lint, build, Vitest and `npm audit --audit-level=high`, then backend install, syntax check, tests and `npm audit --audit-level=high`.
 
 Run the same checks locally:
 
@@ -343,9 +365,12 @@ npm audit --audit-level=high --prefix server
 
 **Manual checks**
 - [ ] The API starts and logs `Database Connected`
-- [ ] The frontend loads on port 3000; Home, Idea, Team and an unknown URL (404) render
+- [ ] The frontend loads on port 3000; Home, Play, Idea, Team and an unknown URL (404) render
+- [ ] On **Play**, typing fills cells and moves along the clue, Space/second click switches direction, Tab moves to the next clue, and letters survive a refresh
+- [ ] The decoder turns the selected clue into English with the right Caesar shift, Atbash, or the Vigenère keyword
+- [ ] On a phone-width window the grid fits without sideways scrolling
 - [ ] Each page has its own browser-tab title
-- [ ] With `SITE_URL` set, `build/sitemap.xml` lists the three public pages and `build/robots.txt` links to it
+- [ ] With `SITE_URL` set, `build/sitemap.xml` lists the four public pages and `build/robots.txt` links to it
 - [ ] `npm run serve` responses include `Content-Security-Policy` and `Strict-Transport-Security` headers
 - [ ] The theme toggle works and persists after a refresh
 
@@ -381,10 +406,10 @@ npm audit --audit-level=high --prefix server
 <details>
 <summary><strong>SEO backlink ideas</strong></summary>
 
-- Link the live site from the GitHub repository description and topics (`react`, `mern`, `crossword`, `blockchain`)
+- Link the live site from the GitHub repository description and topics (`react`, `mern`, `crossword`, `cipher`, `cryptography`, `puzzle`)
 - Add it to team members' GitHub profile READMEs, LinkedIn and portfolios
 - Write a short dev post (DEV.to, Hashnode, Medium) about building Cryp-Cross and link back
-- Submit it to course or school project showcases and puzzle/web3 community directories
+- Submit it to course or school project showcases and puzzle and cryptography communities (r/crossword, r/codes, puzzle newsletters)
 
 </details>
 

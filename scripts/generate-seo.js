@@ -7,6 +7,7 @@ import { fileURLToPath } from 'node:url';
 const BUILD_DIR = path.join(path.dirname(fileURLToPath(import.meta.url)), '..', 'build');
 const PUBLIC_ROUTES = [
     { path: '/', priority: '1.0' },
+    { path: '/play', priority: '0.9' },
     { path: '/idea', priority: '0.8' },
     { path: '/team', priority: '0.6' },
 ];

@@ -13,6 +13,7 @@ import VerifyEmailPage from './pages/VerifyEmailPage';
 import ForgotPasswordPage from './pages/ForgotPasswordPage';
 import ResetPasswordPage from './pages/ResetPasswordPage';
 import AccountPage from './pages/AccountPage';
+import PlayPage from './pages/PlayPage';
 import AuthProvider from './auth/AuthProvider';
 import VerifyBanner from './components/VerifyBanner';
 
@@ -50,6 +51,7 @@ export default function App() {
                     <VerifyBanner />
                     <Routes>
                         <Route path="/" element={<HomePage />} />
+                        <Route path="/play" element={<PlayPage />} />
                         <Route path="/idea" element={<IdeaPage />} />
                         <Route path="/team" element={<TeamPage />} />
                         <Route path="/login" element={<LoginPage />} />

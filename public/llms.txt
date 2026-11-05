@@ -1,11 +1,12 @@
 # Cryp-Cross
 
-> Cryp-Cross is a crypto crossword challenge concept: a fresh crossword every day, correct answers recorded on a verifiable ledger, and blockchain-based token rewards that players can trade. This site presents the concept.
+> Cryp-Cross is a free daily cryptographic crossword. Each day everyone gets the same generated grid, and every clue is encrypted with that day's classical cipher: a Caesar shift, Atbash, or Vigenere (whose keyword is the answer to a plain-text key clue). Players decode the clues with a built-in decoder, fill the grid, and with a free account can check answers, submit timed solves, keep streaks and appear on the daily leaderboard.
 
 ## Pages
 
-- [Home](/): Introduction to Cryp-Cross
-- [The Idea](/idea): Problem statement, key features and blockchain integration
+- [Home](/): What Cryp-Cross is
+- [Play](/play): Today's puzzle with the cipher decoder
+- [How it works](/idea): The three ciphers and the features
 - [Team](/team): The people building Cryp-Cross
 
 ## Source

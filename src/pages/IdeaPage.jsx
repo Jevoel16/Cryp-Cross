@@ -4,33 +4,49 @@ import usePageMeta from '../usePageMeta';
 
 export default function IdeaPage() {
     usePageMeta({
-        title: 'The Idea',
-        description: 'The Cryp-Cross idea: daily crosswords, real-time answer validation, leaderboards and tamper-resistant blockchain token rewards.',
+        title: 'How It Works',
+        description:
+            'How Cryp-Cross works: a daily generated crossword whose clues are encrypted with Caesar, Atbash or Vigenère ciphers, with accounts, streaks and a leaderboard.',
         path: '/idea',
     });
     return (
-    <SectionWrapper title="Cryp-Cross: The Idea">
-        <article>
-            <h2>Problem Statement</h2>
-            <p>Traditional crossword puzzle platforms, although playable, lack dynamic content and transparent, secure reward systems. This app delivers a new crossword each day with correct entries publicly recorded to prevent duplicate solving. Successful players receive <strong>blockchain-based tokens</strong> as rewards, which can be traded to others.</p>
-        </article>
-        <article>
-            <h2>Key Features</h2>
-            <ul>
-                <li>Daily Crossword Generation</li>
-                <li>User Registration and Authentication</li>
-                <li>Real-Time Answer Submission and Validation</li>
-                <li>Leaderboard and Progress Tracking</li>
-                <li>Blockchain-Based Rewards</li>
-                <li>Token Trading System</li>
-                <li>Puzzle and User Data Management</li>
-            </ul>
-        </article>
-        <article>
-            <h2>Emerging Technology Integration</h2>
-            <p>A built-in blockchain ledger records, verifies, and secures each player’s earned puzzle rewards, ensuring every achievement is transparently tracked and tamper-resistant without relying on external platforms. This approach brings trust, verifiability, and accountability to user incentives within the Cryp-Cross ecosystem.</p>
-            <p><Link to="/team">Meet the team</Link> building it.</p>
-        </article>
-    </SectionWrapper>
+        <SectionWrapper title="Cryp-Cross: How It Works">
+            <article>
+                <h2>The idea</h2>
+                <p>
+                    Crosswords test vocabulary; ciphers test pattern spotting. Cryp-Cross combines both: before you can answer a
+                    clue, you have to decrypt it. Everyone gets the same puzzle each day, so you can compare solves with friends.
+                </p>
+            </article>
+            <article>
+                <h2>The daily ciphers</h2>
+                <ul>
+                    <li>
+                        <strong>Caesar shift</strong>: every letter moves the same number of places. The shift is secret, so try
+                        all 25.
+                    </li>
+                    <li>
+                        <strong>Atbash</strong>: the alphabet is mirrored, A↔Z, B↔Y. The gentlest day of the week.
+                    </li>
+                    <li>
+                        <strong>Vigenère</strong>: a keyword shifts each letter by a different amount. Solve the plain-text key
+                        clue first to get the keyword.
+                    </li>
+                </ul>
+            </article>
+            <article>
+                <h2>Features</h2>
+                <ul>
+                    <li>A fresh crossword generated every day, the same for everyone</li>
+                    <li>A decoder workbench for the day&apos;s cipher</li>
+                    <li>Free accounts with email verification</li>
+                    <li>Saved progress, answer checking and timed submissions</li>
+                    <li>Daily leaderboard, solve streaks and an archive of past puzzles</li>
+                </ul>
+                <p>
+                    Ready? <Link to="/play">Play today&apos;s puzzle</Link> or <Link to="/team">meet the team</Link>.
+                </p>
+            </article>
+        </SectionWrapper>
     );
 }

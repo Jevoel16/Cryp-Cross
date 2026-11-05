@@ -1,7 +1,7 @@
 {
   "short_name": "Cryp-Cross",
   "name": "Cryp-Cross: Crypto Crossword Challenge",
-  "description": "Solve a fresh crossword every day and earn blockchain-based token rewards.",
+  "description": "A free daily crossword with encrypted clues.",
   "icons": [
     {
       "src": "favicon.ico",

@@ -9,7 +9,7 @@
     <!-- Defaults for the home page; each route updates these at runtime (src/usePageMeta.js). -->
     <meta
       name="description"
-      content="Cryp-Cross is a crypto crossword challenge: solve a fresh crossword every day and earn blockchain-based token rewards on a verifiable ledger."
+      content="Cryp-Cross is a free daily cryptographic crossword: every clue is hidden behind a classical cipher. Decode the clues, fill the grid and climb the leaderboard."
     />
     <meta name="robots" content="index, follow" />
     <meta property="og:type" content="website" />
@@ -17,7 +17,7 @@
     <meta property="og:title" content="Cryp-Cross" />
     <meta
       property="og:description"
-      content="Solve a fresh crossword every day and earn blockchain-based token rewards."
+      content="A free daily crossword with encrypted clues. Crack the cipher, fill the grid, race the leaderboard."
     />
     <meta property="og:image" content="/logo512.png" />
     <meta name="twitter:card" content="summary" />
@@ -26,15 +26,37 @@
     <script type="application/ld+json">
       {
         "@context": "https://schema.org",
-        "@type": "WebSite",
-        "name": "Cryp-Cross",
-        "description": "A crypto crossword challenge with daily puzzles and blockchain-based token rewards.",
-        "inLanguage": "en",
-        "creator": {
-          "@type": "Organization",
-          "name": "Cryp-Cross Team",
-          "sameAs": ["https://github.com/Jevoel16/Cryp-Cross"]
-        }
+        "@graph": [
+          {
+            "@type": "WebSite",
+            "name": "Cryp-Cross",
+            "description": "A free daily cryptographic crossword whose clues are encrypted with Caesar, Atbash or Vigenere ciphers.",
+            "inLanguage": "en",
+            "creator": {
+              "@type": "Organization",
+              "name": "Cryp-Cross Team",
+              "sameAs": [
+                "https://github.com/Jevoel16/Cryp-Cross"
+              ]
+            }
+          },
+          {
+            "@type": "Game",
+            "name": "Cryp-Cross daily cipher crossword",
+            "description": "A new crossword every day. Every clue is encrypted with a classical cipher; decode the clues, then fill the grid.",
+            "genre": [
+              "Crossword",
+              "Puzzle",
+              "Cryptography"
+            ],
+            "inLanguage": "en",
+            "isAccessibleForFree": true,
+            "numberOfPlayers": {
+              "@type": "QuantitativeValue",
+              "minValue": 1
+            }
+          }
+        ]
       }
     </script>
   </head>

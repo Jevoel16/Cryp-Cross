@@ -3,6 +3,7 @@ import { useAuth } from '../auth/authContext';
 
 const NAV_ITEMS = [
     { path: '/', label: 'Home' },
+    { path: '/play', label: 'Play' },
     { path: '/idea', label: 'Idea' },
     { path: '/team', label: 'Team' },
 ];
