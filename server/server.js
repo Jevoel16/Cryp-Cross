@@ -10,6 +10,14 @@ async function start() {
     process.exit(1);
   }
 
+  if (process.env.NODE_ENV === 'production') {
+    const missing = ['SESSION_SECRET', 'SMTP_HOST', 'APP_URL'].filter((name) => !process.env[name]);
+    if (missing.length) {
+      console.error(`Missing required production settings: ${missing.join(', ')}`);
+      process.exit(1);
+    }
+  }
+
   if (process.env.NODE_ENV === 'production' && !process.env.CORS_ORIGINS) {
     console.warn('CORS_ORIGINS is not set: browsers on other origins will be blocked.');
   }

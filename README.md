@@ -20,7 +20,7 @@
     <img src="https://img.shields.io/badge/node-22-blue?style=flat" alt="Node 22" />
   </p>
   <p>
-    <img src="https://img.shields.io/badge/version-0.5.0-green?style=flat" alt="Version 0.5.0" />
+    <img src="https://img.shields.io/badge/version-0.6.0-green?style=flat" alt="Version 0.6.0" />
     <a href="LICENSE"><img src="https://img.shields.io/badge/license-Sprucetrap%20Source--Available-orange?style=flat" alt="License: Sprucetrap Source-Available" /></a>
     <img src="https://img.shields.io/badge/platform-web-lightgrey?style=flat" alt="Platform: web" />
     <a href="https://github.com/Jevoel16/Cryp-Cross/actions/workflows/ci.yml"><img src="https://github.com/Jevoel16/Cryp-Cross/actions/workflows/ci.yml/badge.svg" alt="CI status" /></a>
@@ -60,6 +60,7 @@ Cryp-Cross is a concept for a crossword platform that rewards players with block
 
 **Frontend (React)**
 - Concept pages: Home, Idea (problem statement, key features, emerging technology) and a Team carousel
+- Accounts: sign up, log in, log out, verify email, forgot/reset password and an account page; a banner reminds unverified players to confirm their email
 - Light/dark theme toggle, remembered in `localStorage`
 - Client-side routing with React Router and a 404 page
 - SEO: a unique title, description and canonical URL per page, `noindex` on the error page, JSON-LD, Open Graph tags, `llms.txt`, and a `sitemap.xml` + `robots.txt` generated at build time
@@ -70,6 +71,9 @@ Cryp-Cross is a concept for a crossword platform that rewards players with block
 - **Daily cipher crossword generator**: each day (in `PUZZLE_TZ`) a crossword of 8–12 words is built from `server/data/words.txt`, deterministically from the date, and stored in MongoDB so it never changes afterwards
 - **Encrypted clues**: the day's cipher is Caesar (hidden shift), Atbash, or Vigenère (the key is the answer to an extra plain-text key clue)
 - Puzzle API: today's puzzle without answers or keys, plus an archive of past played days with answers revealed
+- **Accounts**: email + username + password (bcrypt, cost 12), email verification and password reset with single-use, expiring links (only SHA-256 hashes stored), and sessions in MongoDB behind an `httpOnly`, `SameSite=Lax` cookie (`Secure` in production). A password reset signs out every other session.
+- Brute-force and abuse protection: 10 login/signup/reset attempts per 15 minutes per IP, constant-time login answers, and no account enumeration on signup or forgot-password
+- CSRF protection for cookie-authenticated writes: foreign `Origin` headers are refused and writes must be JSON
 - 10 KB JSON body limit
 - Security headers with `helmet`, a CORS allow-list (`CORS_ORIGINS`) and rate limiting (300 requests / 15 min per IP, 60 writes)
 - Generic error responses: no internal messages or stack traces reach clients
@@ -85,7 +89,7 @@ Cryp-Cross is a concept for a crossword platform that rewards players with block
 |-------|-----------|
 | Frontend | React 19, React Router 7, Vite 8 (build and dev server), plain CSS |
 | Frontend tooling | ESLint 10 (flat config, react-hooks plugin), Vitest 5 |
-| Backend | Node.js 22, Express 4, Mongoose 7, helmet, express-rate-limit, cors, dotenv |
+| Backend | Node.js 22, Express 4, Mongoose 7, express-session + connect-mongo, bcryptjs, nodemailer, helmet, express-rate-limit, cors, dotenv |
 | Database | MongoDB (MongoDB Atlas recommended) |
 | Production frontend server | `serve` with `serve.json` (SPA rewrites) |
 | CI | GitHub Actions |
@@ -134,7 +138,12 @@ npm install --prefix server
 |----------|----------|-------------|
 | `DATABASE_URL` | yes | MongoDB connection string |
 | `PORT` | no | Port for the Express API (default `5000`, which the frontend expects in development) |
-| `CORS_ORIGINS` | in production | Comma-separated frontend origins allowed to call the API. Unset: `http://localhost:3000` in development, no browser origins in production. |
+| `CORS_ORIGINS` | in production | Comma-separated frontend origins allowed to call the API and send cookie-authenticated writes; must include the site's own origin. Unset: `http://localhost:3000` in development, no browser origins in production. |
+| `SESSION_SECRET` | in production | Long random string that signs the session cookie. Development uses a random one per start (sessions end when the API restarts). |
+| `APP_URL` | in production | Public site URL used in email links (default `http://localhost:3000`) |
+| `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASS` | in production | SMTP server for account emails (port 465 uses TLS). Empty `SMTP_HOST` in development prints emails to the API console. |
+| `MAIL_FROM` | no | Sender address for account emails |
+| `AUTH_RATE_LIMIT` | no | Login/signup/reset attempts per IP per 15 minutes (default `10`) |
 | `PUZZLE_TZ` | no | IANA time zone that decides when the daily puzzle changes (default `UTC`) |
 | `TRUST_PROXY` | no | Set to `1` behind one reverse proxy (Render, Railway) so rate limiting sees real client IPs. Default `0`. |
 | `NODE_ENV` | no | Set to `production` in production |
@@ -188,6 +197,14 @@ Base URL: `http://localhost:5000` in development (the Vite dev server proxies `/
 
 | Method | Path | Description |
 |--------|------|-------------|
+| `POST` | `/api/auth/signup` | `{ email, username, password }`: creates the account, signs in and emails a verification link |
+| `POST` | `/api/auth/login` | `{ email, password }` |
+| `POST` | `/api/auth/logout` | Ends the session |
+| `GET` | `/api/auth/me` | The signed-in user (`username`, `email`, `emailVerified`) or `null` |
+| `POST` | `/api/auth/verify-email` | `{ token }` from the email link |
+| `POST` | `/api/auth/resend-verification` | Signed in: sends a new verification link |
+| `POST` | `/api/auth/forgot-password` | `{ email }`: same answer whether or not the account exists |
+| `POST` | `/api/auth/reset-password` | `{ token, password }` |
 | `GET` | `/api/puzzles/today` | Today's puzzle: `layout` (`#` block, `.` open cell), numbered `entries` with encrypted `clue`s, and `cipher` (`type`, plus `keyClue` and `keyLength` for Vigenère). No answers or keys. |
 | `GET` | `/api/puzzles` | Past days that were played (up to 60), newest first |
 | `GET` | `/api/puzzles/:date` | One day (`YYYY-MM-DD`). Past days include `solution`, each entry's `answer` and `plainClue`, and the cipher key. Unplayed or future days return 404. |
@@ -200,7 +217,11 @@ curl http://localhost:5000/api/puzzles/today
 
 | Status | Meaning |
 |--------|---------|
-| `400` | Invalid body, JSON or date. `message` explains why. |
+| `400` | Invalid body, JSON, date or token. `message` explains why. |
+| `401` | Not logged in, or wrong email/password |
+| `403` | Foreign `Origin`, or email not verified yet |
+| `409` | Username taken |
+| `415` | Write request without a JSON body |
 | `404` | Puzzle or route not found |
 | `413` | Body larger than 10 KB |
 | `429` | Rate limit exceeded |
@@ -233,8 +254,10 @@ Cryp-Cross/
 │   └── generate-seo.js        # Post-build: writes build/sitemap.xml and build/robots.txt
 ├── src/
 │   ├── App.jsx                # Router, theme and layout
-│   ├── components/            # NavBar, Footer, SectionWrapper, TeamCarousel
-│   ├── pages/                 # One file per route (Home, Idea, Team, 404)
+│   ├── api.js                 # fetch wrapper (JSON, session cookie, errors)
+│   ├── auth/                  # AuthProvider and useAuth
+│   ├── components/            # NavBar, Footer, SectionWrapper, TeamCarousel, VerifyBanner, FormMessage
+│   ├── pages/                 # One file per route (Home, Idea, Team, auth pages, Account, 404)
 │   ├── App.css / index.css    # Styling
 │   ├── config.js              # API base URL and site URL
 │   ├── usePageMeta.js         # Per-route title, description, canonical and robots tags
@@ -244,8 +267,10 @@ Cryp-Cross/
 │   ├── app.js                 # Express app: security middleware, error handling
 │   ├── data/words.txt         # Word bank: WORD|clue per line
 │   ├── puzzle/                # Generator, ciphers, PRNG, day key, puzzle service
-│   ├── models/                # Mongoose schemas (DailyPuzzle)
-│   ├── routes/                # Express routers (puzzles)
+│   ├── models/                # Mongoose schemas (User, DailyPuzzle)
+│   ├── routes/                # Express routers (auth, puzzles)
+│   ├── lib/                   # Sessions, mailer, one-time tokens, validators
+│   ├── middleware/            # requireAuth, requireVerified
 │   ├── test/                  # Backend tests (node:test + in-memory MongoDB)
 │   └── .env.example           # Backend environment template
 ├── vite.config.js             # Vite: dev port and /api proxy, build/ output, Vitest settings
@@ -288,7 +313,7 @@ Cryp-Cross/
 
 ## Testing
 
-The backend has automated tests in `server/test/` (Node's built-in `node:test`). They cover the ciphers, a year of generated puzzles (every answer spelled, no unclued letters, correct numbering), the puzzle API against an in-memory MongoDB (`mongodb-memory-server`, downloaded on first install), error handling, CORS and security headers. The frontend has no automated tests yet; Vitest is set up for files named `src/**/*.test.{js,jsx}`. Every push and pull request to `main` runs [CI](.github/workflows/ci.yml): frontend install, lint, build, Vitest and `npm audit --audit-level=high`, then backend install, syntax check, tests and `npm audit --audit-level=high`.
+The backend has automated tests in `server/test/` (Node's built-in `node:test`). They cover the ciphers, a year of generated puzzles (every answer spelled, no unclued letters, correct numbering), the account flows (signup, verification, login, logout, password reset and expiry, session invalidation, enumeration resistance, CSRF and rate limits) and the puzzle API against an in-memory MongoDB (`mongodb-memory-server`, downloaded on first install), error handling, CORS and security headers. The frontend has no automated tests yet; Vitest is set up for files named `src/**/*.test.{js,jsx}`. Every push and pull request to `main` runs [CI](.github/workflows/ci.yml): frontend install, lint, build, Vitest and `npm audit --audit-level=high`, then backend install, syntax check, tests and `npm audit --audit-level=high`.
 
 Run the same checks locally:
 

@@ -3,6 +3,8 @@ const cors = require('cors');
 const helmet = require('helmet');
 const { rateLimit } = require('express-rate-limit');
 const puzzleRoutes = require('./routes/puzzles');
+const { createAuthRouter } = require('./routes/auth');
+const { createSessionMiddleware } = require('./lib/session');
 
 // Comma-separated allow-list; dev falls back to the Vite dev server only.
 function allowedOrigins() {
@@ -12,6 +14,25 @@ function allowedOrigins() {
     .filter(Boolean);
   if (fromEnv.length) return fromEnv;
   return process.env.NODE_ENV === 'production' ? [] : ['http://localhost:3000'];
+}
+
+const UNSAFE_METHODS = new Set(['POST', 'PUT', 'PATCH', 'DELETE']);
+
+// CSRF guard for cookie-authenticated writes: the browser always sends Origin on
+// cross-site POSTs, so a foreign Origin is refused. Requiring a JSON body also blocks
+// plain HTML form posts, which can't send application/json without a CORS preflight.
+function csrfGuard(origins) {
+  return (req, res, next) => {
+    if (!UNSAFE_METHODS.has(req.method)) return next();
+    const origin = req.get('origin');
+    if (origin && !origins.includes(origin)) {
+      return res.status(403).json({ success: false, message: 'Origin not allowed' });
+    }
+    if (!req.is('application/json')) {
+      return res.status(415).json({ success: false, message: 'Send a JSON body (Content-Type: application/json)' });
+    }
+    next();
+  };
 }
 
 function createApp() {
@@ -33,6 +54,7 @@ function createApp() {
     })
   );
 
+  app.use('/api', csrfGuard(origins));
   app.use(express.json({ limit: '10kb' }));
 
   const limiterOptions = {
@@ -46,6 +68,8 @@ function createApp() {
   const writeLimiter = rateLimit({ ...limiterOptions, limit: 60, skip: (req) => req.method === 'GET' });
   app.use('/api', apiLimiter, writeLimiter);
 
+  app.use('/api', createSessionMiddleware());
+  app.use('/api/auth', createAuthRouter());
   app.use('/api/puzzles', puzzleRoutes);
 
   app.get('/', (req, res) => {

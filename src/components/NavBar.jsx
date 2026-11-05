@@ -1,4 +1,5 @@
 import { Link, useLocation } from 'react-router-dom';
+import { useAuth } from '../auth/authContext';
 
 const NAV_ITEMS = [
     { path: '/', label: 'Home' },
@@ -8,15 +9,22 @@ const NAV_ITEMS = [
 
 export default function NavBar({ isDark, onToggleTheme }) {
     const location = useLocation();
+    const { user, loading } = useAuth();
     // startsWith keeps a tab active on its sub-routes.
     const isActive = (path) =>
         location.pathname === path || (path !== '/' && location.pathname.startsWith(path));
 
+    const items = [
+        ...NAV_ITEMS,
+        // Hidden while the session check runs so the link doesn't flicker.
+        ...(loading ? [] : [user ? { path: '/account', label: user.username } : { path: '/login', label: 'Log in' }]),
+    ];
+
     return (
         <header>
-            <nav id="navigator">
+            <nav id="navigator" aria-label="Main">
                 <ul className="tabs">
-                    {NAV_ITEMS.map((item) => (
+                    {items.map((item) => (
                         <li key={item.path} className="tab-item">
                             <Link to={item.path} className={isActive(item.path) ? 'active' : ''}>
                                 {item.label}
