@@ -15,7 +15,7 @@ concurrency:
 
 jobs:
   frontend:
-    name: Frontend (React)
+    name: Frontend (React + Vite)
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -25,9 +25,10 @@ jobs:
           cache: npm
           cache-dependency-path: package-lock.json
       - run: npm ci
-      # CRA's build runs ESLint; CI=true makes lint warnings fail the build
+      - run: npm run lint
       - run: npm run build
-      - run: npm test -- --watchAll=false --passWithNoTests
+      - run: npm test
+      - run: npm audit --audit-level=high
 
   backend:
     name: Backend (Express)

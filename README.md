@@ -9,8 +9,10 @@
 
   <p>
     <img src="https://img.shields.io/badge/react-19.2.0-blue?style=flat" alt="React 19.2.0" />
-    <img src="https://img.shields.io/badge/react--router--dom-7.9.6-blue?style=flat" alt="React Router 7.9.6" />
-    <img src="https://img.shields.io/badge/react--scripts-5.0.1-blue?style=flat" alt="react-scripts 5.0.1" />
+    <img src="https://img.shields.io/badge/react--router--dom-7.18.5-blue?style=flat" alt="React Router 7.18.5" />
+    <img src="https://img.shields.io/badge/vite-8.3.5-blue?style=flat" alt="Vite 8.3.5" />
+    <img src="https://img.shields.io/badge/vitest-5.1.0-blue?style=flat" alt="Vitest 5.1.0" />
+    <img src="https://img.shields.io/badge/eslint-10.14.0-blue?style=flat" alt="ESLint 10.14.0" />
     <img src="https://img.shields.io/badge/express-4.22.3-blue?style=flat" alt="Express 4.22.3" />
     <img src="https://img.shields.io/badge/mongoose-7.8.13-blue?style=flat" alt="Mongoose 7.8.13" />
     <img src="https://img.shields.io/badge/helmet-8.3.0-blue?style=flat" alt="helmet 8.3.0" />
@@ -18,7 +20,7 @@
     <img src="https://img.shields.io/badge/node-22-blue?style=flat" alt="Node 22" />
   </p>
   <p>
-    <img src="https://img.shields.io/badge/version-0.2.0-green?style=flat" alt="Version 0.2.0" />
+    <img src="https://img.shields.io/badge/version-0.3.0-green?style=flat" alt="Version 0.3.0" />
     <a href="LICENSE"><img src="https://img.shields.io/badge/license-Sprucetrap%20Source--Available-orange?style=flat" alt="License: Sprucetrap Source-Available" /></a>
     <img src="https://img.shields.io/badge/platform-web-lightgrey?style=flat" alt="Platform: web" />
     <a href="https://github.com/Jevoel16/Cryp-Cross/actions/workflows/ci.yml"><img src="https://github.com/Jevoel16/Cryp-Cross/actions/workflows/ci.yml/badge.svg" alt="CI status" /></a>
@@ -82,7 +84,8 @@ Cryp-Cross is a concept for a crossword platform that rewards players with block
 
 | Layer | Technology |
 |-------|-----------|
-| Frontend | React 19, React Router 7, Create React App (react-scripts 5), plain CSS |
+| Frontend | React 19, React Router 7, Vite 8 (build and dev server), plain CSS |
+| Frontend tooling | ESLint 10 (flat config, react-hooks plugin), Vitest 5 |
 | Backend | Node.js 22, Express 4, Mongoose 7, helmet, express-rate-limit, cors, dotenv |
 | Database | MongoDB (MongoDB Atlas recommended) |
 | Production frontend server | `serve` with `serve.json` (SPA rewrites) |
@@ -140,8 +143,8 @@ npm install --prefix server
 
 | Variable | Required | Description |
 |----------|----------|-------------|
-| `REACT_APP_API_URL` | in production | Base URL of the deployed API. Defaults to `http://localhost:5000` in development and the site's own origin in production. |
-| `REACT_APP_SITE_URL` | in production | Public site URL (https, no trailing slash). Used for canonical links and to generate `sitemap.xml` / `robots.txt` after `npm run build`. `SITE_URL` also works for the sitemap step. |
+| `VITE_API_URL` | in production | Base URL of the deployed API. Defaults to `http://localhost:5000` in development and the site's own origin in production. |
+| `VITE_SITE_URL` | in production | Public site URL (https, no trailing slash). Used for canonical links and to generate `sitemap.xml` / `robots.txt` after `npm run build`. `SITE_URL` also works for the sitemap step. Vite only exposes variables prefixed with `VITE_` to the browser bundle, so never put secrets in them. |
 
 See `.env.example` for a template.
 
@@ -169,7 +172,7 @@ Start the frontend in a second terminal:
 npm start
 ```
 
-The app opens at `http://localhost:3000`.
+The Vite dev server runs at `http://localhost:3000` and proxies `/api` requests to `http://localhost:5000`.
 
 ### Visitor flow
 
@@ -222,7 +225,7 @@ Validation rules: `title` (max 200 characters) and `description` (max 2000) are 
 <summary><strong>Deployment notes</strong></summary>
 
 - **Backend** (e.g. Render or Railway): root directory `server`, start command `npm start`. Set `DATABASE_URL`, `NODE_ENV=production`, `CORS_ORIGINS=<your frontend URL>` and `TRUST_PROXY=1`. The host provides `PORT`.
-- **Frontend**: set `REACT_APP_API_URL` and `REACT_APP_SITE_URL` at build time, run `npm run build` (which also writes `sitemap.xml` and `robots.txt`), then `npm run serve`. That passes `-c ../serve.json` so the SPA rewrites and security headers apply. On another static host (e.g. Vercel), copy the headers from `serve.json` into that host's config.
+- **Frontend**: set `VITE_API_URL` and `VITE_SITE_URL` at build time, run `npm run build` (which also writes `sitemap.xml` and `robots.txt`), then `npm run serve`. That passes `-c ../serve.json` so the SPA rewrites and security headers apply. On another static host (e.g. Vercel), copy the headers from `serve.json` into that host's config.
 - **HTTPS**: hosts like Render, Railway and Vercel terminate TLS and redirect HTTP to HTTPS. `serve.json` adds HSTS so browsers stay on HTTPS. Add your API origin to the CSP `connect-src` in `serve.json` if you want to drop the generic `https:`.
 
 </details>
@@ -236,22 +239,26 @@ Validation rules: `title` (max 200 characters) and `description` (max 2000) are 
 ```
 Cryp-Cross/
 ├── .github/workflows/ci.yml   # GitHub Actions CI
-├── public/                    # index.html (meta, JSON-LD), manifest, icons, robots.txt, llms.txt
+├── index.html                 # Vite HTML entry (meta tags, JSON-LD)
+├── public/                    # Static files copied as-is: manifest, icons, robots.txt, llms.txt
 │   └── img/                   # Team member photos (WebP)
 ├── scripts/
 │   └── generate-seo.js        # Post-build: writes build/sitemap.xml and build/robots.txt
 ├── src/
-│   ├── App.js                 # Routes, pages and Project Log CRUD logic
+│   ├── App.jsx                # Routes, pages and Project Log CRUD logic
 │   ├── App.css / index.css    # Styling
 │   ├── config.js              # API base URL, site URL and endpoints
 │   ├── usePageMeta.js         # Per-route title, description, canonical and robots tags
-│   └── index.js               # React entry point
+│   ├── reportWebVitals.js     # Optional web-vitals reporting
+│   └── index.jsx              # React entry point
 ├── server/
 │   ├── server.js              # Entry point: connects to MongoDB and starts the API
 │   ├── app.js                 # Express app: routes, validation, security middleware
 │   ├── test/                  # Backend tests (node:test, no database needed)
 │   ├── models/projectLog.js   # Mongoose schema
 │   └── .env.example           # Backend environment template
+├── vite.config.js             # Vite: dev port and /api proxy, build/ output, Vitest settings
+├── eslint.config.js           # ESLint flat config (react-hooks, react-refresh)
 ├── serve.json                 # Production static-server config (rewrites, security headers, caching)
 ├── .env.example               # Frontend environment template
 ├── .nvmrc                     # Node version
@@ -269,10 +276,12 @@ Cryp-Cross/
 
 | Script | Description |
 |--------|-------------|
-| `npm start` | Start the React dev server on port 3000 |
+| `npm start` / `npm run dev` | Start the Vite dev server on port 3000 (proxies `/api` to port 5000) |
 | `npm run build` | Production build into `build/`, then `postbuild` generates `sitemap.xml` and `robots.txt` |
 | `npm run serve` | Serve `build/` on port 3000 with `serve.json` (rewrites and headers) |
-| `npm test` | Run the Jest test runner (watch mode) |
+| `npm run preview` | Preview `build/` with Vite (no `serve.json` headers; use `npm run serve` to check those) |
+| `npm run lint` | Lint `src/`, configs and scripts with ESLint |
+| `npm test` | Run frontend tests once with Vitest (`src/**/*.test.{js,jsx}`; passes when there are none) |
 
 **`server/` (backend)**
 
@@ -288,16 +297,24 @@ Cryp-Cross/
 
 ## Testing
 
-The backend has automated tests in `server/test/` (Node's built-in `node:test`). They cover validation, error handling, CORS and security headers, and need no database. The frontend has no automated tests yet. Every push and pull request to `main` runs [CI](.github/workflows/ci.yml): frontend install, build (with ESLint) and the test runner, then backend install, syntax check, tests and `npm audit --audit-level=high`.
+The backend has automated tests in `server/test/` (Node's built-in `node:test`). They cover validation, error handling, CORS and security headers, and need no database. The frontend has no automated tests yet; Vitest is set up for files named `src/**/*.test.{js,jsx}`. Every push and pull request to `main` runs [CI](.github/workflows/ci.yml): frontend install, lint, build, Vitest and `npm audit --audit-level=high`, then backend install, syntax check, tests and `npm audit --audit-level=high`.
 
 Run the same checks locally:
+
+```bash
+npm run lint
+```
 
 ```bash
 npm run build
 ```
 
 ```bash
-npm test -- --watchAll=false --passWithNoTests
+npm test
+```
+
+```bash
+npm audit --audit-level=high
 ```
 
 ```bash
@@ -326,12 +343,13 @@ npm audit --audit-level=high --prefix server
 
 | Problem | Cause | Fix |
 |---------|-------|-----|
-| `ECONNREFUSED` or "Cannot GET /api/projects" | API not running, or the wrong API URL | Start it with `npm start --prefix server`; check `REACT_APP_API_URL` / `src/config.js` |
+| `ECONNREFUSED` or "Cannot GET /api/projects" | API not running, or the wrong API URL | Start it with `npm start --prefix server`; check `VITE_API_URL` / `src/config.js` |
+| API URL or site URL from `.env` is ignored | Variables still use the old Create React App `REACT_APP_` prefix | Rename them to `VITE_API_URL` / `VITE_SITE_URL` (v0.3.0+) and restart or rebuild |
 | `Database connection error` | Wrong `DATABASE_URL` or IP not allowed | Check `server/.env`; add your IP to the MongoDB Atlas access list |
 | `DATABASE_URL is not set` on startup | Missing `server/.env` | Copy `server/.env.example` to `server/.env` and fill it in |
 | Browser shows a CORS error | Frontend origin isn't in `CORS_ORIGINS` | Add the exact origin (scheme + host + port) to `CORS_ORIGINS` and restart the API |
 | `429 Too many requests` | Rate limit reached | Wait 15 minutes; behind a proxy, set `TRUST_PROXY=1` so users aren't grouped under the proxy IP |
-| No `sitemap.xml` in `build/` | `SITE_URL` / `REACT_APP_SITE_URL` not set | Set it and rebuild |
+| No `sitemap.xml` in `build/` | `SITE_URL` / `VITE_SITE_URL` not set | Set it and rebuild |
 | Security headers missing in production | Server started without the config | Use `npm run serve` (passes `-c ../serve.json`) |
 | Port already in use | Another process on 3000/5000 | Windows: `netstat -ano \| findstr :5000`, then `taskkill /PID <PID> /F` |
 

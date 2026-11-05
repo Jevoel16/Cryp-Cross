@@ -530,52 +530,57 @@ const NotFoundPage = () => {
 };
 
 
+// Fetches projects from the API, oldest first, mapped for the UI. Falls back to the
+// mock PROJECT_LOG when the server is unreachable; returns null if the API reports failure.
+const requestProjects = async () => {
+    try {
+        const response = await fetch(API_ENDPOINTS.PROJECTS);
+        const data = await response.json();
+        if (!data.success) return null;
+        return data.data
+            .slice()
+            .sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt))
+            .map((project) => ({
+                id: project._id,
+                title: project.title,
+                status: project.status,
+                priority: 'Medium',
+                description: project.description,
+            }));
+    } catch (error) {
+        console.error('Error fetching projects:', error);
+        return PROJECT_LOG.slice();
+    }
+};
+
+
 // --- Main App Component (Root/Container) ---
 const App = () => {
-    // State for Theme
-    const [isDark, setIsDark] = useState(false);
+    // State for Theme: read the saved choice on first render instead of setting it in an effect
+    const [isDark, setIsDark] = useState(() => localStorage.getItem('theme') === 'dark');
     
     // 1. STATE INITIALIZATION: Fetch projects from server
     const [projects, setProjects] = useState([]);
     const [loading, setLoading] = useState(true);
     
-    // Fetch projects from API on mount
-    useEffect(() => {
-        fetchProjects();
-    }, []);
-    
-    const fetchProjects = async () => {
-        try {
-            setLoading(true);
-            const response = await fetch(API_ENDPOINTS.PROJECTS);
-            const data = await response.json();
-            if (data.success) {
-                // Sort by createdAt ascending from backend, then map for UI
-                const byCreatedAsc = data.data
-                    .slice()
-                    .sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
-
-                const mappedProjects = byCreatedAsc.map((project) => ({
-                    id: project._id,
-                    title: project.title,
-                    status: project.status,
-                    priority: 'Medium',
-                    description: project.description,
-                }));
-
-                setProjects(mappedProjects);
-            }
-        } catch (error) {
-            console.error('Error fetching projects:', error);
-            // Fallback to mock data if server is not running
-            // Fallback: retain current order; optionally enforce title-based first/last
-            const fallback = PROJECT_LOG.slice();
-            setProjects(fallback);
-        } finally {
-            setLoading(false);
-        }
+    // Applies a fetch result; null means the API answered without data, so keep the current list.
+    const applyProjects = (list) => {
+        if (list) setProjects(list);
+        setLoading(false);
     };
-    
+
+    // Refetch (e.g. after a failed delete): show the loading state again, then load
+    const fetchProjects = () => {
+        setLoading(true);
+        return requestProjects().then(applyProjects);
+    };
+
+    // Fetch projects from API on mount (loading already starts as true). State is only set
+    // in the promise callback, never synchronously inside the effect.
+    useEffect(() => {
+        requestProjects().then(applyProjects);
+    }, []);
+
     // CREATE: Add new project
     const handleCreateProject = async (newProject) => {
         try {
@@ -680,14 +685,8 @@ const App = () => {
 
     // useEffect hook for initial theme loading and state persistence (Theme logic retained)
     useEffect(() => {
-        const savedTheme = localStorage.getItem('theme');
-        if (savedTheme === 'dark') {
-            setIsDark(true);
-            document.body.classList.add('dark-mode');
-        } else {
-            document.body.classList.remove('dark-mode');
-        }
-    }, []);
+        document.body.classList.toggle('dark-mode', isDark);
+    }, [isDark]);
 
     // Theme Toggle Handler (Retained)
     const handleToggleTheme = () => {

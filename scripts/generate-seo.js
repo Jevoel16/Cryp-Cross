@@ -1,9 +1,10 @@
 // Runs after `npm run build`: writes build/sitemap.xml and build/robots.txt.
-// Both need absolute URLs, so they're generated from SITE_URL (or REACT_APP_SITE_URL).
-const fs = require('fs');
-const path = require('path');
+// Both need absolute URLs, so they're generated from SITE_URL (or VITE_SITE_URL).
+import fs from 'node:fs';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 
-const BUILD_DIR = path.join(__dirname, '..', 'build');
+const BUILD_DIR = path.join(path.dirname(fileURLToPath(import.meta.url)), '..', 'build');
 const PUBLIC_ROUTES = [
     { path: '/', priority: '1.0' },
     { path: '/idea', priority: '0.8' },
@@ -17,7 +18,7 @@ function main() {
         process.exit(1);
     }
 
-    const raw = process.env.SITE_URL || process.env.REACT_APP_SITE_URL || '';
+    const raw = process.env.SITE_URL || process.env.VITE_SITE_URL || '';
     let siteUrl = '';
     if (raw) {
         try {
