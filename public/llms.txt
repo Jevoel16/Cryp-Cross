@@ -1,0 +1,14 @@
+# Cryp-Cross
+
+> Cryp-Cross is a crypto crossword challenge concept: a fresh crossword every day, correct answers recorded on a verifiable ledger, and blockchain-based token rewards that players can trade. This site presents the concept and includes the team's Project Log.
+
+## Pages
+
+- [Home](/): Introduction to Cryp-Cross
+- [The Idea](/idea): Problem statement, key features and blockchain integration
+- [Team](/team): The people building Cryp-Cross
+- [Project Log](/projects): Development task tracker with status for each task
+
+## Source
+
+- [GitHub repository](https://github.com/Jevoel16/Cryp-Cross): Source code (MERN: React, Express, MongoDB), licensed under the Sprucetrap Source-Available License 1.0

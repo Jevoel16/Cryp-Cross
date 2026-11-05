@@ -3,6 +3,7 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 // Import necessary components from react-router-dom
 import { BrowserRouter, Routes, Route, Link, useLocation, useParams, useNavigate } from 'react-router-dom';
 import { API_ENDPOINTS } from './config';
+import usePageMeta from './usePageMeta';
 
 // --- MOCK PROJECT DATA ---
 // NEW: Mock project data array
@@ -18,11 +19,12 @@ const PROJECT_LOG = [
 
 // Team member data is moved from script.js into the React component file
 const TEAM_MEMBERS = [
-    { name: "Jev", role: "Project Lead", img: "./img/pic1.jpg" },
-    { name: "Jev", role: "Front-End Specialist", img: "./img/pic2.jpg" },
-    { name: "Jev", role: "Back-End Specialist", img: "./img/pic1.jpg" },
-    { name: "Jev", role: "Database Administrator", img: "./img/pic2.jpg" },
-    { name: "Jev, Mark, & Al", role: "Quality Tester", img: "./img/pic3.jpg" }
+    // Root-relative paths so images also load on nested routes.
+    { name: "Jev", role: "Project Lead", img: "/img/pic1.webp" },
+    { name: "Jev", role: "Front-End Specialist", img: "/img/pic2.webp" },
+    { name: "Jev", role: "Back-End Specialist", img: "/img/pic1.webp" },
+    { name: "Jev", role: "Database Administrator", img: "/img/pic2.webp" },
+    { name: "Jev, Mark, & Al", role: "Quality Tester", img: "/img/pic3.webp" }
 ];
 
 // --- UTILITY FUNCTION ---
@@ -143,7 +145,14 @@ const TeamCarousel = () => {
             <div id="teamContainer">
                 <button id="prevTeamBtn" onClick={goToPrev}>&#8592;</button>
                 <div id="teamProfile" className={isFading ? 'fade-out' : ''}>
-                    <img id="teamImage" src={currentMember.img} alt={currentMember.name} />
+                    <img
+                        id="teamImage"
+                        src={currentMember.img}
+                        alt={`${currentMember.name}, ${currentMember.role}`}
+                        width="200"
+                        height="200"
+                        decoding="async"
+                    />
                     <div id="teamText">
                         <h2 id="teamName">{currentMember.name}</h2>
                         <p id="teamRole">{currentMember.role}</p>
@@ -320,16 +329,21 @@ const ProjectDetail = ({ projects }) => {
     const { id } = useParams();
     const navigate = useNavigate();
 
-    // Find the project object that matches the ID (now string-based for MongoDB)
-    const project = projects.find(p => p.id === id);
-    
-    // Get the display index (position in array + 1)
-    const displayIndex = projects.findIndex(p => p.id === id) + 1;
+    // URL params are strings; fallback data uses numeric ids, MongoDB uses string ids.
+    const index = projects.findIndex(p => String(p.id) === id);
+    const project = projects[index];
+    const displayIndex = index + 1;
+
+    usePageMeta({
+        title: project ? project.title : 'Project Not Found',
+        description: project ? project.description.slice(0, 155) : 'This project could not be found in the Cryp-Cross Project Log.',
+        noindex: true,
+    });
 
     if (!project) {
         return (
             <SectionWrapper title="Project Not Found">
-                <p>No project found with ID: **{id}**.</p>
+                <p>No project found with ID: <strong>{id}</strong>.</p>
                 <p><Link to="/projects">Go back to the list</Link></p>
             </SectionWrapper>
         );
@@ -349,7 +363,7 @@ const ProjectDetail = ({ projects }) => {
                     </span>
                 </p>
                 &nbsp;
-                <h3>Description</h3>
+                <h2>Description</h2>
                 &nbsp;
                 <p>{project.description}</p>
             </article>
@@ -364,20 +378,41 @@ const ProjectDetail = ({ projects }) => {
 };
 
 // NEW: Project Log Page Component (List-only view)
-const ProjectLogPage = ({ projects, onUpdateStatus, onDeleteProject }) => (
-    <SectionWrapper title="Cryp-Cross Project Log">
-        <ProjectList 
-            projects={projects} 
-            onUpdateStatus={onUpdateStatus}
-            onDeleteProject={onDeleteProject}
-        />
-    </SectionWrapper>
-);
+const ProjectLogPage = ({ projects, loading, onUpdateStatus, onDeleteProject }) => {
+    usePageMeta({
+        title: 'Project Log',
+        description: 'Track Cryp-Cross development tasks: create, update and review project log entries with their status.',
+        path: '/projects',
+    });
+
+    if (loading) {
+        return (
+            <SectionWrapper title="Loading...">
+                <p>Fetching projects from server...</p>
+            </SectionWrapper>
+        );
+    }
+
+    return (
+        <SectionWrapper title="Cryp-Cross Project Log">
+            <ProjectList
+                projects={projects}
+                onUpdateStatus={onUpdateStatus}
+                onDeleteProject={onDeleteProject}
+            />
+        </SectionWrapper>
+    );
+};
 
 // NEW: Create Project Page Component (separate route)
 const CreateProjectPage = ({ onCreateProject }) => {
     const navigate = useNavigate();
-    
+    usePageMeta({
+        title: 'Create New Project',
+        description: 'Add a new entry to the Cryp-Cross Project Log.',
+        noindex: true,
+    });
+
     const handleCreateSuccess = async (newProject) => {
         const result = await onCreateProject(newProject);
         if (result.success) {
@@ -402,7 +437,13 @@ const CreateProjectPage = ({ onCreateProject }) => {
 
 // --- 6. Route-Specific Components (Replacing old conditional rendering blocks) ---
 
-const HomePage = () => (
+const HomePage = () => {
+    usePageMeta({
+        title: 'Cryp-Cross',
+        description: 'Cryp-Cross is a crypto crossword challenge: solve a fresh crossword every day and earn blockchain-based token rewards on a verifiable ledger.',
+        path: '/',
+    });
+    return (
     <SectionWrapper title="Cryp-Cross">
         &nbsp;
         <article>
@@ -412,7 +453,7 @@ const HomePage = () => (
             </p>
              &nbsp;
             <p>
-                Cryp-Cross is a next-generation crossword puzzle platform that merges timeless word challenges with the transparency and excitement of **blockchain rewards**. Each day, users can solve fresh crossword puzzles, earn digital tokens for every correct answer, and track their achievements on an immutable, verifiable ledger.
+                Cryp-Cross is a next-generation crossword puzzle platform that merges timeless word challenges with the transparency and excitement of <strong>blockchain rewards</strong>. Each day, users can solve fresh crossword puzzles, earn digital tokens for every correct answer, and track their achievements on an immutable, verifiable ledger.
             </p>
              &nbsp;
             <p>
@@ -420,19 +461,26 @@ const HomePage = () => (
             </p>
              &nbsp;
             <p>
-                Explore the project overview, discover its unique features, and meet the team driving its development.
+                Explore the <Link to="/idea">project overview and unique features</Link>, and <Link to="/team">meet the team</Link> driving its development.
             </p>
              &nbsp;
         </article>
          &nbsp;
     </SectionWrapper>
-);
+    );
+};
 
-const IdeaPage = () => (
-    <SectionWrapper title="Cryp-Cross">
+const IdeaPage = () => {
+    usePageMeta({
+        title: 'The Idea',
+        description: 'The Cryp-Cross idea: daily crosswords, real-time answer validation, leaderboards and tamper-resistant blockchain token rewards.',
+        path: '/idea',
+    });
+    return (
+    <SectionWrapper title="Cryp-Cross: The Idea">
         <article>
             <h2>Problem Statement</h2>
-            <p>Traditional crossword puzzle platforms, although playable, lack dynamic content and transparent, secure reward systems. This app delivers a new crossword each day with correct entries publicly recorded to prevent duplicate solving. Successful players receive **blockchain-based tokens** as rewards, which can be traded to others.</p>
+            <p>Traditional crossword puzzle platforms, although playable, lack dynamic content and transparent, secure reward systems. This app delivers a new crossword each day with correct entries publicly recorded to prevent duplicate solving. Successful players receive <strong>blockchain-based tokens</strong> as rewards, which can be traded to others.</p>
         </article>
         <article>
             <h2>Key Features</h2>
@@ -449,15 +497,37 @@ const IdeaPage = () => (
         <article>
             <h2>Emerging Technology Integration</h2>
             <p>A built-in blockchain ledger records, verifies, and secures each player’s earned puzzle rewards, ensuring every achievement is transparently tracked and tamper-resistant without relying on external platforms. This approach brings trust, verifiability, and accountability to user incentives within the Cryp-Cross ecosystem.</p>
+            <p><Link to="/team">Meet the team</Link> building it.</p>
         </article>
     </SectionWrapper>
-);
+    );
+};
 
-const TeamPage = () => (
-    <SectionWrapper title="Cryp-Cross Team">
-        <TeamCarousel />
-    </SectionWrapper>
-);
+const TeamPage = () => {
+    usePageMeta({
+        title: 'Team',
+        description: 'Meet the Cryp-Cross team: project lead, front-end and back-end specialists, database administrator and quality testers.',
+        path: '/team',
+    });
+    return (
+        <SectionWrapper title="Cryp-Cross Team">
+            <TeamCarousel />
+        </SectionWrapper>
+    );
+};
+
+const NotFoundPage = () => {
+    usePageMeta({
+        title: 'Page Not Found',
+        description: 'The page you requested does not exist on Cryp-Cross.',
+        noindex: true,
+    });
+    return (
+        <SectionWrapper title="404 Not Found">
+            <p>The page you requested does not exist. <Link to="/">Go Home</Link></p>
+        </SectionWrapper>
+    );
+};
 
 
 // --- Main App Component (Root/Container) ---
@@ -650,17 +720,14 @@ const App = () => {
                     {/* Passes both state and the setter function as a callback prop */}
                     <Route 
                         path="/projects" 
-                        element={loading ? (
-                            <SectionWrapper title="Loading...">
-                                <p>Fetching projects from server...</p>
-                            </SectionWrapper>
-                        ) : (
-                            <ProjectLogPage 
-                                projects={projects} 
+                        element={
+                            <ProjectLogPage
+                                projects={projects}
+                                loading={loading}
                                 onUpdateStatus={handleUpdateStatus}
                                 onDeleteProject={handleDeleteProject}
                             />
-                        )} 
+                        }
                     />
 
                     {/* Route for creating a new project */}
@@ -678,9 +745,7 @@ const App = () => {
                     {/* Optional: Fallback route for 404/No Match */}
                     <Route 
                         path="*" 
-                        element={<SectionWrapper title="404 Not Found">
-                            <p>The page you requested does not exist. <Link to="/">Go Home</Link></p>
-                        </SectionWrapper>} 
+                        element={<NotFoundPage />}
                     />
                 </Routes>
             </main>

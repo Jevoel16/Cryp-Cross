@@ -1,0 +1,55 @@
+// Runs after `npm run build`: writes build/sitemap.xml and build/robots.txt.
+// Both need absolute URLs, so they're generated from SITE_URL (or REACT_APP_SITE_URL).
+const fs = require('fs');
+const path = require('path');
+
+const BUILD_DIR = path.join(__dirname, '..', 'build');
+const PUBLIC_ROUTES = [
+    { path: '/', priority: '1.0' },
+    { path: '/idea', priority: '0.8' },
+    { path: '/team', priority: '0.6' },
+    { path: '/projects', priority: '0.5' },
+];
+
+function main() {
+    if (!fs.existsSync(BUILD_DIR)) {
+        console.error('generate-seo: build/ not found. Run `npm run build` first.');
+        process.exit(1);
+    }
+
+    const raw = process.env.SITE_URL || process.env.REACT_APP_SITE_URL || '';
+    let siteUrl = '';
+    if (raw) {
+        try {
+            const url = new URL(raw);
+            if (url.protocol !== 'https:' && url.hostname !== 'localhost') {
+                console.warn(`generate-seo: SITE_URL should use https (got ${url.protocol}).`);
+            }
+            siteUrl = url.origin;
+        } catch {
+            console.error(`generate-seo: SITE_URL is not a valid URL: ${raw}`);
+            process.exit(1);
+        }
+    }
+
+    const robots = ['User-agent: *', 'Allow: /', 'Disallow: /projects/'];
+    // /projects/* (detail and create pages) are per-entry and noindexed; /projects itself stays crawlable.
+
+    if (siteUrl) {
+        const today = new Date().toISOString().slice(0, 10);
+        const urls = PUBLIC_ROUTES.map(
+            (r) =>
+                `  <url>\n    <loc>${siteUrl}${r.path}</loc>\n    <lastmod>${today}</lastmod>\n    <priority>${r.priority}</priority>\n  </url>`
+        ).join('\n');
+        const sitemap = `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${urls}\n</urlset>\n`;
+        fs.writeFileSync(path.join(BUILD_DIR, 'sitemap.xml'), sitemap);
+        robots.push('', `Sitemap: ${siteUrl}/sitemap.xml`);
+        console.log(`generate-seo: wrote sitemap.xml for ${siteUrl}`);
+    } else {
+        console.warn('generate-seo: SITE_URL not set, so sitemap.xml was skipped. Set it for production builds.');
+    }
+
+    fs.writeFileSync(path.join(BUILD_DIR, 'robots.txt'), robots.join('\n') + '\n');
+}
+
+main();

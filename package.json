@@ -1,6 +1,6 @@
 {
   "name": "app",
-  "version": "0.1.6",
+  "version": "0.2.0",
   "private": true,
   "proxy": "http://localhost:5000",
   "dependencies": {
@@ -18,7 +18,8 @@
   "scripts": {
     "start": "react-scripts start",
     "build": "react-scripts build",
-    "serve": "serve -s build -l 3000",
+    "postbuild": "node scripts/generate-seo.js",
+    "serve": "serve -s build -l 3000 -c ../serve.json",
     "test": "react-scripts test",
     "eject": "react-scripts eject"
   },

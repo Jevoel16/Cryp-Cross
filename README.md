@@ -18,7 +18,7 @@
     <img src="https://img.shields.io/badge/node-22-blue?style=flat" alt="Node 22" />
   </p>
   <p>
-    <img src="https://img.shields.io/badge/version-0.1.6-green?style=flat" alt="Version 0.1.6" />
+    <img src="https://img.shields.io/badge/version-0.2.0-green?style=flat" alt="Version 0.2.0" />
     <a href="LICENSE"><img src="https://img.shields.io/badge/license-Sprucetrap%20Source--Available-orange?style=flat" alt="License: Sprucetrap Source-Available" /></a>
     <img src="https://img.shields.io/badge/platform-web-lightgrey?style=flat" alt="Platform: web" />
     <a href="https://github.com/Jevoel16/Cryp-Cross/actions/workflows/ci.yml"><img src="https://github.com/Jevoel16/Cryp-Cross/actions/workflows/ci.yml/badge.svg" alt="CI status" /></a>
@@ -62,6 +62,9 @@ Cryp-Cross is a concept for a crossword platform that rewards players with block
 - Project detail page per entry (`/projects/:id`)
 - Light/dark theme toggle, remembered in `localStorage`
 - Client-side routing with React Router and a 404 page
+- SEO: a unique title, description and canonical URL per page, `noindex` on per-entry and error pages, JSON-LD, Open Graph tags, `llms.txt`, and a `sitemap.xml` + `robots.txt` generated at build time
+- Optimized assets: WebP team photos at display size and correctly sized app icons
+- Production security headers via `serve.json` (CSP, HSTS, `nosniff`, frame blocking) and long-term caching for hashed static files
 
 **Backend (Express)**
 - REST API with four endpoints: `GET`, `POST`, `PATCH`, `DELETE` on `/api/projects`
@@ -137,7 +140,10 @@ npm install --prefix server
 
 | Variable | Required | Description |
 |----------|----------|-------------|
-| `REACT_APP_API_URL` | in production | Base URL of the deployed API. In development it defaults to `http://localhost:5000`. |
+| `REACT_APP_API_URL` | in production | Base URL of the deployed API. Defaults to `http://localhost:5000` in development and the site's own origin in production. |
+| `REACT_APP_SITE_URL` | in production | Public site URL (https, no trailing slash). Used for canonical links and to generate `sitemap.xml` / `robots.txt` after `npm run build`. `SITE_URL` also works for the sitemap step. |
+
+See `.env.example` for a template.
 
 `.env` files are gitignored. Never commit real credentials.
 
@@ -216,7 +222,8 @@ Validation rules: `title` (max 200 characters) and `description` (max 2000) are 
 <summary><strong>Deployment notes</strong></summary>
 
 - **Backend** (e.g. Render or Railway): root directory `server`, start command `npm start`. Set `DATABASE_URL`, `NODE_ENV=production`, `CORS_ORIGINS=<your frontend URL>` and `TRUST_PROXY=1`. The host provides `PORT`.
-- **Frontend**: build with `npm run build` and serve with `npm run serve` (uses `serve.json` for SPA rewrites), or deploy to a static host such as Vercel. Set `REACT_APP_API_URL` to the API URL at build time.
+- **Frontend**: set `REACT_APP_API_URL` and `REACT_APP_SITE_URL` at build time, run `npm run build` (which also writes `sitemap.xml` and `robots.txt`), then `npm run serve`. That passes `-c ../serve.json` so the SPA rewrites and security headers apply. On another static host (e.g. Vercel), copy the headers from `serve.json` into that host's config.
+- **HTTPS**: hosts like Render, Railway and Vercel terminate TLS and redirect HTTP to HTTPS. `serve.json` adds HSTS so browsers stay on HTTPS. Add your API origin to the CSP `connect-src` in `serve.json` if you want to drop the generic `https:`.
 
 </details>
 
@@ -229,12 +236,15 @@ Validation rules: `title` (max 200 characters) and `description` (max 2000) are 
 ```
 Cryp-Cross/
 ├── .github/workflows/ci.yml   # GitHub Actions CI
-├── public/                    # Static assets, index.html, manifest, robots.txt
-│   └── img/                   # Team member photos
+├── public/                    # index.html (meta, JSON-LD), manifest, icons, robots.txt, llms.txt
+│   └── img/                   # Team member photos (WebP)
+├── scripts/
+│   └── generate-seo.js        # Post-build: writes build/sitemap.xml and build/robots.txt
 ├── src/
 │   ├── App.js                 # Routes, pages and Project Log CRUD logic
 │   ├── App.css / index.css    # Styling
-│   ├── config.js              # API base URL and endpoints
+│   ├── config.js              # API base URL, site URL and endpoints
+│   ├── usePageMeta.js         # Per-route title, description, canonical and robots tags
 │   └── index.js               # React entry point
 ├── server/
 │   ├── server.js              # Entry point: connects to MongoDB and starts the API
@@ -242,7 +252,8 @@ Cryp-Cross/
 │   ├── test/                  # Backend tests (node:test, no database needed)
 │   ├── models/projectLog.js   # Mongoose schema
 │   └── .env.example           # Backend environment template
-├── serve.json                 # Production static-server config
+├── serve.json                 # Production static-server config (rewrites, security headers, caching)
+├── .env.example               # Frontend environment template
 ├── .nvmrc                     # Node version
 ├── LICENSE
 └── package.json               # Frontend dependencies and scripts
@@ -259,8 +270,8 @@ Cryp-Cross/
 | Script | Description |
 |--------|-------------|
 | `npm start` | Start the React dev server on port 3000 |
-| `npm run build` | Production build into `build/` |
-| `npm run serve` | Serve `build/` on port 3000 |
+| `npm run build` | Production build into `build/`, then `postbuild` generates `sitemap.xml` and `robots.txt` |
+| `npm run serve` | Serve `build/` on port 3000 with `serve.json` (rewrites and headers) |
 | `npm test` | Run the Jest test runner (watch mode) |
 
 **`server/` (backend)**
@@ -300,6 +311,9 @@ npm audit --audit-level=high --prefix server
 **Manual checks**
 - [ ] The API starts and logs `Database Connected`
 - [ ] The frontend loads on port 3000; Home, Idea, Team and an unknown URL (404) render
+- [ ] Each page has its own browser-tab title; a project detail page opens from **View Detail**
+- [ ] With `SITE_URL` set, `build/sitemap.xml` lists the four public pages and `build/robots.txt` links to it
+- [ ] `npm run serve` responses include `Content-Security-Policy` and `Strict-Transport-Security` headers
 - [ ] The theme toggle works and persists after a refresh
 - [ ] Create, view detail, change status and delete a project
 - [ ] Data persists after a page refresh
@@ -317,6 +331,8 @@ npm audit --audit-level=high --prefix server
 | `DATABASE_URL is not set` on startup | Missing `server/.env` | Copy `server/.env.example` to `server/.env` and fill it in |
 | Browser shows a CORS error | Frontend origin isn't in `CORS_ORIGINS` | Add the exact origin (scheme + host + port) to `CORS_ORIGINS` and restart the API |
 | `429 Too many requests` | Rate limit reached | Wait 15 minutes; behind a proxy, set `TRUST_PROXY=1` so users aren't grouped under the proxy IP |
+| No `sitemap.xml` in `build/` | `SITE_URL` / `REACT_APP_SITE_URL` not set | Set it and rebuild |
+| Security headers missing in production | Server started without the config | Use `npm run serve` (passes `-c ../serve.json`) |
 | Port already in use | Another process on 3000/5000 | Windows: `netstat -ano \| findstr :5000`, then `taskkill /PID <PID> /F` |
 
 <p align="right"><a href="#readme-top">back to top</a></p>

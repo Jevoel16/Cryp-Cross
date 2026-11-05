@@ -1,3 +1,4 @@
-# https://www.robotstxt.org/robotstxt.html
+# Production builds overwrite this with a version that includes the sitemap (scripts/generate-seo.js).
 User-agent: *
-Disallow:
+Allow: /
+Disallow: /projects/
