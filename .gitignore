@@ -23,3 +23,7 @@ yarn-debug.log*
 yarn-error.log*
 
 .env
+
+# local Claude settings and personal instructions
+.claude/
+CLAUDE.md
