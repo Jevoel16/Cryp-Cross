@@ -11,7 +11,7 @@ async function start() {
   }
 
   if (process.env.NODE_ENV === 'production') {
-    const missing = ['SESSION_SECRET', 'SMTP_HOST', 'APP_URL'].filter((name) => !process.env[name]);
+    const missing = ['SESSION_SECRET', 'PUZZLE_SECRET', 'SMTP_HOST', 'APP_URL'].filter((name) => !process.env[name]);
     if (missing.length) {
       console.error(`Missing required production settings: ${missing.join(', ')}`);
       process.exit(1);

@@ -1,3 +1,4 @@
+const crypto = require('crypto');
 const { createRng } = require('./rng');
 const { encryptWith, CIPHER_TYPES } = require('./ciphers');
 
@@ -152,11 +153,19 @@ function chooseCipher(rng, words, usedWords) {
   return { type, key: keyWord.word, keyClue: keyWord.clue };
 }
 
-// Builds the puzzle for a day. Same date + same word list => same puzzle.
-function generatePuzzle(date, words) {
+// With a secret, the seed is an HMAC of the date, so nobody can work out a future
+// puzzle from the public source code and word list. Without one (development and tests)
+// the date alone is the seed.
+function seedFor(date, attempt, secret) {
+  const text = `${date}#${attempt}`;
+  return secret ? crypto.createHmac('sha256', secret).update(text).digest('hex') : text;
+}
+
+// Builds the puzzle for a day. Same date + word list + secret => same puzzle.
+function generatePuzzle(date, words, { secret } = {}) {
   let best = null;
   for (let attempt = 0; attempt < MAX_TRIES; attempt++) {
-    const rng = createRng(`${date}#${attempt}`);
+    const rng = createRng(seedFor(date, attempt, secret));
     const { grid, placed } = layout(words, rng);
     if (!best || placed.length > best.placed.length) best = { grid, placed, rng };
     if (placed.length >= MIN_WORDS) break;

@@ -7,6 +7,14 @@ const { isObject } = require('../lib/validate');
 
 const LEADERBOARD_SIZE = 50;
 const HISTORY_SIZE = 30;
+const DEFAULT_MIN_SOLVE_SECONDS = 30;
+
+// Solves faster than this can't come from reading and decoding the clues, only from
+// answers worked out before the timer started, so they are refused.
+function minSolveMs() {
+  const seconds = Number(process.env.MIN_SOLVE_SECONDS);
+  return (Number.isFinite(seconds) && seconds >= 0 ? seconds : DEFAULT_MIN_SOLVE_SECONDS) * 1000;
+}
 
 // The grid a player sends must match today's layout exactly: same size, blocks in the
 // same places, and only A-Z or blanks in open cells.
@@ -45,6 +53,8 @@ const publicAttempt = (a) => ({
 });
 
 // Creates the attempt (and starts the timer) the first time a player opens today's puzzle.
+// Only GET /progress may do this: if saving, checking or submitting could create it too,
+// a pre-solved grid could be submitted as the very first request with a near-zero time.
 async function findOrStartAttempt(user, date) {
   return Attempt.findOneAndUpdate(
     { user: user._id, date },
@@ -54,6 +64,9 @@ async function findOrStartAttempt(user, date) {
 }
 
 const badRequest = (res, message) => res.status(400).json({ success: false, message });
+
+const notStarted = (res) =>
+  res.status(409).json({ success: false, message: "Open today's puzzle first to start your timer" });
 
 const router = express.Router();
 const player = [requireAuth, requireVerified];
@@ -73,7 +86,8 @@ router.put('/puzzles/today/progress', player, async (req, res, next) => {
     const puzzle = await getTodayPuzzle();
     const problem = validateGrid(req.body, puzzle);
     if (problem) return badRequest(res, problem);
-    const attempt = await findOrStartAttempt(req.user, puzzle.date);
+    const attempt = await Attempt.findOne({ user: req.user._id, date: puzzle.date });
+    if (!attempt) return notStarted(res);
     // A solved grid is final.
     if (!attempt.solvedAt) {
       attempt.grid = req.body.grid;
@@ -91,7 +105,8 @@ router.post('/puzzles/today/check', player, async (req, res, next) => {
     const puzzle = await getTodayPuzzle();
     const problem = validateGrid(req.body, puzzle);
     if (problem) return badRequest(res, problem);
-    const attempt = await findOrStartAttempt(req.user, puzzle.date);
+    const attempt = await Attempt.findOne({ user: req.user._id, date: puzzle.date });
+    if (!attempt) return notStarted(res);
     if (!attempt.solvedAt) {
       attempt.grid = req.body.grid;
       attempt.checks += 1;
@@ -108,7 +123,8 @@ router.post('/puzzles/today/submit', player, async (req, res, next) => {
     const puzzle = await getTodayPuzzle();
     const problem = validateGrid(req.body, puzzle);
     if (problem) return badRequest(res, problem);
-    const attempt = await findOrStartAttempt(req.user, puzzle.date);
+    const attempt = await Attempt.findOne({ user: req.user._id, date: puzzle.date });
+    if (!attempt) return notStarted(res);
     if (attempt.solvedAt) {
       return res.status(409).json({ success: false, message: 'You already solved today\'s puzzle' });
     }
@@ -123,8 +139,13 @@ router.post('/puzzles/today/submit', player, async (req, res, next) => {
       });
     }
 
-    attempt.solvedAt = new Date();
-    attempt.timeMs = attempt.solvedAt - attempt.startedAt;
+    const solvedAt = new Date();
+    if (solvedAt - attempt.startedAt < minSolveMs()) {
+      await attempt.save();
+      return badRequest(res, 'That solve was too fast to record. Submit again in a few seconds.');
+    }
+    attempt.solvedAt = solvedAt;
+    attempt.timeMs = solvedAt - attempt.startedAt;
     await attempt.save();
     const faster = await Attempt.countDocuments({ date: puzzle.date, timeMs: { $lt: attempt.timeMs } });
     res.json({ success: true, data: { solved: true, timeMs: attempt.timeMs, rank: faster + 1 } });
@@ -208,4 +229,4 @@ router.get('/me/stats', requireAuth, async (req, res, next) => {
   }
 });
 
-module.exports = { router, streaks, validateGrid };
+module.exports = { router, streaks, validateGrid, minSolveMs };

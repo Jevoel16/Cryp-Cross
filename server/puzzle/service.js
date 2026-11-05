@@ -12,7 +12,7 @@ async function getOrCreatePuzzle(date) {
   const existing = await DailyPuzzle.findOne({ date }).lean();
   if (existing) return existing;
   try {
-    const created = await DailyPuzzle.create(generatePuzzle(date, wordList()));
+    const created = await DailyPuzzle.create(generatePuzzle(date, wordList(), { secret: process.env.PUZZLE_SECRET }));
     return created.toObject();
   } catch (error) {
     if (error.code === 11000) return DailyPuzzle.findOne({ date }).lean();

@@ -25,7 +25,7 @@
     <img src="https://img.shields.io/badge/node-22-blue?style=flat" alt="Node 22" />
   </p>
   <p>
-    <img src="https://img.shields.io/badge/version-0.8.1-green?style=flat" alt="Version 0.8.1" />
+    <img src="https://img.shields.io/badge/version-0.8.2-green?style=flat" alt="Version 0.8.2" />
     <a href="LICENSE"><img src="https://img.shields.io/badge/license-Sprucetrap%20Source--Available-orange?style=flat" alt="License: Sprucetrap Source-Available" /></a>
     <img src="https://img.shields.io/badge/platform-web-lightgrey?style=flat" alt="Platform: web" />
     <a href="https://github.com/Jevoel16/Cryp-Cross/actions/workflows/ci.yml"><img src="https://github.com/Jevoel16/Cryp-Cross/actions/workflows/ci.yml/badge.svg" alt="CI status" /></a>
@@ -83,7 +83,7 @@ Cryp-Cross is a free daily crossword where every clue is encrypted. Each day the
 - **Daily cipher crossword generator**: each day (in `PUZZLE_TZ`) a crossword of 8–12 words is built from `server/data/words.txt`, deterministically from the date, and stored in MongoDB so it never changes afterwards
 - **Encrypted clues**: the day's cipher is Caesar (hidden shift), Atbash, or Vigenère (the key is the answer to an extra plain-text key clue)
 - Puzzle API: today's puzzle without answers or keys, plus an archive of past played days with answers revealed
-- **Attempts**: per-player progress, server-side answer checking, timed submissions (timer starts the first time a verified player opens the day), a leaderboard that exposes only usernames and times, and streak stats
+- **Attempts**: per-player progress, server-side answer checking, timed submissions (the timer starts only when a verified player opens the day with `GET /progress`; saving, checking and submitting require that, solves faster than `MIN_SOLVE_SECONDS` are refused, and the puzzle seed includes `PUZZLE_SECRET` so answers can't be computed in advance), a leaderboard that exposes only usernames and times, and streak stats
 - **Accounts**: email + username + password (bcrypt, cost 12), email verification and password reset with single-use, expiring links (only SHA-256 hashes stored), and sessions in MongoDB behind an `httpOnly`, `SameSite=Lax` cookie (`Secure` in production). A password reset signs out every other session.
 - Brute-force and abuse protection: 10 login/signup/reset attempts per 15 minutes per IP, constant-time login answers, and no account enumeration on signup or forgot-password
 - CSRF protection for cookie-authenticated writes: foreign `Origin` headers are refused and writes must be JSON
@@ -158,6 +158,8 @@ npm install --prefix server
 | `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASS` | in production | SMTP server for account emails (port 465 uses TLS). Empty `SMTP_HOST` in development prints emails to the API console. |
 | `MAIL_FROM` | no | Sender address for account emails |
 | `AUTH_RATE_LIMIT` | no | Login/signup/reset attempts per IP per 15 minutes (default `10`) |
+| `PUZZLE_SECRET` | in production | Secret mixed into the puzzle seed (HMAC of the date), so future puzzles can't be generated from the public source. Changing it only affects puzzles not yet created. |
+| `MIN_SOLVE_SECONDS` | no | Correct submissions sooner than this after opening the puzzle are refused (default `30`) |
 | `PUZZLE_TZ` | no | IANA time zone that decides when the daily puzzle changes (default `UTC`) |
 | `TRUST_PROXY` | no | Set to `1` behind one reverse proxy (Render, Railway) so rate limiting sees real client IPs. Default `0`. |
 | `NODE_ENV` | no | Set to `production` in production |
@@ -244,9 +246,9 @@ Base URL: `http://localhost:5000` in development (the Vite dev server proxies `/
 | `POST` | `/api/auth/forgot-password` | `{ email }`: same answer whether or not the account exists |
 | `POST` | `/api/auth/reset-password` | `{ token, password }` |
 | `GET` | `/api/puzzles/today/progress` | Verified player: your saved `grid`, `startedAt`, `solvedAt`, `timeMs` (starts the timer on first call) |
-| `PUT` | `/api/puzzles/today/progress` | `{ date, grid }`: save letters. `grid` is rows like the layout: `#` blocks, `A-Z` or space in open cells |
+| `PUT` | `/api/puzzles/today/progress` | `{ date, grid }`: save letters (`409` until you have opened the puzzle with `GET`). `grid` is rows like the layout: `#` blocks, `A-Z` or space in open cells |
 | `POST` | `/api/puzzles/today/check` | `{ date, grid }` → `entries`: `right` / `wrong` / `incomplete` per clue |
-| `POST` | `/api/puzzles/today/submit` | `{ date, grid }` → `{ solved: true, timeMs, rank }` or `{ solved: false, wrong, incomplete }`; `409` if already solved |
+| `POST` | `/api/puzzles/today/submit` | `{ date, grid }` → `{ solved: true, timeMs, rank }` or `{ solved: false, wrong, incomplete }`; `409` if not opened yet or already solved; `400` if sooner than `MIN_SOLVE_SECONDS` after opening |
 | `GET` | `/api/leaderboard?date=` | Top 50 solves for a day (default today): `rank`, `username`, `timeMs` |
 | `GET` | `/api/me/stats` | Signed in: `solves`, `currentStreak`, `bestStreak`, `bestTimeMs`, last 30 solves |
 | `GET` | `/api/puzzles/today` | Today's puzzle: `layout` (`#` block, `.` open cell), numbered `entries` with encrypted `clue`s, and `cipher` (`type`, plus `keyClue` and `keyLength` for Vigenère). No answers or keys. |
@@ -276,7 +278,7 @@ curl http://localhost:5000/api/puzzles/today
 <details>
 <summary><strong>Deployment notes</strong></summary>
 
-- **Backend** (e.g. Render or Railway): root directory `server`, start command `npm start`. Set `DATABASE_URL`, `NODE_ENV=production`, `SESSION_SECRET`, `APP_URL`, `SMTP_HOST` / `SMTP_PORT` / `SMTP_USER` / `SMTP_PASS`, `MAIL_FROM`, `CORS_ORIGINS=<your site origin>` and `TRUST_PROXY=1`. The host provides `PORT`. The API refuses to start in production without `SESSION_SECRET`, `SMTP_HOST` and `APP_URL`.
+- **Backend** (e.g. Render or Railway): root directory `server`, start command `npm start`. Set `DATABASE_URL`, `NODE_ENV=production`, `SESSION_SECRET`, `PUZZLE_SECRET`, `APP_URL`, `SMTP_HOST` / `SMTP_PORT` / `SMTP_USER` / `SMTP_PASS`, `MAIL_FROM`, `CORS_ORIGINS=<your site origin>` and `TRUST_PROXY=1`. The host provides `PORT`. The API refuses to start in production without `SESSION_SECRET`, `PUZZLE_SECRET`, `SMTP_HOST` and `APP_URL`.
 - **Cookies**: the session cookie is `SameSite=Lax`, so the API must be on the same site as the frontend: the same origin behind a reverse proxy (leave `VITE_API_URL` empty and route `/api` to the API), or a subdomain of the same domain (e.g. `www.example.com` + `api.example.com`). An API on a different domain (such as a default `*.onrender.com` URL next to a `*.vercel.app` site) will not keep players logged in.
 - **Email**: any SMTP provider works (e.g. Resend, Postmark, Mailgun, SES). Verify your sending domain so verification emails don't land in spam.
 - **Frontend**: set `VITE_API_URL` and `VITE_SITE_URL` at build time, run `npm run build` (which also writes `sitemap.xml` and `robots.txt`), then `npm run serve`. That passes `-c ../serve.json` so the SPA rewrites and security headers apply. On another static host (e.g. Vercel), copy the headers from `serve.json` into that host's config.
@@ -423,6 +425,7 @@ npm audit --audit-level=high --prefix server
 | `403 Origin not allowed` when logging in or saving | The site's origin isn't in `CORS_ORIGINS` | Add the exact origin (e.g. `http://localhost:3001` if Vite picked another port) and restart the API |
 | Logged out after every API restart in development | No `SESSION_SECRET` set, so a random one is used per start | Set `SESSION_SECRET` in `server/.env` |
 | Logged out right after a password reset | By design: a reset signs out all other sessions | Log in with the new password |
+| "That solve was too fast to record" | Submitted sooner than `MIN_SOLVE_SECONDS` after opening the puzzle | Wait a few seconds and submit again |
 | No Check/Submit buttons on Play | Not logged in, or email not verified | Log in and verify your email |
 | Server tests hang on first run | `mongodb-memory-server` is downloading MongoDB (~100 MB, once) | Wait for the download; behind a proxy, see the mongodb-memory-server docs |
 | `429 Too many requests` | Rate limit reached | Wait 15 minutes; behind a proxy, set `TRUST_PROXY=1` so users aren't grouped under the proxy IP |

@@ -27,6 +27,14 @@ test('same date gives the same puzzle, different dates differ', () => {
   assert.notDeepEqual(generatePuzzle('2026-11-05', words).solution, generatePuzzle('2026-11-06', words).solution);
 });
 
+test('a secret changes the puzzle and keeps it stable', () => {
+  const plain = generatePuzzle('2026-11-05', words);
+  const secret = generatePuzzle('2026-11-05', words, { secret: 'server-only' });
+  assert.notDeepEqual(secret.solution, plain.solution);
+  assert.deepEqual(generatePuzzle('2026-11-05', words, { secret: 'server-only' }), secret);
+  assert.notDeepEqual(generatePuzzle('2026-11-05', words, { secret: 'other' }).solution, secret.solution);
+});
+
 test('a year of puzzles is consistent', () => {
   for (const date of dates(365)) {
     const p = generatePuzzle(date, words);

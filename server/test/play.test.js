@@ -28,6 +28,8 @@ describe('playing the daily puzzle', () => {
 
   before(async () => {
     process.env.AUTH_RATE_LIMIT = '1000';
+    // Most tests submit instantly; the minimum-time test turns this back on.
+    process.env.MIN_SOLVE_SECONDS = '0';
     await startDb();
     api = await listen(createApp());
   });
@@ -35,6 +37,7 @@ describe('playing the daily puzzle', () => {
     await api.close();
     await stopDb();
     delete process.env.AUTH_RATE_LIMIT;
+    delete process.env.MIN_SOLVE_SECONDS;
   });
   beforeEach(async () => {
     await clearDb();
@@ -66,6 +69,36 @@ describe('playing the daily puzzle', () => {
     const unverified = await player('newbie', { verify: false });
     assert.equal((await unverified.get('/api/puzzles/today/progress')).status, 403);
     assert.equal((await unverified.post('/api/puzzles/today/check', body(blank()))).status, 403);
+  });
+
+  test('saving, checking or submitting before opening the puzzle is refused', async () => {
+    const alice = await player('alice');
+    for (const path of ['/api/puzzles/today/check', '/api/puzzles/today/submit']) {
+      const res = await alice.post(path, body(puzzle.solution));
+      assert.equal(res.status, 409, path);
+    }
+    assert.equal((await alice.put('/api/puzzles/today/progress', body(puzzle.solution))).status, 409);
+    assert.equal(await Attempt.countDocuments(), 0, 'no attempt (and no timer) was created');
+  });
+
+  test('a pre-solved grid submitted right after opening is not recorded', async () => {
+    process.env.MIN_SOLVE_SECONDS = '30';
+    try {
+      const alice = await player('alice');
+      await alice.get('/api/puzzles/today/progress');
+      const instant = await alice.post('/api/puzzles/today/submit', body(puzzle.solution));
+      assert.equal(instant.status, 400);
+      assert.equal((await createClient(api.base).get('/api/leaderboard')).body.data.solvers, 0);
+
+      // Once enough time has passed the same solve counts.
+      const aliceUser = await User.findOne({ username: 'alice' });
+      await Attempt.updateOne({ user: aliceUser._id }, { startedAt: new Date(Date.now() - 45_000) });
+      const later = await alice.post('/api/puzzles/today/submit', body(puzzle.solution));
+      assert.equal(later.body.data.solved, true);
+      assert.ok(later.body.data.timeMs >= 45_000);
+    } finally {
+      process.env.MIN_SOLVE_SECONDS = '0';
+    }
   });
 
   test('progress is saved per player and validated against the layout', async () => {
