@@ -27,9 +27,10 @@
     <img src="https://img.shields.io/badge/node-22-blue?style=flat" alt="Node 22" />
   </p>
   <p>
-    <img src="https://img.shields.io/badge/version-0.11.0-green?style=flat" alt="Version 0.11.0" />
+    <img src="https://img.shields.io/badge/version-1.0.0-green?style=flat" alt="Version 1.0.0" />
     <a href="LICENSE"><img src="https://img.shields.io/badge/license-Sprucetrap%20Source--Available-orange?style=flat" alt="License: Sprucetrap Source-Available" /></a>
     <img src="https://img.shields.io/badge/platform-web-lightgrey?style=flat" alt="Platform: web" />
+    <img src="https://img.shields.io/badge/hosting-Vercel-lightgrey?style=flat" alt="Hosting: Vercel" />
     <a href="https://github.com/Jevoel16/Cryp-Cross/actions/workflows/ci.yml"><img src="https://github.com/Jevoel16/Cryp-Cross/actions/workflows/ci.yml/badge.svg" alt="CI status" /></a>
   </p>
 </div>
@@ -86,7 +87,7 @@ Cryp-Cross is a free daily crossword where every clue is encrypted. Each day the
 - Client-side routing with React Router and a 404 page
 - SEO: a unique title, description and canonical URL per page, `noindex` on the error page, JSON-LD, Open Graph tags, `llms.txt`, and a `sitemap.xml` + `robots.txt` generated at build time
 - Optimized assets: WebP team photos at display size and correctly sized app icons
-- Production security headers via `serve.json` (CSP, HSTS, `nosniff`, frame blocking) and long-term caching for hashed static files
+- Production security headers via `vercel.json` on Vercel or `serve.json` when self-hosting (CSP, HSTS, `nosniff`, frame blocking) and long-term caching for hashed static files
 
 **Backend (Express)**
 - **Daily cipher crossword generator**: each day (in `PUZZLE_TZ`) a crossword of 8–12 words is built from `server/data/words.txt`, deterministically from the date, and stored in MongoDB so it never changes afterwards
@@ -99,7 +100,7 @@ Cryp-Cross is a free daily crossword where every clue is encrypted. Each day the
 - Brute-force and abuse protection: 10 login/signup/reset attempts per 15 minutes per IP, constant-time login answers, and no account enumeration on signup or forgot-password
 - CSRF protection for cookie-authenticated writes: foreign `Origin` headers are refused and writes must be JSON
 - 10 KB JSON body limit
-- Security headers with `helmet`, a CORS allow-list (`CORS_ORIGINS`) and rate limiting (300 requests / 15 min per IP, 60 writes)
+- Security headers with `helmet`, a CORS allow-list (`CORS_ORIGINS`) and rate limiting (300 requests / 15 min per IP, 60 writes). Rate-limit counters live in MongoDB, so the limits hold across serverless instances on Vercel.
 - Generic error responses: no internal messages or stack traces reach clients
 - Environment-based configuration with `dotenv`
 
@@ -116,7 +117,7 @@ Cryp-Cross is a free daily crossword where every clue is encrypted. Each day the
 | Backend testing | node:test, mongodb-memory-server (in-memory MongoDB) |
 | Backend | Node.js 22, Express 4, Mongoose 7, express-session + connect-mongo, bcryptjs, nodemailer, helmet, express-rate-limit, cors, dotenv |
 | Database | MongoDB (MongoDB Atlas recommended) |
-| Production frontend server | `serve` with `serve.json` (SPA rewrites) |
+| Hosting | Vercel: static `build/` plus the API as a serverless function (`api/index.js`) on one origin. Self-hosting: `serve` with `serve.json` and `npm start --prefix server`. |
 | CI | GitHub Actions |
 
 <p align="right"><a href="#readme-top">back to top</a></p>
@@ -175,7 +176,7 @@ npm install --prefix server
 | `PUZZLE_SECRET` | in production | Secret mixed into the puzzle seed (HMAC of the date), so future puzzles can't be generated from the public source. Changing it only affects puzzles not yet created. |
 | `MIN_SOLVE_SECONDS` | no | Correct submissions sooner than this after opening the puzzle are refused (default `30`) |
 | `PUZZLE_TZ` | no | IANA time zone that decides when the daily puzzle changes (default `UTC`) |
-| `TRUST_PROXY` | no | Set to `1` behind one reverse proxy (Render, Railway) so rate limiting sees real client IPs. Default `0`. |
+| `TRUST_PROXY` | on Vercel | Set to `1` behind one reverse proxy (Vercel, Render, Railway) so rate limiting sees real client IPs. Default `0`. |
 | `NODE_ENV` | no | Set to `production` in production |
 
 **Frontend:** optional, set in a root `.env` file or in your hosting provider.
@@ -195,7 +196,7 @@ The callback URL is `<API_URL or APP_URL>/api/auth/oauth/<provider>/callback`. I
 - `http://localhost:3000/api/auth/oauth/github/callback`
 - `http://localhost:3000/api/auth/oauth/google/callback`
 
-In production use your real https origin, for example `https://cryp-cross.example.com/api/auth/oauth/github/callback`.
+In production use your real https origin. On Vercel that is `https://<project>.vercel.app/api/auth/oauth/github/callback` and `.../google/callback`.
 
 **GitHub**
 1. Go to GitHub → Settings → Developer settings → OAuth Apps → **New OAuth App**.
@@ -323,14 +324,37 @@ curl http://localhost:5000/api/puzzles/today
 
 </details>
 
-<details>
-<summary><strong>Deployment notes</strong></summary>
+### Deploy to Vercel
 
-- **Backend** (e.g. Render or Railway): root directory `server`, start command `npm start`. Set `DATABASE_URL`, `NODE_ENV=production`, `SESSION_SECRET`, `PUZZLE_SECRET`, `APP_URL`, `SMTP_HOST` / `SMTP_PORT` / `SMTP_USER` / `SMTP_PASS`, `MAIL_FROM`, `CORS_ORIGINS=<your site origin>` and `TRUST_PROXY=1`. The host provides `PORT`. The API refuses to start in production without `SESSION_SECRET`, `PUZZLE_SECRET`, `SMTP_HOST` and `APP_URL`.
-- **Cookies**: the session cookie is `SameSite=Lax`, so the API must be on the same site as the frontend: the same origin behind a reverse proxy (leave `VITE_API_URL` empty and route `/api` to the API), or a subdomain of the same domain (e.g. `www.example.com` + `api.example.com`). An API on a different domain (such as a default `*.onrender.com` URL next to a `*.vercel.app` site) will not keep players logged in.
-- **Email**: any SMTP provider works (e.g. Resend, Postmark, Mailgun, SES). Verify your sending domain so verification emails don't land in spam.
-- **Frontend**: set `VITE_API_URL` and `VITE_SITE_URL` at build time, run `npm run build` (which also writes `sitemap.xml` and `robots.txt`), then `npm run serve`. That passes `-c ../serve.json` so the SPA rewrites and security headers apply. On another static host (e.g. Vercel), copy the headers from `serve.json` into that host's config.
-- **HTTPS**: hosts like Render, Railway and Vercel terminate TLS and redirect HTTP to HTTPS. `serve.json` adds HSTS so browsers stay on HTTPS. Add your API origin to the CSP `connect-src` in `serve.json` if you want to drop the generic `https:`.
+The site and the API run in one Vercel project on one origin: `vercel.json` builds the frontend into `build/`, serves it with the security headers, and rewrites `/api/*` to the serverless function `api/index.js`, which runs the same Express app as `server/`. Because both share an origin, the `SameSite=Lax` session cookie works and `VITE_API_URL` stays empty.
+
+1. **Database**: create a free [MongoDB Atlas](https://www.mongodb.com/cloud/atlas) cluster and a database user. Under Network Access allow `0.0.0.0/0` (Vercel functions have no fixed IPs). Copy the connection string.
+2. **Email**: create an SMTP account (e.g. Resend, Brevo, Postmark) and verify your sending address or domain. The API refuses to run in production without `SMTP_HOST`.
+3. **Import**: on [vercel.com](https://vercel.com) choose **Add New > Project** and import `Jevoel16/Cryp-Cross`. Leave the framework preset as **Other**; install, build and output settings come from `vercel.json`.
+4. **Environment variables** (Production), with `<site>` = `https://<project>.vercel.app`:
+
+   | Variable | Value |
+   |----------|-------|
+   | `NODE_ENV` | `production` |
+   | `DATABASE_URL` | Atlas connection string |
+   | `SESSION_SECRET`, `PUZZLE_SECRET` | two different long random strings, e.g. from `node -e "console.log(require('crypto').randomBytes(48).toString('hex'))"` |
+   | `APP_URL`, `CORS_ORIGINS`, `VITE_SITE_URL` | `<site>` |
+   | `TRUST_PROXY` | `1` |
+   | `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASS`, `MAIL_FROM` | from your SMTP provider |
+   | `GITHUB_CLIENT_ID/SECRET`, `GOOGLE_CLIENT_ID/SECRET` | optional, from production OAuth apps |
+   | `PUZZLE_TZ`, `MIN_SOLVE_SECONDS`, `AUTH_RATE_LIMIT` | optional |
+
+5. **Deploy**, then register `<site>/api/auth/oauth/github/callback` and `<site>/api/auth/oauth/google/callback` with the OAuth apps.
+6. From then on every push to `main` deploys to production, and other branches get preview URLs. Previews have a different origin, so logins there are refused unless you set Preview variables to match.
+
+With a custom domain later, update `APP_URL`, `CORS_ORIGINS`, `VITE_SITE_URL` and the OAuth callback URLs, then redeploy. Vercel's free Hobby plan is for non-commercial use, which matches this project's license.
+
+<details>
+<summary><strong>Self-hosting notes (without Vercel)</strong></summary>
+
+- **Backend** (e.g. Render or Railway): root directory `server`, start command `npm start`. Set the same variables as above plus `TRUST_PROXY=1`; the host provides `PORT`.
+- **Cookies**: the session cookie is `SameSite=Lax`, so the API must be on the same site as the frontend: the same origin behind a reverse proxy (leave `VITE_API_URL` empty and route `/api` to the API), or a subdomain of the same domain. An API on a different domain will not keep players logged in.
+- **Frontend**: set `VITE_SITE_URL` (and `VITE_API_URL` if needed) at build time, run `npm run build`, then `npm run serve`, which applies `serve.json` (SPA rewrites and security headers). If the API is on another origin, add it to the CSP `connect-src` in `serve.json`.
 
 </details>
 
@@ -343,6 +367,7 @@ curl http://localhost:5000/api/puzzles/today
 ```
 Cryp-Cross/
 ├── .github/workflows/ci.yml   # GitHub Actions CI
+├── api/index.js               # Vercel serverless entry: connects to MongoDB once per instance, runs the Express app
 ├── index.html                 # Vite HTML entry (meta tags, JSON-LD)
 ├── public/                    # Static files copied as-is: manifest, icons, robots.txt, llms.txt
 │   ├── theme.js               # Applies the saved/system theme before React renders (no flash)
@@ -362,20 +387,21 @@ Cryp-Cross/
 │   ├── usePageMeta.js         # Per-route title, description, canonical and robots tags
 │   └── index.jsx              # React entry point
 ├── server/
-│   ├── server.js              # Entry point: connects to MongoDB and starts the API
+│   ├── server.js              # Self-hosted entry point: connects to MongoDB and starts the API
 │   ├── app.js                 # Express app: security middleware, error handling
 │   ├── data/words.txt         # Word bank: WORD|clue per line
 │   ├── puzzle/                # Generator, ciphers, PRNG, day key, puzzle service
 │   ├── models/                # Mongoose schemas (User, DailyPuzzle, Attempt)
 │   ├── routes/                # Express routers (auth, oauth, puzzles, play: progress/check/submit/guest-check/leaderboard/stats)
-│   ├── lib/                   # Sessions, mailer, one-time tokens, validators, OAuth providers (oauth.js)
+│   ├── lib/                   # Sessions, MongoDB rate-limit store, env checks, DB connection, mailer, tokens, validators, OAuth
 │   ├── middleware/            # requireAuth, requireVerified
 │   ├── scripts/dev-memory.js  # Runs the API on a throwaway in-memory MongoDB
 │   ├── test/                  # Backend tests (node:test + in-memory MongoDB)
 │   └── .env.example           # Backend environment template
 ├── vite.config.js             # Vite: dev port and /api proxy, build/ output, Vitest settings
 ├── eslint.config.js           # ESLint flat config (react-hooks, react-refresh)
-├── serve.json                 # Production static-server config (rewrites, security headers, caching)
+├── vercel.json                # Vercel: install/build commands, /api rewrite, SPA fallback, security headers
+├── serve.json                 # Self-hosted static-server config (rewrites, security headers, caching)
 ├── .env.example               # Frontend environment template
 ├── .nvmrc                     # Node version
 ├── LICENSE
@@ -458,6 +484,7 @@ npm audit --audit-level=high --prefix server
 - [ ] Each page has its own browser-tab title
 - [ ] With `SITE_URL` set, `build/sitemap.xml` lists the six public pages and `build/robots.txt` links to it
 - [ ] `npm run serve` responses include `Content-Security-Policy` and `Strict-Transport-Security` headers
+- [ ] After a Vercel deploy: `curl -I <site>/play` shows the CSP and HSTS headers, `<site>/api/puzzles/today` returns JSON, and sign-up, email verification, ranked submit and GitHub/Google sign-in work on the live site
 - [ ] The theme toggle switches between dark and light and persists after a refresh; with no saved choice the site follows the system theme
 - [ ] At 375px wide the header collapses into a menu button, and Home, Play and Account have no sideways scrolling
 - [ ] With "reduce motion" turned on in the OS, the tagline, logo and cursor do not animate
@@ -488,7 +515,9 @@ npm audit --audit-level=high --prefix server
 | Server tests hang on first run | `mongodb-memory-server` is downloading MongoDB (~100 MB, once) | Wait for the download; behind a proxy, see the mongodb-memory-server docs |
 | `429 Too many requests` | Rate limit reached | Wait 15 minutes; behind a proxy, set `TRUST_PROXY=1` so users aren't grouped under the proxy IP |
 | No `sitemap.xml` in `build/` | `SITE_URL` / `VITE_SITE_URL` not set | Set it and rebuild |
-| Security headers missing in production | Server started without the config | Use `npm run serve` (passes `-c ../serve.json`) |
+| Security headers missing in production | Server started without the config | On Vercel they come from `vercel.json`; self-hosted, use `npm run serve` (passes `-c ../serve.json`) |
+| Vercel: `/api/...` returns `503 Service unavailable` | The function couldn't start: a required variable is missing or Atlas refused the connection | Check the function logs in Vercel, set the missing variables, and allow `0.0.0.0/0` in Atlas Network Access |
+| Vercel: `403 Origin not allowed` on login | `CORS_ORIGINS` doesn't match the URL you opened (e.g. a preview URL) | Set `CORS_ORIGINS` to that exact origin and redeploy |
 | Port already in use | Another process on 3000/5000 | Windows: `netstat -ano \| findstr :5000`, then `taskkill /PID <PID> /F` |
 
 <p align="right"><a href="#readme-top">back to top</a></p>
@@ -498,7 +527,7 @@ npm audit --audit-level=high --prefix server
 ## Contributing
 
 - **Branches:** `feat/short-description`, `fix/short-description`, `docs/...`, `chore/...`
-- **Commits:** [Conventional Commits](https://www.conventionalcommits.org/) with the bumped SemVer version at the end of the subject, e.g. `feat: add CSV export (v0.2.0)`. Breaking change → minor while on `0.x`; `feat` → minor; everything else → patch. Bump `package.json` and the version badge in the same commit.
+- **Commits:** [Conventional Commits](https://www.conventionalcommits.org/) with the bumped SemVer version at the end of the subject, e.g. `feat: add CSV export (v1.1.0)`. Breaking change → major; `feat` → minor; everything else → patch. Bump `package.json` and the version badge in the same commit.
 - Make sure CI checks pass locally before committing.
 - **Update this README with every change.**
 

@@ -12,6 +12,7 @@ const {
   isObject,
 } = require('../lib/validate');
 const mailer = require('../lib/mailer');
+const { createRateLimitStore } = require('../lib/rateLimitStore');
 const { requireAuth, loadSessionUser } = require('../middleware/auth');
 const { createOAuthRouter } = require('./oauth');
 
@@ -23,11 +24,12 @@ const DUMMY_HASH = bcrypt.hashSync('not-a-real-password', BCRYPT_ROUNDS);
 
 const badRequest = (res, errors) => res.status(400).json({ success: false, message: errors.join('; '), errors });
 
-// Brute-force guard for credential and email-sending endpoints (one per app instance).
+// Brute-force guard for credential and email-sending endpoints (counts shared via MongoDB).
 const createAuthLimiter = () =>
   rateLimit({
     windowMs: 15 * 60 * 1000,
     limit: Number(process.env.AUTH_RATE_LIMIT) || 10,
+    store: createRateLimitStore('auth'),
     standardHeaders: 'draft-7',
     legacyHeaders: false,
     message: { success: false, message: 'Too many attempts, please try again later' },

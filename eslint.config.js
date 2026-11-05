@@ -23,4 +23,9 @@ export default defineConfig([
         extends: [js.configs.recommended],
         languageOptions: { ecmaVersion: 'latest', globals: globals.node },
     },
+    {
+        files: ['api/**/*.js'],
+        extends: [js.configs.recommended],
+        languageOptions: { ecmaVersion: 'latest', sourceType: 'commonjs', globals: globals.node },
+    },
 ]);

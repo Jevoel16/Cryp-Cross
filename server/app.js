@@ -6,6 +6,7 @@ const puzzleRoutes = require('./routes/puzzles');
 const { createAuthRouter } = require('./routes/auth');
 const { router: playRoutes } = require('./routes/play');
 const { createSessionMiddleware } = require('./lib/session');
+const { createRateLimitStore } = require('./lib/rateLimitStore');
 
 // Comma-separated allow-list; dev falls back to the Vite dev server only.
 function allowedOrigins() {
@@ -39,7 +40,7 @@ function csrfGuard(origins) {
 function createApp() {
   const app = express();
 
-  // Behind Render/Railway set TRUST_PROXY=1 so rate limiting sees real client IPs.
+  // Behind Vercel/Render/Railway set TRUST_PROXY=1 so rate limiting sees real client IPs.
   app.set('trust proxy', Number(process.env.TRUST_PROXY) || 0);
   app.disable('x-powered-by');
 
@@ -64,9 +65,14 @@ function createApp() {
     legacyHeaders: false,
     message: { success: false, message: 'Too many requests, please try again later' },
   };
-  const apiLimiter = rateLimit({ ...limiterOptions, limit: 300 });
+  const apiLimiter = rateLimit({ ...limiterOptions, limit: 300, store: createRateLimitStore('api') });
   // Stricter cap on writes.
-  const writeLimiter = rateLimit({ ...limiterOptions, limit: 60, skip: (req) => req.method === 'GET' });
+  const writeLimiter = rateLimit({
+    ...limiterOptions,
+    limit: 60,
+    skip: (req) => req.method === 'GET',
+    store: createRateLimitStore('write'),
+  });
   app.use('/api', apiLimiter, writeLimiter);
 
   app.use('/api', createSessionMiddleware());
