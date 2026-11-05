@@ -1,886 +1,334 @@
-# 🚀 Cryp-Cross MERN Application
+<a id="readme-top"></a>
 
-> A complete full-stack CRUD application with React frontend, Express backend, and MongoDB database for managing project logs.
+<div align="center">
+  <img src="public/logomain.png" alt="Cryp-Cross logo" width="120" />
 
-## 📋 Table of Contents
+  <h1>Cryp-Cross</h1>
 
-- [Overview](#overview)
+  <p><strong>A MERN showcase for a crypto crossword platform, with a full-stack project task log.</strong></p>
+
+  <p>
+    <img src="https://img.shields.io/badge/react-19.2.0-blue?style=flat" alt="React 19.2.0" />
+    <img src="https://img.shields.io/badge/react--router--dom-7.9.6-blue?style=flat" alt="React Router 7.9.6" />
+    <img src="https://img.shields.io/badge/react--scripts-5.0.1-blue?style=flat" alt="react-scripts 5.0.1" />
+    <img src="https://img.shields.io/badge/express-4.22.3-blue?style=flat" alt="Express 4.22.3" />
+    <img src="https://img.shields.io/badge/mongoose-7.8.13-blue?style=flat" alt="Mongoose 7.8.13" />
+    <img src="https://img.shields.io/badge/node-22-blue?style=flat" alt="Node 22" />
+  </p>
+  <p>
+    <img src="https://img.shields.io/badge/version-0.1.5-green?style=flat" alt="Version 0.1.5" />
+    <a href="LICENSE"><img src="https://img.shields.io/badge/license-Sprucetrap%20Source--Available-orange?style=flat" alt="License: Sprucetrap Source-Available" /></a>
+    <img src="https://img.shields.io/badge/platform-web-lightgrey?style=flat" alt="Platform: web" />
+    <a href="https://github.com/Jevoel16/Cryp-Cross/actions/workflows/ci.yml"><img src="https://github.com/Jevoel16/Cryp-Cross/actions/workflows/ci.yml/badge.svg" alt="CI status" /></a>
+  </p>
+</div>
+
+---
+
+## Table of Contents
+
+- [About](#about)
 - [Features](#features)
 - [Tech Stack](#tech-stack)
-- [Project Structure](#project-structure)
+- [Prerequisites](#prerequisites)
 - [Installation](#installation)
-- [Running Locally](#running-locally)
-- [API Endpoints](#api-endpoints)
-- [CRUD Operations](#crud-operations)
-- [Deployment](#deployment)
+- [Configuration and Environment Variables](#configuration-and-environment-variables)
+- [Usage](#usage)
+- [Project Structure](#project-structure)
+- [Scripts](#scripts)
+- [Testing](#testing)
 - [Troubleshooting](#troubleshooting)
+- [Contributing](#contributing)
+- [License](#license)
+- [Author](#author)
 
 ---
 
-## 🎯 Overview
+## About
 
-Cryp-Cross is a MERN (MongoDB, Express, React, Node.js) full-stack application that demonstrates a complete implementation of CRUD operations integrated with a modern web stack.
+Cryp-Cross is a concept for a crossword platform that rewards players with blockchain-based tokens: a fresh puzzle every day, with correct answers recorded on a verifiable ledger. This repository is a MERN (MongoDB, Express, React, Node.js) web app that presents the concept (home, idea and team pages) and includes a **Project Log**, a full CRUD task tracker the team uses to log development work, backed by a REST API and MongoDB.
 
-### Activity Requirements Met ✅
-- [x] Complete CRUD API routes (Create, Read, Update, Delete)
-- [x] Full frontend integration with backend
-- [x] Secure environment variable configuration
-- [x] Deployment-ready production setup
-- [x] Comprehensive error handling and validation
+<p align="right"><a href="#readme-top">back to top</a></p>
 
 ---
 
-## ✨ Features
+## Features
 
-### Frontend (React)
-- 📊 **Dynamic Project List** - View all projects with auto-sorting by creation date
-- ➕ **Create Projects** - Add new projects through an easy-to-use form
-- 🔄 **Update Status** - Cycle project status (Pending → InProgress → Complete)
-- 🗑️ **Delete Projects** - Remove projects with confirmation dialog
-- 🔍 **View Details** - See full project information on detail page
-- 🌓 **Dark/Light Theme** - Toggle between dark and light modes
-- 📱 **Responsive Design** - Works on desktop, tablet, and mobile
-- 🧭 **React Router** - Smooth navigation between pages
+**Frontend (React)**
+- Concept pages: Home, Idea (problem statement, key features, emerging technology) and a Team carousel
+- Project Log list sorted by creation date, with create, status-cycle (Pending → InProgress → Complete) and delete
+- Project detail page per entry (`/projects/:id`)
+- Light/dark theme toggle, remembered in `localStorage`
+- Client-side routing with React Router and a 404 page
 
-### Backend (Express)
-- ✅ RESTful API with 4 endpoints (GET, POST, PATCH, DELETE)
-- 🔐 CORS enabled for cross-origin requests
-- 📦 MongoDB with Mongoose ODM
-- 🛡️ Input validation and error handling
-- ♻️ Async/await for clean asynchronous code
-- 🌍 Environment-based configuration
+**Backend (Express)**
+- REST API with four endpoints: `GET`, `POST`, `PATCH`, `DELETE` on `/api/projects`
+- MongoDB through Mongoose, with schema validation and automatic `createdAt` / `updatedAt`
+- Environment-based configuration with `dotenv`
 
-### Database (MongoDB)
-- 📄 Project schema with title, description, status, timestamps
-- ⏱️ Automatic createdAt/updatedAt fields
-- 🔑 Unique MongoDB ObjectIds
-- 📊 MongoDB Atlas cloud hosting
+<p align="right"><a href="#readme-top">back to top</a></p>
 
 ---
 
-## 🛠️ Tech Stack
+## Tech Stack
 
-**Frontend:**
-- React 19
-- React Router v7
-- CSS3 (custom styling)
-- Fetch API for HTTP requests
+| Layer | Technology |
+|-------|-----------|
+| Frontend | React 19, React Router 7, Create React App (react-scripts 5), plain CSS |
+| Backend | Node.js 22, Express 4, Mongoose 7, cors, dotenv |
+| Database | MongoDB (MongoDB Atlas recommended) |
+| Production frontend server | `serve` with `serve.json` (SPA rewrites) |
+| CI | GitHub Actions |
 
-**Backend:**
-- Node.js
-- Express.js
-- Mongoose ODM
-- CORS middleware
-
-**Database:**
-- MongoDB Atlas (cloud)
-
-**Deployment:**
-- Vercel (React frontend)
-- Render (Express backend)
+<p align="right"><a href="#readme-top">back to top</a></p>
 
 ---
 
-## 📁 Project Structure
+## Prerequisites
 
-```
-Orbilla - Lab Activity Final/
-│
-├── src/                          # React Frontend
-│   ├── App.js                    # Main React component with all CRUD logic
-│   ├── App.css                   # Styling
-│   ├── config.js                 # API endpoint configuration
-│   ├── index.js                  # React entry point
-│   └── index.css                 # Global styles
-│
-├── public/                       # Static files
-│   ├── index.html
-│   ├── manifest.json
-│   └── img/                      # Team member images
-│
-├── Orbilla - Lab Activity 7/     # Express Backend
-│   ├── server.js                 # Main Express server
-│   ├── models/
-│   │   └── projectLog.js         # MongoDB schema
-│   ├── .env                      # Environment variables (NOT in git)
-│   └── package.json              # Backend dependencies
-│
-├── package.json                  # Frontend dependencies & scripts
-├── .gitignore                    # Git ignore rules
-├── README.md                     # This file
-├── DEPLOYMENT_GUIDE.md           # Step-by-step deployment
-├── PROJECT_README.md             # Project documentation
-├── COMPLETION_CHECKLIST.md       # Requirements checklist
-├── REQUIREMENTS_VERIFICATION.md  # Detailed verification
-└── .env.example                  # Environment template
-```
+- Node.js 22 (see `.nvmrc`) and npm
+- A MongoDB database, for example a free [MongoDB Atlas](https://www.mongodb.com/cloud/atlas) cluster
+- Git
+
+<p align="right"><a href="#readme-top">back to top</a></p>
 
 ---
 
-## 📦 Installation
+## Installation
 
-### Prerequisites
-- Node.js (v14 or higher)
-- npm or yarn
-- MongoDB Atlas account (free at https://www.mongodb.com/cloud/atlas)
-- Git (optional, for version control)
-
-### Option 1: Using Existing Project (Quick Start)
-
-#### 1. Clone Repository
 ```bash
-git clone <your-repo-url>
-cd "Orbilla - Lab Activity Final"
+git clone https://github.com/Jevoel16/Cryp-Cross.git
 ```
 
-#### 2. Backend Setup
-
-Navigate to backend folder:
 ```bash
-cd "Orbilla - Lab Activity 7"
+cd Cryp-Cross
+```
+
+```bash
 npm install
 ```
 
-Create `.env` file in the backend folder:
-```env
-PORT=5000
-DATABASE_URL=your_mongodb_atlas_connection_string
-```
-
-#### 3. Frontend Setup
-
-Go back to root directory:
 ```bash
-cd ..
-npm install
+npm install --prefix server
 ```
+
+<p align="right"><a href="#readme-top">back to top</a></p>
 
 ---
 
-### Option 2: Creating Project from Scratch
+## Configuration and Environment Variables
 
-#### Step 1: Create React Frontend
+**Backend:** copy `server/.env.example` to `server/.env` and fill it in.
 
-```bash
-# Create new React app
-npx create-react-app "Orbilla - Lab Activity Final"
-cd "Orbilla - Lab Activity Final"
+| Variable | Required | Description |
+|----------|----------|-------------|
+| `DATABASE_URL` | yes | MongoDB connection string |
+| `PORT` | yes | Port for the Express API (the frontend expects `5000` in development) |
 
-# Install React Router
-npm install react-router-dom
+**Frontend:** optional, set in a root `.env` file or in your hosting provider.
 
-# Install development dependencies (optional)
-npm install --save-dev concurrently
-```
+| Variable | Required | Description |
+|----------|----------|-------------|
+| `REACT_APP_API_URL` | in production | Base URL of the deployed API. In development it defaults to `http://localhost:5000`. |
 
-#### Step 2: Create Backend Folder
+`.env` files are gitignored. Never commit real credentials.
 
-```bash
-# Create backend folder
-mkdir "Orbilla - Lab Activity 7"
-cd "Orbilla - Lab Activity 7"
-
-# Initialize Node project
-npm init -y
-
-# Install backend dependencies
-npm install express cors mongoose dotenv
-
-# Create necessary folders and files
-mkdir models
-touch server.js .env
-```
-
-#### Step 3: Create MongoDB Database
-
-1. Go to [MongoDB Atlas](https://www.mongodb.com/cloud/atlas)
-2. Create free account and sign in
-3. Create a new cluster (M0 free tier)
-4. Click "Connect" → "Connect your application"
-5. Copy connection string
-6. Replace `<username>` and `<password>` with your credentials
-7. Copy final string to `.env` file
-
-#### Step 4: Set Up Backend Server
-
-Create `Orbilla - Lab Activity 7/server.js`:
-
-```javascript
-require('dotenv').config();
-const express = require('express');
-const mongoose = require('mongoose');
-const cors = require('cors');
-const ProjectLog = require('./models/projectLog');
-
-const app = express();
-
-// Middleware
-app.use(cors());
-app.use(express.json());
-
-// MongoDB Connection
-const connectDB = async () => {
-  try {
-    await mongoose.connect(process.env.DATABASE_URL, {
-      useNewUrlParser: true,
-      useUnifiedTopology: true,
-    });
-    console.log('Database Connected');
-  } catch (error) {
-    console.error('Database connection error:', error.message);
-    process.exit(1);
-  }
-};
-
-connectDB();
-
-// GET - Read all projects
-app.get('/api/projects', async (req, res) => {
-  try {
-    const projects = await ProjectLog.find().sort({ createdAt: -1 });
-    res.json({
-      success: true,
-      count: projects.length,
-      data: projects,
-    });
-  } catch (error) {
-    console.error('Error fetching projects:', error.message);
-    res.status(500).json({
-      success: false,
-      message: 'Internal Server Error',
-      error: error.message,
-    });
-  }
-});
-
-// POST - Create new project
-app.post('/api/projects', async (req, res) => {
-  try {
-    const { title, description, status } = req.body;
-
-    if (!title || !description) {
-      return res.status(400).json({
-        success: false,
-        message: 'Title and description are required fields',
-      });
-    }
-
-    const newProject = new ProjectLog({
-      title,
-      description,
-      status: status || 'Pending',
-    });
-
-    const savedProject = await newProject.save();
-
-    res.status(201).json({
-      success: true,
-      message: 'Project created successfully',
-      data: savedProject,
-    });
-  } catch (error) {
-    console.error('Error creating project:', error.message);
-    res.status(500).json({
-      success: false,
-      message: 'Internal Server Error',
-      error: error.message,
-    });
-  }
-});
-
-// PATCH - Update project
-app.patch('/api/projects/:id', async (req, res) => {
-  try {
-    const { id } = req.params;
-    const { title, description, status } = req.body;
-
-    if (!title && !description && !status) {
-      return res.status(400).json({
-        success: false,
-        message: 'At least one field is required for update',
-      });
-    }
-
-    const updateData = {};
-    if (title) updateData.title = title;
-    if (description) updateData.description = description;
-    if (status) updateData.status = status;
-
-    const updatedProject = await ProjectLog.findByIdAndUpdate(
-      id,
-      updateData,
-      { new: true, runValidators: true }
-    );
-
-    if (!updatedProject) {
-      return res.status(404).json({
-        success: false,
-        message: 'Project not found',
-      });
-    }
-
-    res.json({
-      success: true,
-      message: 'Project updated successfully',
-      data: updatedProject,
-    });
-  } catch (error) {
-    console.error('Error updating project:', error.message);
-    res.status(500).json({
-      success: false,
-      message: 'Internal Server Error',
-      error: error.message,
-    });
-  }
-});
-
-// DELETE - Remove project
-app.delete('/api/projects/:id', async (req, res) => {
-  try {
-    const { id } = req.params;
-
-    const deletedProject = await ProjectLog.findByIdAndDelete(id);
-
-    if (!deletedProject) {
-      return res.status(404).json({
-        success: false,
-        message: 'Project not found',
-      });
-    }
-
-    res.status(204).send();
-  } catch (error) {
-    console.error('Error deleting project:', error.message);
-    res.status(500).json({
-      success: false,
-      message: 'Internal Server Error',
-      error: error.message,
-    });
-  }
-});
-
-// Default route
-app.get('/', (req, res) => {
-  res.json({
-    message: 'Welcome to MERN Backend API',
-    endpoints: {
-      get: '/api/projects',
-      post: '/api/projects',
-      patch: '/api/projects/:id',
-      delete: '/api/projects/:id',
-    },
-  });
-});
-
-// Start server
-const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => {
-  console.log(`Server is running on http://localhost:${PORT}`);
-});
-```
-
-#### Step 5: Create MongoDB Model
-
-Create `Orbilla - Lab Activity 7/models/projectLog.js`:
-
-```javascript
-const mongoose = require('mongoose');
-
-const projectLogSchema = new mongoose.Schema(
-  {
-    title: {
-      type: String,
-      required: true,
-      trim: true,
-    },
-    description: {
-      type: String,
-      required: true,
-      trim: true,
-    },
-    status: {
-      type: String,
-      required: true,
-      enum: ['Pending', 'InProgress', 'Complete'],
-      default: 'Pending',
-    },
-  },
-  {
-    timestamps: true,
-  }
-);
-
-const ProjectLog = mongoose.model('ProjectLog', projectLogSchema);
-module.exports = ProjectLog;
-```
-
-#### Step 6: Create Backend .env File
-
-Create `Orbilla - Lab Activity 7/.env`:
-
-```env
-PORT=5000
-DATABASE_URL=mongodb+srv://<username>:<password>@<cluster>.mongodb.net/?appName=<appname>
-```
-
-Replace with your actual MongoDB connection string.
-
-#### Step 7: Set Up React Frontend - Config File
-
-Create `src/config.js`:
-
-```javascript
-// API Configuration for different environments
-const API_BASE_URL = process.env.REACT_APP_API_URL || 
-                     (process.env.NODE_ENV === 'production' 
-                      ? 'https://your-backend-url.onrender.com'
-                      : 'http://localhost:5000');
-
-export const API_ENDPOINTS = {
-    PROJECTS: `${API_BASE_URL}/api/projects`,
-    PROJECT_BY_ID: (id) => `${API_BASE_URL}/api/projects/${id}`,
-};
-
-export default API_BASE_URL;
-```
-
-#### Step 8: Update React package.json
-
-Add proxy to `package.json`:
-
-```json
-{
-  "name": "app",
-  "version": "0.1.0",
-  "private": true,
-  "proxy": "http://localhost:5000",
-  "dependencies": {
-    "react": "^19.2.0",
-    "react-dom": "^19.2.0",
-    "react-router-dom": "^7.9.6",
-    "react-scripts": "5.0.1"
-  },
-  "scripts": {
-    "start": "react-scripts start",
-    "build": "react-scripts build",
-    "test": "react-scripts test",
-    "eject": "react-scripts eject"
-  }
-}
-```
-
-#### Step 9: Build React Components
-
-Replace `src/App.js` with complete CRUD implementation (see original project for full code).
-
-Key features:
-- useEffect hook for fetching data
-- useState for state management
-- async/await for API calls
-- React Router for navigation
-- Form for creating projects
-- Table for displaying projects
-- Buttons for update/delete
-
-#### Step 10: Add Styling
-
-Update `src/App.css` with styling for:
-- Project table
-- Form inputs
-- Buttons
-- Dark/light theme
-- Responsive layout
-
-#### Step 11: Create Additional Documentation Files
-
-Create the following documentation files:
-
-**DEPLOYMENT_GUIDE.md** - Step-by-step deployment instructions
-
-**PROJECT_README.md** - Detailed project overview
-
-**COMPLETION_CHECKLIST.md** - Requirements verification
-
-**REQUIREMENTS_VERIFICATION.md** - Detailed requirement checking
-
-**GITIGNORE** - Exclude sensitive files:
-
-```
-node_modules/
-*/node_modules/
-.env
-.env.local
-.env.production
-build/
-dist/
-.DS_Store
-.vscode/
-.idea/
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-```
+<p align="right"><a href="#readme-top">back to top</a></p>
 
 ---
 
-## Step-by-Step Feature Implementation
+## Usage
 
-### 1. Frontend - Data Fetching
+### Run locally
 
-```javascript
-const [projects, setProjects] = useState([]);
-const [loading, setLoading] = useState(true);
+Start the API in one terminal:
 
-useEffect(() => {
-    fetchProjects();
-}, []);
-
-const fetchProjects = async () => {
-    try {
-        const response = await fetch(API_ENDPOINTS.PROJECTS);
-        const data = await response.json();
-        if (data.success) {
-            setProjects(data.data);
-        }
-    } catch (error) {
-        console.error('Error fetching projects:', error);
-    } finally {
-        setLoading(false);
-    }
-};
-```
-
-### 2. Frontend - Create Handler
-
-```javascript
-const handleCreateProject = async (newProject) => {
-    try {
-        const response = await fetch(API_ENDPOINTS.PROJECTS, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(newProject),
-        });
-        const data = await response.json();
-        if (data.success) {
-            setProjects([data.data, ...projects]);
-            return { success: true };
-        }
-    } catch (error) {
-        console.error('Error creating project:', error);
-        return { success: false, error: 'Failed to create' };
-    }
-};
-```
-
-### 3. Frontend - Update Handler
-
-```javascript
-const handleUpdateStatus = async (id, newStatus) => {
-    setProjects(projects.map(p => 
-        p._id === id ? { ...p, status: newStatus } : p
-    ));
-    
-    try {
-        await fetch(API_ENDPOINTS.PROJECT_BY_ID(id), {
-            method: 'PATCH',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ status: newStatus }),
-        });
-    } catch (error) {
-        console.error('Error updating status:', error);
-    }
-};
-```
-
-### 4. Frontend - Delete Handler
-
-```javascript
-const handleDeleteProject = async (id) => {
-    if (!window.confirm('Delete this project?')) return;
-    
-    setProjects(projects.filter(p => p._id !== id));
-    
-    try {
-        await fetch(API_ENDPOINTS.PROJECT_BY_ID(id), {
-            method: 'DELETE',
-        });
-    } catch (error) {
-        console.error('Error deleting project:', error);
-    }
-};
-```
-
-### 5. React Router Setup
-
-```javascript
-import { BrowserRouter, Routes, Route, Link } from 'react-router-dom';
-
-<BrowserRouter>
-  <NavBar />
-  <main>
-    <Routes>
-      <Route path="/" element={<HomePage />} />
-      <Route path="/projects" element={<ProjectLogPage projects={projects} />} />
-      <Route path="/projects/new" element={<CreateProjectPage />} />
-      <Route path="/projects/:id" element={<ProjectDetail projects={projects} />} />
-    </Routes>
-  </main>
-  <Footer />
-</BrowserRouter>
-```
-
----
-
-## Running the Complete Project
-
-### Terminal 1: Start Backend
 ```bash
-cd "Orbilla - Lab Activity 7"
-node server.js
+npm start --prefix server
 ```
 
-### Terminal 2: Start Frontend
+You should see `Server is running on http://localhost:5000` and `Database Connected`.
+
+Start the frontend in a second terminal:
+
 ```bash
 npm start
 ```
 
-### Expected Output
-```
-Frontend: http://localhost:3000
-Backend:  http://localhost:5000
-```
+The app opens at `http://localhost:3000`.
 
----
+### Visitor flow
 
+1. **Home** (`/`): introduction to Cryp-Cross.
+2. **Idea** (`/idea`): problem statement, key features and blockchain integration.
+3. **Team** (`/team`): team member carousel.
+4. Use the theme toggle in the header to switch between light and dark mode.
 
+### Project Log flow (team member)
 
-## 🚀 Running Locally
+| Action | How |
+|--------|-----|
+| Create | Open **Project Log** → **+ Create New Project**, fill in title, description and status, then submit. You're redirected to the list. |
+| Read | **Project Log** (`/projects`) lists all entries, newest first. **View Detail** opens `/projects/:id`. |
+| Update | **Change Status** cycles Pending → InProgress → Complete → Pending. |
+| Delete | **Delete**, then confirm the dialog. |
 
-### Terminal 1 - Start Backend
+<details>
+<summary><strong>API reference</strong></summary>
+
+Base URL: `http://localhost:5000` in development, or your deployed API URL.
+
+| Method | Path | Body | Description |
+|--------|------|------|-------------|
+| `GET` | `/` | none | API info and endpoint list |
+| `GET` | `/api/projects` | none | List all projects, newest first |
+| `POST` | `/api/projects` | `{ "title", "description", "status" }` | Create a project |
+| `PATCH` | `/api/projects/:id` | `{ "status" }` | Update a project |
+| `DELETE` | `/api/projects/:id` | none | Delete a project |
+
+Example:
+
 ```bash
-cd "Orbilla - Lab Activity 7"
-node server.js
+curl -X POST http://localhost:5000/api/projects -H "Content-Type: application/json" -d '{"title":"New Project","description":"Project description","status":"Pending"}'
 ```
 
-You should see:
+`status` must be one of `Pending`, `InProgress` or `Complete`.
+
+</details>
+
+<details>
+<summary><strong>Deployment notes</strong></summary>
+
+- **Backend** (e.g. Render or Railway): root directory `server`, start command `npm start`, and set `DATABASE_URL` and `PORT`.
+- **Frontend**: build with `npm run build` and serve with `npm run serve` (uses `serve.json` for SPA rewrites), or deploy to a static host such as Vercel. Set `REACT_APP_API_URL` to the API URL at build time.
+
+</details>
+
+<p align="right"><a href="#readme-top">back to top</a></p>
+
+---
+
+## Project Structure
+
 ```
-Server is running on http://localhost:5000
-Database Connected
+Cryp-Cross/
+├── .github/workflows/ci.yml   # GitHub Actions CI
+├── public/                    # Static assets, index.html, manifest, robots.txt
+│   └── img/                   # Team member photos
+├── src/
+│   ├── App.js                 # Routes, pages and Project Log CRUD logic
+│   ├── App.css / index.css    # Styling
+│   ├── config.js              # API base URL and endpoints
+│   └── index.js               # React entry point
+├── server/
+│   ├── server.js              # Express API and MongoDB connection
+│   ├── models/projectLog.js   # Mongoose schema
+│   └── .env.example           # Backend environment template
+├── serve.json                 # Production static-server config
+├── .nvmrc                     # Node version
+├── LICENSE
+└── package.json               # Frontend dependencies and scripts
 ```
 
-### Terminal 2 - Start Frontend
+<p align="right"><a href="#readme-top">back to top</a></p>
+
+---
+
+## Scripts
+
+**Root (frontend)**
+
+| Script | Description |
+|--------|-------------|
+| `npm start` | Start the React dev server on port 3000 |
+| `npm run build` | Production build into `build/` |
+| `npm run serve` | Serve `build/` on port 3000 |
+| `npm test` | Run the Jest test runner (watch mode) |
+
+**`server/` (backend)**
+
+| Script | Description |
+|--------|-------------|
+| `npm start` | Start the Express API |
+| `npm run dev` | Same as `start` |
+
+<p align="right"><a href="#readme-top">back to top</a></p>
+
+---
+
+## Testing
+
+There are no automated tests yet. Every push and pull request to `main` runs [CI](.github/workflows/ci.yml): frontend install, build (with ESLint) and the test runner, then backend install, syntax check and `npm audit --audit-level=high`.
+
+Run the same checks locally:
+
 ```bash
-npm start
+npm run build
 ```
 
-The app will open at `http://localhost:3000`
-
----
-
-## 📡 API Endpoints
-
-### Base URL
-- **Development**: `http://localhost:5000`
-- **Production**: `https://your-backend.onrender.com`
-
-### Endpoints
-
-#### Get All Projects
-```http
-GET /api/projects
+```bash
+npm test -- --watchAll=false --passWithNoTests
 ```
 
-#### Create Project
-```http
-POST /api/projects
-Content-Type: application/json
-
-{
-  "title": "New Project",
-  "description": "Project description",
-  "status": "Pending"
-}
+```bash
+npm audit --audit-level=high --prefix server
 ```
 
-#### Update Project
-```http
-PATCH /api/projects/:id
-Content-Type: application/json
+**Manual checks**
+- [ ] The API starts and logs `Database Connected`
+- [ ] The frontend loads on port 3000; Home, Idea, Team and an unknown URL (404) render
+- [ ] The theme toggle works and persists after a refresh
+- [ ] Create, view detail, change status and delete a project
+- [ ] Data persists after a page refresh
 
-{
-  "status": "InProgress"
-}
-```
-
-#### Delete Project
-```http
-DELETE /api/projects/:id
-```
+<p align="right"><a href="#readme-top">back to top</a></p>
 
 ---
 
-## 🔄 CRUD Operations
+## Troubleshooting
 
-### Create (C)
-1. Click **"+ Create New Project"** button
-2. Fill in form: Title, Description, Status
-3. Click **"Create Project"**
-4. Auto-redirects to task list
-5. New project appears at top of list
-6. ✅ Persists in database
+| Problem | Cause | Fix |
+|---------|-------|-----|
+| `ECONNREFUSED` or "Cannot GET /api/projects" | API not running, or the wrong API URL | Start it with `npm start --prefix server`; check `REACT_APP_API_URL` / `src/config.js` |
+| `Database connection error` | Wrong `DATABASE_URL` or IP not allowed | Check `server/.env`; add your IP to the MongoDB Atlas access list |
+| Server listens on `undefined` | `PORT` not set | Set `PORT=5000` in `server/.env` |
+| Port already in use | Another process on 3000/5000 | Windows: `netstat -ano \| findstr :5000`, then `taskkill /PID <PID> /F` |
 
-### Read (R)
-1. Navigate to **"Project Log"** page
-2. View list of all projects
-3. Click **"View Detail"** to see full info
-4. List auto-sorts by creation date
-5. ✅ Fetches from database on page load
-
-### Update (U)
-1. In task list, click **"Change Status"**
-2. Status cycles: Pending → InProgress → Complete → Pending
-3. ✅ Updates instantly in UI and database
-
-### Delete (D)
-1. In task list, click **"Delete"**
-2. Confirm in popup dialog
-3. Project removed from list
-4. ✅ Deleted from database
+<p align="right"><a href="#readme-top">back to top</a></p>
 
 ---
 
-## 🌐 Deployment
+## Contributing
 
-### Deploy Backend (Render)
+- **Branches:** `feat/short-description`, `fix/short-description`, `docs/...`, `chore/...`
+- **Commits:** [Conventional Commits](https://www.conventionalcommits.org/) with the bumped SemVer version at the end of the subject, e.g. `feat: add CSV export (v0.2.0)`. Breaking change → minor while on `0.x`; `feat` → minor; everything else → patch. Bump `package.json` and the version badge in the same commit.
+- Make sure CI checks pass locally before committing.
+- **Update this README with every change.**
 
-1. **Create Render Account** → https://render.com
+<details>
+<summary><strong>SEO backlink ideas</strong></summary>
 
-2. **Create Web Service**
-   - Connect GitHub repository
-   - Select backend folder: `Orbilla - Lab Activity 7`
-   - Build command: `npm install`
-   - Start command: `node server.js`
+- Link the live site from the GitHub repository description and topics (`react`, `mern`, `crossword`, `blockchain`)
+- Add it to team members' GitHub profile READMEs, LinkedIn and portfolios
+- Write a short dev post (DEV.to, Hashnode, Medium) about building Cryp-Cross and link back
+- Submit it to course or school project showcases and puzzle/web3 community directories
 
-3. **Add Environment Variables**
-   ```
-   PORT=5000
-   DATABASE_URL=your_mongodb_uri
-   ```
+</details>
 
-4. **Deploy** and copy the URL (e.g., `https://your-app.onrender.com`)
-
-### Deploy Frontend (Vercel)
-
-1. **Create Vercel Account** → https://vercel.com
-
-2. **Import Repository**
-   - Select your GitHub repo
-   - Root directory: (leave as is)
-   - Framework: Create React App
-
-3. **Add Environment Variable**
-   ```
-   REACT_APP_API_URL=https://your-backend.onrender.com
-   ```
-
-4. **Deploy**
-
-5. **Share Live URL** from Vercel dashboard
-
-### Full Deployment Guide
-See [DEPLOYMENT_GUIDE.md](DEPLOYMENT_GUIDE.md) for detailed steps.
+<p align="right"><a href="#readme-top">back to top</a></p>
 
 ---
 
-## 🧪 Testing
+## License
 
-### Local Testing Checklist
-- [x] Backend server starts without errors
-- [x] React frontend loads on port 3000
-- [x] Database connection successful
-- [x] Can create new projects
-- [x] Can view all projects
-- [x] Can update project status
-- [x] Can delete projects
-- [x] Data persists after page refresh
-- [x] All CRUD operations work instantly
+Licensed under the **Sprucetrap Source-Available License 1.0**. See [LICENSE](LICENSE). Non-commercial use, study and modification are allowed with visible credit: "Based on Cryp-Cross by Sprucetrap (https://github.com/Jevoel16)". Commercial use needs written permission.
+
+<p align="right"><a href="#readme-top">back to top</a></p>
 
 ---
 
-## 🔧 Troubleshooting
+## Author
 
-### Issue: "Cannot GET /api/projects"
-**Cause**: Backend not running or wrong API URL
-**Solution**: 
-- Ensure `node server.js` is running
-- Check `src/config.js` API URL is correct
+**Sprucetrap** ([@Jevoel16](https://github.com/Jevoel16)), for CCC181 Lab Activity Final (Orbilla team).
 
-### Issue: "ECONNREFUSED" error
-**Cause**: Backend server not running
-**Solution**: 
-- Start backend: `cd "Orbilla - Lab Activity 7"; node server.js`
-
-### Issue: "Database connection error"
-**Cause**: Wrong MongoDB URI
-**Solution**:
-- Verify `.env` DATABASE_URL is correct
-- Check MongoDB Atlas IP whitelist includes your IP
-
-### Issue: Port already in use
-**Cause**: Another process using port 3000 or 5000
-**Solution**:
-```powershell
-# Kill process using port 5000
-netstat -ano | findstr :5000
-taskkill /PID <PID> /F
-```
-
----
-
-## 📚 Documentation
-
-| Document | Purpose |
-|----------|---------|
-| [README.md](README.md) | This file - Quick start guide |
-| [DEPLOYMENT_GUIDE.md](DEPLOYMENT_GUIDE.md) | Step-by-step deployment instructions |
-| [COMPLETION_CHECKLIST.md](COMPLETION_CHECKLIST.md) | Requirements completion tracking |
-| [REQUIREMENTS_VERIFICATION.md](REQUIREMENTS_VERIFICATION.md) | Detailed verification with code references |
-
----
-
-## 👨‍💻 Author
-
-**Orbilla**  
-CCC181 - Lab Activity Final  
-Full Stack Integration: Complete CRUD and Deployment
-
----
-
-## 📄 License
-
-Educational Project - CCC181 Course
-
----
-
-**Last Updated**: December 12, 2025  
-**Status**: ✅ Complete & Ready for Deployment
-
-### Analyzing the Bundle Size
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
-
-### Making a Progressive Web App
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
-
-### Advanced Configuration
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
-
-### Deployment
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
-
-### `npm run build` fails to minify
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+<p align="right"><a href="#readme-top">back to top</a></p>
