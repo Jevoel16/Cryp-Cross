@@ -13,8 +13,8 @@
     "mongoose",
     "crud"
   ],
-  "author": "",
-  "license": "ISC",
+  "author": "Sprucetrap (https://github.com/Jevoel16)",
+  "license": "SEE LICENSE IN ../LICENSE",
   "dependencies": {
     "cors": "^2.8.5",
     "dotenv": "^16.6.1",
