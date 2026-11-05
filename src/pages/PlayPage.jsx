@@ -12,6 +12,7 @@ import { formatDuration } from '../lib/format';
 const SAVE_DELAY_MS = 1000;
 const NO_STATUS = {};
 const storageKey = (date) => `cc:grid:${date}`;
+const guestKey = (date) => `cc:guest:${date}`;
 
 // Per-browser draft of the grid, so a refresh doesn't lose typed letters.
 function readDraft(date) {
@@ -27,6 +28,24 @@ function writeDraft(date, rows) {
         localStorage.setItem(storageKey(date), JSON.stringify(rows));
     } catch {
         // Storage blocked: the draft just won't survive a refresh.
+    }
+}
+
+// Guest solves are timed in this browser only; they never reach the server.
+function readGuestClock(date) {
+    try {
+        const saved = JSON.parse(localStorage.getItem(guestKey(date)));
+        return saved && Number.isFinite(saved.startedAt) ? saved : null;
+    } catch {
+        return null;
+    }
+}
+
+function writeGuestClock(date, clock) {
+    try {
+        localStorage.setItem(guestKey(date), JSON.stringify(clock));
+    } catch {
+        // Storage blocked: the guest timer restarts on refresh.
     }
 }
 
@@ -47,14 +66,36 @@ function Timer({ startedAt, timeMs }) {
     );
 }
 
-// The board itself. `progress` is the server attempt for verified players, else null.
+// The board itself. Players (verified accounts) have a server attempt in `progress` and
+// rank on the leaderboard; guests get the same Check and Submit, graded but never stored.
 function PuzzlePlayer({ puzzle, progress, initialRows }) {
+    const isGuest = !progress;
     const board = useMemo(() => buildBoard(puzzle), [puzzle]);
-    const crossword = useCrossword(puzzle, rowsToLetters(board, initialRows));
-    const { letters } = crossword;
-    const [result, setResult] = useState(() =>
-        progress?.solvedAt ? { solved: true, timeMs: progress.timeMs } : null
-    );
+    const grid = useCrossword(puzzle, rowsToLetters(board, initialRows));
+    const { letters } = grid;
+    const [guestClock, setGuestClock] = useState(() => (isGuest ? readGuestClock(puzzle.date) : null));
+    // A guest's clock starts with the first letter typed.
+    const { handleKey } = grid;
+    const crossword = useMemo(() => {
+        if (!isGuest || guestClock) return grid;
+        return {
+            ...grid,
+            handleKey: (key, options) => {
+                const handled = handleKey(key, options);
+                if (handled && /^[a-zA-Z]$/.test(key) && !options?.locked) {
+                    const clock = { startedAt: Date.now() };
+                    writeGuestClock(puzzle.date, clock);
+                    setGuestClock(clock);
+                }
+                return handled;
+            },
+        };
+    }, [grid, handleKey, isGuest, guestClock, puzzle.date]);
+    const [result, setResult] = useState(() => {
+        if (progress?.solvedAt) return { solved: true, timeMs: progress.timeMs };
+        if (guestClock && 'timeMs' in guestClock) return { solved: true, timeMs: guestClock.timeMs, guest: true };
+        return null;
+    });
     // Check results belong to the grid they were made for; any edit hides them.
     const [checked, setChecked] = useState({ rowsKey: null, status: {} });
     const [busy, setBusy] = useState(false);
@@ -76,6 +117,8 @@ function PuzzlePlayer({ puzzle, progress, initialRows }) {
         }, SAVE_DELAY_MS);
         return () => clearTimeout(id);
     }, [rowsKey, puzzle.date, progress, solved]);
+
+    const startedAt = isGuest ? guestClock?.startedAt : progress.startedAt;
 
     const clueStatus = checked.rowsKey === rowsKey ? checked.status : NO_STATUS;
 
@@ -106,7 +149,7 @@ function PuzzlePlayer({ puzzle, progress, initialRows }) {
     };
 
     const onCheck = async () => {
-        const data = await run('/puzzles/today/check');
+        const data = await run(isGuest ? '/puzzles/today/guest-check' : '/puzzles/today/check');
         if (!data) return;
         setChecked({ rowsKey, status: Object.fromEntries(data.entries.map((s, i) => [i, s])) });
         const wrong = data.entries.filter((s) => s === 'wrong').length;
@@ -118,6 +161,7 @@ function PuzzlePlayer({ puzzle, progress, initialRows }) {
     };
 
     const onSubmit = async () => {
+        if (isGuest) return onGuestSubmit();
         const data = await run('/puzzles/today/submit');
         if (!data) return;
         if (data.solved) {
@@ -131,33 +175,62 @@ function PuzzlePlayer({ puzzle, progress, initialRows }) {
         }
     };
 
+    const onGuestSubmit = async () => {
+        const data = await run('/puzzles/today/guest-check');
+        if (!data) return;
+        if (!data.solved) {
+            const wrong = data.entries.filter((s) => s === 'wrong').length;
+            const incomplete = data.entries.filter((s) => s === 'incomplete').length;
+            setMessage({
+                type: 'error',
+                text: `Not quite: ${wrong} wrong and ${incomplete} unfinished. Use Check to find them.`,
+            });
+            return;
+        }
+        // A draft restored from before the clock existed has no start time, so no time to show.
+        const start = guestClock?.startedAt;
+        const clock = { startedAt: start ?? Date.now(), timeMs: start ? Math.max(0, Date.now() - start) : null };
+        writeGuestClock(puzzle.date, clock);
+        setGuestClock(clock);
+        setResult({ solved: true, timeMs: clock.timeMs, guest: true });
+    };
+
     return (
         <PuzzleBoard puzzle={puzzle} crossword={crossword} marks={marks} clueStatus={clueStatus} locked={solved}>
-            {progress && (
-                <div className="play-actions">
-                    <Timer startedAt={progress.startedAt} timeMs={result?.timeMs ?? null} />
-                    {!solved && (
-                        <>
-                            <button type="button" className="primary-btn" onClick={onCheck} disabled={busy}>
-                                Check
-                            </button>
-                            <button
-                                type="button"
-                                className="submit-btn"
-                                onClick={onSubmit}
-                                disabled={busy || !isFilled(board, letters)}
-                                title={isFilled(board, letters) ? undefined : 'Fill every cell first'}
-                            >
-                                Submit
-                            </button>
-                        </>
-                    )}
-                </div>
-            )}
-            {solved && (
+            <div className="play-actions">
+                <span className={`mode-badge ${isGuest ? 'guest' : 'ranked'}`}>{isGuest ? 'Guest · unranked' : 'Ranked'}</span>
+                {startedAt && !(solved && result.timeMs === null) && (
+                    <Timer startedAt={startedAt} timeMs={result?.timeMs ?? null} />
+                )}
+                {!startedAt && !solved && <span className="timer idle">⏱ starts when you type</span>}
+                {!solved && (
+                    <>
+                        <button type="button" className="primary-btn" onClick={onCheck} disabled={busy}>
+                            Check
+                        </button>
+                        <button
+                            type="button"
+                            className="submit-btn"
+                            onClick={onSubmit}
+                            disabled={busy || !isFilled(board, letters)}
+                            title={isFilled(board, letters) ? undefined : 'Fill every cell first'}
+                        >
+                            Submit
+                        </button>
+                    </>
+                )}
+            </div>
+            {solved && !result.guest && (
                 <p className="form-message success" role="status">
                     Solved in {formatDuration(result.timeMs)}
                     {result.rank ? ` · #${result.rank} today` : ''}. <Link to="/leaderboard">See the leaderboard</Link>.
+                </p>
+            )}
+            {solved && result.guest && (
+                <p className="form-message success" role="status">
+                    {result.timeMs === null ? 'Solved' : `Solved in ${formatDuration(result.timeMs)}`} · not ranked.{' '}
+                    <Link to="/signup">Sign up</Link> or <Link to="/login" state={{ from: '/play' }}>log in</Link> to join
+                    the leaderboard tomorrow.
                 </p>
             )}
             {message && (
@@ -195,10 +268,11 @@ function TodayPuzzle({ puzzle }) {
             )}
             {!user && (
                 <p className="play-hint">
+                    You&apos;re playing as a guest: Check and Submit work, but your time isn&apos;t ranked.{' '}
                     <Link to="/login" state={{ from: '/play' }}>
                         Log in
                     </Link>{' '}
-                    or <Link to="/signup">sign up</Link> to save progress, check answers, submit a timed solve and join the{' '}
+                    or <Link to="/signup">sign up</Link> to save progress across devices and join the{' '}
                     <Link to="/leaderboard">leaderboard</Link>.
                 </p>
             )}

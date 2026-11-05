@@ -25,7 +25,7 @@
     <img src="https://img.shields.io/badge/node-22-blue?style=flat" alt="Node 22" />
   </p>
   <p>
-    <img src="https://img.shields.io/badge/version-0.8.2-green?style=flat" alt="Version 0.8.2" />
+    <img src="https://img.shields.io/badge/version-0.9.0-green?style=flat" alt="Version 0.9.0" />
     <a href="LICENSE"><img src="https://img.shields.io/badge/license-Sprucetrap%20Source--Available-orange?style=flat" alt="License: Sprucetrap Source-Available" /></a>
     <img src="https://img.shields.io/badge/platform-web-lightgrey?style=flat" alt="Platform: web" />
     <a href="https://github.com/Jevoel16/Cryp-Cross/actions/workflows/ci.yml"><img src="https://github.com/Jevoel16/Cryp-Cross/actions/workflows/ci.yml/badge.svg" alt="CI status" /></a>
@@ -55,7 +55,7 @@
 
 ## About
 
-Cryp-Cross is a free daily crossword where every clue is encrypted. Each day the server generates one grid for everyone and hides its clues behind a classical cipher (Caesar, Atbash or Vigenère). Players crack the cipher with a built-in decoder, fill the grid and, with a free account, check answers, submit timed solves and climb the leaderboard. It is a MERN app (MongoDB, Express, React, Node.js).
+Cryp-Cross is a free daily crossword where every clue is encrypted. Each day the server generates one grid for everyone and hides its clues behind a classical cipher (Caesar, Atbash or Vigenère). Players crack the cipher with a built-in decoder, fill the grid, and check and submit their answers. Guests play unranked; with a free account, solves are timed by the server and climb the leaderboard. It is a MERN app (MongoDB, Express, React, Node.js).
 
 <p align="right"><a href="#readme-top">back to top</a></p>
 
@@ -67,6 +67,7 @@ Cryp-Cross is a free daily crossword where every clue is encrypted. Each day the
 - **Play page** (`/play`): today's grid with keyboard and touch input (letters, Backspace, arrows, Space to switch direction, Tab/Enter for the next clue), across/down clue lists, and the current clue above the grid
 - **Decoder workbench** for the day's cipher: a Caesar shift slider with an "all 25 shifts" view, Atbash, and Vigenère with a keyword box and the plain key clue
 - Unsaved letters are kept per browser, so a refresh doesn't lose them
+- **Guest play**: without an account (or before verifying), **Check** and **Submit** still work and a timer runs in the browser, but the solve is unranked: nothing is stored on the server
 - **For verified players**: progress saved to the server as you type, a running timer, **Check** (marks each clue right, wrong or unfinished without revealing answers) and **Submit** (one timed solve per day, then the grid locks)
 - **Leaderboard** (`/leaderboard`): today's fastest solves, or any past day with `?date=YYYY-MM-DD`
 - **Archive** (`/puzzles`, `/puzzles/:date`): past days with the solution, decoded clues and the cipher key
@@ -83,6 +84,7 @@ Cryp-Cross is a free daily crossword where every clue is encrypted. Each day the
 - **Daily cipher crossword generator**: each day (in `PUZZLE_TZ`) a crossword of 8–12 words is built from `server/data/words.txt`, deterministically from the date, and stored in MongoDB so it never changes afterwards
 - **Encrypted clues**: the day's cipher is Caesar (hidden shift), Atbash, or Vigenère (the key is the answer to an extra plain-text key clue)
 - Puzzle API: today's puzzle without answers or keys, plus an archive of past played days with answers revealed
+- **Guest check** (`POST /api/puzzles/today/guest-check`): grades a grid per clue for anyone, stores nothing and never touches the leaderboard
 - **Attempts**: per-player progress, server-side answer checking, timed submissions (the timer starts only when a verified player opens the day with `GET /progress`; saving, checking and submitting require that, solves faster than `MIN_SOLVE_SECONDS` are refused, and the puzzle seed includes `PUZZLE_SECRET` so answers can't be computed in advance), a leaderboard that exposes only usernames and times, and streak stats
 - **Accounts**: email + username + password (bcrypt, cost 12), email verification and password reset with single-use, expiring links (only SHA-256 hashes stored), and sessions in MongoDB behind an `httpOnly`, `SameSite=Lax` cookie (`Secure` in production). A password reset signs out every other session.
 - Brute-force and abuse protection: 10 login/signup/reset attempts per 15 minutes per IP, constant-time login answers, and no account enumeration on signup or forgot-password
@@ -212,7 +214,8 @@ This starts the API on an in-memory database (nothing to install or configure, d
 1. Open **Play** (`/play`). The title shows today's date; the decoder names today's cipher.
 2. Click a cell (click it again or press Space to switch across/down) and pick a clue from the lists. The decoder shows the selected clue.
 3. Decode it: move the Caesar slider until the clue reads as English, read the Atbash output, or (Vigenère) solve the plain key clue and type that keyword.
-4. Type the answer. Tab or Enter jumps to the next clue. Your letters stay after a refresh.
+4. Type the answer. Tab or Enter jumps to the next clue. Your letters stay after a refresh, and the guest timer starts with your first letter.
+5. **Check** marks each clue green or red; **Submit** (once every cell is filled) shows "Solved in 4:12 · not ranked". Guest solves never appear on the leaderboard.
 
 ### Player flow (account)
 
@@ -248,6 +251,7 @@ Base URL: `http://localhost:5000` in development (the Vite dev server proxies `/
 | `GET` | `/api/puzzles/today/progress` | Verified player: your saved `grid`, `startedAt`, `solvedAt`, `timeMs` (starts the timer on first call) |
 | `PUT` | `/api/puzzles/today/progress` | `{ date, grid }`: save letters (`409` until you have opened the puzzle with `GET`). `grid` is rows like the layout: `#` blocks, `A-Z` or space in open cells |
 | `POST` | `/api/puzzles/today/check` | `{ date, grid }` → `entries`: `right` / `wrong` / `incomplete` per clue |
+| `POST` | `/api/puzzles/today/guest-check` | Anyone: `{ date, grid }` → `{ entries, solved }`. Graded like `check`, but nothing is stored and nothing is ranked |
 | `POST` | `/api/puzzles/today/submit` | `{ date, grid }` → `{ solved: true, timeMs, rank }` or `{ solved: false, wrong, incomplete }`; `409` if not opened yet or already solved; `400` if sooner than `MIN_SOLVE_SECONDS` after opening |
 | `GET` | `/api/leaderboard?date=` | Top 50 solves for a day (default today): `rank`, `username`, `timeMs` |
 | `GET` | `/api/me/stats` | Signed in: `solves`, `currentStreak`, `bestStreak`, `bestTimeMs`, last 30 solves |
@@ -400,6 +404,7 @@ npm audit --audit-level=high --prefix server
 - [ ] The decoder turns the selected clue into English with the right Caesar shift, Atbash, or the Vigenère keyword
 - [ ] On a phone-width window the grid fits without sideways scrolling
 - [ ] Sign up, open the verification link from the API terminal, and the banner disappears
+- [ ] As a guest, Check marks a wrong clue red, Submit on a full correct grid shows "not ranked", and the leaderboard is unchanged
 - [ ] As a verified player, letters survive a refresh on another browser, Check marks a wrong clue red, and Submit records a time that appears on the leaderboard and Account page
 - [ ] After solving, the grid is locked and Submit is gone
 - [ ] Log out, forgot password and reset password work, and the old session is signed out after a reset

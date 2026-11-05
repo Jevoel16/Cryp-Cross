@@ -61,7 +61,7 @@ describe('playing the daily puzzle', () => {
   const blank = () => puzzle.solution.map((row) => row.replace(/[A-Z]/g, ' '));
   const body = (grid) => ({ date: puzzle.date, grid });
 
-  test('guests and unverified players cannot save, check or submit', async () => {
+  test('guests and unverified players cannot use the ranked routes', async () => {
     const guest = createClient(api.base);
     assert.equal((await guest.get('/api/puzzles/today/progress')).status, 401);
     assert.equal((await guest.post('/api/puzzles/today/submit', body(puzzle.solution))).status, 401);
@@ -69,6 +69,48 @@ describe('playing the daily puzzle', () => {
     const unverified = await player('newbie', { verify: false });
     assert.equal((await unverified.get('/api/puzzles/today/progress')).status, 403);
     assert.equal((await unverified.post('/api/puzzles/today/check', body(blank()))).status, 403);
+  });
+
+  test('guest-check grades the grid but stores nothing and never ranks', async () => {
+    const guest = createClient(api.base);
+    const partial = await guest.post('/api/puzzles/today/guest-check', body(blank()));
+    assert.equal(partial.status, 200);
+    assert.equal(partial.body.data.solved, false);
+    assert.equal(partial.body.data.entries.length, puzzle.entries.length);
+    assert.ok(partial.body.data.entries.every((s) => s === 'incomplete'));
+    assert.ok(!JSON.stringify(partial.body).includes(puzzle.entries[0].answer), 'no answers leak');
+
+    const wrong = puzzle.solution.map((row) => row.replace(/[A-Z]/g, 'Q'));
+    assert.ok((await guest.post('/api/puzzles/today/guest-check', body(wrong))).body.data.entries.includes('wrong'));
+
+    const solved = await guest.post('/api/puzzles/today/guest-check', body(puzzle.solution));
+    assert.equal(solved.body.data.solved, true);
+
+    // Unverified accounts play the same unranked way.
+    const unverified = await player('newbie', { verify: false });
+    assert.equal((await unverified.post('/api/puzzles/today/guest-check', body(puzzle.solution))).body.data.solved, true);
+
+    assert.equal(await Attempt.countDocuments(), 0);
+    assert.equal((await guest.get('/api/leaderboard')).body.data.solvers, 0);
+  });
+
+  test('guest-check validates the grid and keeps the write protections', async () => {
+    const guest = createClient(api.base);
+    for (const bad of [
+      { date: previousDayKey(puzzle.date), grid: blank() },
+      { date: puzzle.date, grid: blank().slice(1) },
+      { date: puzzle.date, grid: 'nope' },
+    ]) {
+      assert.equal((await guest.post('/api/puzzles/today/guest-check', bad)).status, 400);
+    }
+    const foreign = createClient(api.base, { origin: 'https://evil.example' });
+    assert.equal((await foreign.post('/api/puzzles/today/guest-check', body(blank()))).status, 403);
+    const form = await fetch(`${api.base}/api/puzzles/today/guest-check`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain' },
+      body: JSON.stringify(body(blank())),
+    });
+    assert.equal(form.status, 415);
   });
 
   test('saving, checking or submitting before opening the puzzle is refused', async () => {

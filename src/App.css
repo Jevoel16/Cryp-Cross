@@ -824,6 +824,23 @@ body.dark-mode .submit-btn {
     min-width: 5.5em;
 }
 
+.timer.idle {
+    font-weight: 400;
+    opacity: 0.7;
+}
+
+.mode-badge {
+    padding: 2px 10px;
+    border-radius: 999px;
+    border: 1px solid var(--card-border);
+    font-size: 0.85em;
+    font-weight: 600;
+}
+
+.mode-badge.ranked {
+    border-color: var(--accent);
+}
+
 .archive-link {
     margin-top: 24px;
 }

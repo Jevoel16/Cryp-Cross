@@ -118,6 +118,20 @@ router.post('/puzzles/today/check', player, async (req, res, next) => {
   }
 });
 
+// Guests (and unverified accounts) can check and finish today's puzzle, but nothing is
+// stored and nothing reaches the leaderboard: only server-timed, verified solves rank.
+router.post('/puzzles/today/guest-check', async (req, res, next) => {
+  try {
+    const puzzle = await getTodayPuzzle();
+    const problem = validateGrid(req.body, puzzle);
+    if (problem) return badRequest(res, problem);
+    const entries = entryStatus(puzzle, req.body.grid);
+    res.json({ success: true, data: { entries, solved: entries.every((s) => s === 'right') } });
+  } catch (error) {
+    next(error);
+  }
+});
+
 router.post('/puzzles/today/submit', player, async (req, res, next) => {
   try {
     const puzzle = await getTodayPuzzle();
