@@ -26,7 +26,7 @@
     <img src="https://img.shields.io/badge/node-22-blue?style=flat" alt="Node 22" />
   </p>
   <p>
-    <img src="https://img.shields.io/badge/version-2.0.6-green?style=flat" alt="Version 2.0.6" />
+    <img src="https://img.shields.io/badge/version-2.0.7-green?style=flat" alt="Version 2.0.7" />
     <a href="LICENSE"><img src="https://img.shields.io/badge/license-Sprucetrap%20Source--Available-orange?style=flat" alt="License: Sprucetrap Source-Available" /></a>
     <img src="https://img.shields.io/badge/platform-web-lightgrey?style=flat" alt="Platform: web" />
     <img src="https://img.shields.io/badge/hosting-Vercel-lightgrey?style=flat" alt="Hosting: Vercel" />
@@ -45,10 +45,9 @@
 - [Installation](#installation)
 - [Configuration and Environment Variables](#configuration-and-environment-variables)
 - [Usage](#usage)
+- [Documentation](#documentation)
 - [Project Structure](#project-structure)
 - [Scripts](#scripts)
-- [Testing](#testing)
-- [Troubleshooting](#troubleshooting)
 - [Contributing](#contributing)
 - [License](#license)
 - [Author](#author)
@@ -363,11 +362,68 @@ Since v2.0.1 the API accepts writes from its own origin even if `CORS_ORIGINS` d
 
 ---
 
+## Documentation
+
+Screenshots from the running app (dark theme, 1280px wide).
+
+**Home page**
+
+<img src="docs/images/home.png" alt="Home" width="800" />
+
+<sub>Home page: what Cryp-Cross is and how a day goes.</sub>
+
+**Play**
+
+<img src="docs/images/play.png" alt="Play page as a guest" width="800" />
+
+<sub>Play: today's grid, the selected clue and the decoder (here Atbash) turning it into English.</sub>
+
+**How it works**
+
+<img src="docs/images/how-it-works.png" alt="How it works page" width="800" />
+
+<sub>How it works: the three ciphers and the features.</sub>
+
+**Leaderboard**
+
+<img src="docs/images/leaderboard.png" alt="Leaderboard page" width="800" />
+
+<sub>Leaderboard: ranked, server-timed solves for today's puzzle (empty on a fresh database).</sub>
+
+**Past puzzles**
+
+<img src="docs/images/past-puzzles.png" alt="Past puzzles page" width="800" />
+
+<sub>Past puzzles: earlier days and their leaderboards.</sub>
+
+**Log in**
+
+<img src="docs/images/login.png" alt="Log in page" width="800" />
+
+<sub>Log in: Continue with GitHub or Google, or username + password once one is set.</sub>
+
+**Team**
+
+<img src="docs/images/team.png" alt="Team page" width="800" />
+
+<sub>Team: the people behind the project.</sub>
+
+The **Account** page is not shown because it needs a real GitHub/Google sign-in.
+
+More docs:
+
+- [Troubleshooting](docs/troubleshooting.md): common errors when running or deploying, with their cause and fix
+
+<p align="right"><a href="#readme-top">back to top</a></p>
+
+---
+
 ## Project Structure
 
 ```
 Cryp-Cross/
 ├── .github/workflows/ci.yml   # GitHub Actions CI
+├── docs/                      # README screenshots (images/) and troubleshooting guide
 ├── api/index.js               # Vercel serverless entry: connects to MongoDB once per instance, runs the Express app
 ├── index.html                 # Vite HTML entry (meta tags, JSON-LD)
 ├── public/                    # Static files copied as-is: manifest, icons, robots.txt, llms.txt
@@ -439,98 +495,20 @@ Cryp-Cross/
 
 ---
 
-## Testing
-
-The backend has automated tests in `server/test/` (Node's built-in `node:test`). They cover the ciphers, a year of generated puzzles (every answer spelled, no unclued letters, correct numbering), progress/check/submit, the leaderboard and streaks, the account flows (username login, setting and changing a password, the 10-minute OAuth recovery window, session invalidation, no stored email, CSRF and rate limits), GitHub/Google sign-in against a fake OAuth provider (state and PKCE, no email scope, account creation, connect/disconnect, unsafe redirects, username changes), the MongoDB rate-limit store, guest checks and the puzzle API against an in-memory MongoDB (`mongodb-memory-server`, downloaded on first install), error handling, CORS and security headers. The frontend has Vitest tests (`src/**/*.test.js`) for the cipher decoders, board navigation the keyboard reducer (fast typing, Backspace, direction toggles, Tab) and time formatting. Every push and pull request to `main` runs [CI](.github/workflows/ci.yml): frontend install, lint, build, Vitest and `npm audit --audit-level=high`, then backend install, syntax check, tests (with an in-memory MongoDB whose binary is cached between runs) and `npm audit --audit-level=high`.
-
-Run the same checks locally:
-
-```bash
-npm run lint
-```
-
-```bash
-npm run build
-```
-
-```bash
-npm test
-```
-
-```bash
-npm audit --audit-level=high
-```
-
-```bash
-npm test --prefix server
-```
-
-```bash
-npm audit --audit-level=high --prefix server
-```
-
-**Manual checks**
-- [ ] The API starts and logs `Database Connected`
-- [ ] The frontend loads on port 3000; Home, Play, Idea, Team and an unknown URL (404) render
-- [ ] On **Play**, typing fills cells and moves along the clue, Space/second click switches direction, Tab moves to the next clue, and letters survive a refresh
-- [ ] The decoder turns the selected clue into English with the right Caesar shift, Atbash, or the Vigenère keyword
-- [ ] On a phone-width window the grid fits without sideways scrolling
-- [ ] As a guest, Check marks a wrong clue red, Submit on a full correct grid shows "not ranked", and the leaderboard is unchanged
-- [ ] With `GITHUB_CLIENT_ID`/`SECRET` set, **Continue with GitHub** creates an account (GitHub's consent screen asks for no email), and returns to the page you came from; without them the button is hidden
-- [ ] On **Account**, change the username, connect a second provider and disconnect one; disconnecting the only sign-in method is refused
-- [ ] As a signed-in player, letters survive a refresh on another browser, Check marks a wrong clue red, and Submit records a time that appears on the leaderboard and Account page
-- [ ] After solving, the grid is locked and Submit is gone
-- [ ] On **Account**, add a password right after a GitHub sign-in, log out, and log in with username + password; changing it later asks for the current one and signs out other browsers
-- [ ] Each page has its own browser-tab title
-- [ ] With `SITE_URL` set, `build/sitemap.xml` lists the six public pages and `build/robots.txt` links to it
-- [ ] `npm run serve` responses include `Content-Security-Policy` and `Strict-Transport-Security` headers
-- [ ] After a Vercel deploy: `curl -I <site>/play` shows the CSP and HSTS headers, `<site>/api/puzzles/today` returns JSON, and GitHub/Google sign-in, adding a password, username login and ranked submit work on the live site
-- [ ] The theme toggle switches between dark and light and persists after a refresh; with no saved choice the site follows the system theme
-- [ ] At 375px wide the header collapses into a menu button, and Home, Play and Account have no sideways scrolling
-- [ ] With "reduce motion" turned on in the OS, the tagline, logo and cursor do not animate
-
-<p align="right"><a href="#readme-top">back to top</a></p>
-
----
-
-## Troubleshooting
-
-| Problem | Cause | Fix |
-|---------|-------|-----|
-| `ECONNREFUSED` on `/api` requests | API not running, or the wrong API URL | Start it with `npm start --prefix server`; check `VITE_API_URL` / `src/config.js` |
-| API URL or site URL from `.env` is ignored | Variables still use the old Create React App `REACT_APP_` prefix | Rename them to `VITE_API_URL` / `VITE_SITE_URL` (v0.3.0+) and restart or rebuild |
-| `Database connection error` | Wrong `DATABASE_URL` or IP not allowed | Check `server/.env`; add your IP to the MongoDB Atlas access list |
-| `DATABASE_URL is not set` on startup | Missing `server/.env` | Copy `server/.env.example` to `server/.env` and fill it in |
-| Browser shows a CORS error | Frontend origin isn't in `CORS_ORIGINS` | Add the exact origin (scheme + host + port) to `CORS_ORIGINS` and restart the API |
-| `403 Origin not allowed` when logging in or saving | The site's origin isn't in `CORS_ORIGINS` | Add the exact origin (e.g. `http://localhost:3001` if Vite picked another port) and restart the API |
-| Logged out after every API restart in development | No `SESSION_SECRET` set, so a random one is used per start | Set `SESSION_SECRET` in `server/.env` |
-| Logged out right after a password change | By design: a change signs out all other sessions | Log in with the new password |
-| "Current password is wrong" and you forgot it | Changing a password needs proof | On **Account**, *Sign in again with GitHub/Google*, then set a new password within 10 minutes |
-| GitHub and Google created two accounts | Accounts are matched by provider ID, not email | Sign in to the one you keep, then **Connect** the other provider on **Account** (only works if that provider isn't already on another account) |
-| "That solve was too fast to record" | Submitted sooner than `MIN_SOLVE_SECONDS` after opening the puzzle | Wait a few seconds and submit again |
-| My solve isn't on the leaderboard | Guests play unranked | Sign in with GitHub or Google before you start the puzzle |
-| No GitHub/Google buttons (nobody can create an account) | The provider's client ID or secret isn't set on the API | Set both in `server/.env` (or Vercel) and restart or redeploy |
-| GitHub/Google shows "redirect_uri mismatch" | The callback URL registered with the provider differs from `<API_URL or APP_URL>/api/auth/oauth/<provider>/callback` | Register exactly that URL (scheme, host, port and path) |
-| "That sign-in link expired or was opened in another browser" | The sign-in took more than 10 minutes, cookies are blocked, or (before v2.0.4) the site was opened on a different domain than `APP_URL`, so the OAuth callback landed on a host without your session cookie | Try again in the same browser with cookies allowed. Since v2.0.4 a sign-in started on another domain first moves to the callback host; still set `APP_URL`, `CORS_ORIGINS` and `VITE_SITE_URL` to the domain you want people on and redeploy |
-| "Too many sign-in attempts from your network" (or raw `Too many attempts` JSON before v2.0.5) | More than `OAUTH_RATE_LIMIT` GitHub/Google sign-in requests from your IP in 15 minutes (each sign-in uses two) | Wait up to 15 minutes, or raise `OAUTH_RATE_LIMIT` in Vercel and redeploy |
-| Server tests hang on first run | `mongodb-memory-server` is downloading MongoDB (~100 MB, once) | Wait for the download; behind a proxy, see the mongodb-memory-server docs |
-| `429 Too many requests` | Rate limit reached | Wait 15 minutes; behind a proxy, set `TRUST_PROXY=1` so users aren't grouped under the proxy IP |
-| No `sitemap.xml` in `build/` | `SITE_URL` / `VITE_SITE_URL` not set | Set it and rebuild |
-| Security headers missing in production | Server started without the config | On Vercel they come from `vercel.json`; self-hosted, use `npm run serve` (passes `-c ../serve.json`) |
-| Vercel: `/api/...` returns `503 Service unavailable` | The function couldn't start: a required variable is missing or Atlas refused the connection | Check the function logs in Vercel, set the missing variables, and allow `0.0.0.0/0` in Atlas Network Access |
-| Vercel: `403 Origin not allowed` on login or guest Check/Submit | Before v2.0.2, the API needed `CORS_ORIGINS` to list the exact URL you opened and `TRUST_PROXY=1` to see https | Update to v2.0.2+, or set both and redeploy |
-| Custom domain: sitemap/canonical still show `vercel.app`, or sign-in lands on `vercel.app` | `VITE_SITE_URL` / `APP_URL` still point at the old domain | Follow *Custom domain* under Deploy to Vercel and redeploy |
-| Port already in use | Another process on 3000/5000 | Windows: `netstat -ano \| findstr :5000`, then `taskkill /PID <PID> /F` |
-
-<p align="right"><a href="#readme-top">back to top</a></p>
-
----
-
 ## Contributing
 
 - **Branches:** `feat/short-description`, `fix/short-description`, `docs/...`, `chore/...`
 - **Commits:** [Conventional Commits](https://www.conventionalcommits.org/) with the bumped SemVer version at the end of the subject, e.g. `feat: add CSV export (v2.1.0)`. Breaking change → major; `feat` → minor; everything else → patch. Bump `package.json` and the version badge in the same commit.
-- Make sure CI checks pass locally before committing.
+- **Before committing**, run the same checks as [CI](.github/workflows/ci.yml) (frontend lint, build, Vitest and audit, then backend syntax check, tests and audit):
+
+  ```bash
+  npm run lint && npm run build && npm test && npm audit --audit-level=high
+  ```
+
+  ```bash
+  npm test --prefix server && npm audit --audit-level=high --prefix server
+  ```
+- Retake the matching screenshot in `docs/images/` when a screen changes.
 - **Update this README with every change.**
 
 <details>
