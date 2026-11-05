@@ -72,6 +72,18 @@ function createOAuthRouter({ authLimiter, startSession }) {
   router.get('/oauth/:provider', authLimiter, async (req, res, next) => {
     const { provider } = req.params;
     if (!oauth.isEnabled(provider)) return res.status(404).json({ success: false, message: 'Not found' });
+
+    // The provider returns to the callback's host, and the session cookie holding `state` only
+    // exists on the host where sign-in started. When the site is also served on another domain
+    // (e.g. *.vercel.app beside a custom domain), start over on the callback's host first.
+    // The target comes from env vars only, so this is not an open redirect.
+    if (process.env.NODE_ENV === 'production') {
+      const target = new URL(oauth.callbackUrl(provider)).origin;
+      if (`${req.protocol}://${req.get('host')}` !== target) {
+        return res.redirect(302, `${target}${req.originalUrl}`);
+      }
+    }
+
     try {
       const link = req.query.link === '1';
       const linkUser = link ? await loadSessionUser(req) : null;

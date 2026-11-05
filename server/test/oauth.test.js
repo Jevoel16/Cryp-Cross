@@ -108,6 +108,24 @@ describe('sign in with GitHub and Google', () => {
     assert.equal(await User.countDocuments(), 2);
   });
 
+  test('in production, sign-in started on another host moves to the callback host first', async () => {
+    fake.profiles.set('octo', { id: 101, login: 'octo' });
+    const tab = createClient(api.base);
+    const env = process.env.NODE_ENV;
+    process.env.NODE_ENV = 'production';
+    let start;
+    try {
+      start = await tab.get('/api/auth/oauth/github?from=%2Fleaderboard');
+    } finally {
+      process.env.NODE_ENV = env;
+    }
+    assert.equal(start.status, 302);
+    assert.equal(start.headers.get('location'), `${APP_URL}/api/auth/oauth/github?from=%2Fleaderboard`);
+    // No attempt was stored on the wrong host, so a callback there is still refused.
+    const res = await tab.get('/api/auth/oauth/github/callback?code=octo&state=x');
+    assert.equal(res.headers.get('location'), `${APP_URL}/login?oauth=state`);
+  });
+
   test('bad, missing, reused or cross-provider state is refused', async () => {
     fake.profiles.set('octo', { id: 101, login: 'octo' });
     const tab = createClient(api.base);
