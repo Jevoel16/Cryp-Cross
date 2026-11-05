@@ -2,6 +2,7 @@ const express = require('express');
 const cors = require('cors');
 const helmet = require('helmet');
 const { rateLimit } = require('express-rate-limit');
+const puzzleRoutes = require('./routes/puzzles');
 
 // Comma-separated allow-list; dev falls back to the Vite dev server only.
 function allowedOrigins() {
@@ -44,6 +45,8 @@ function createApp() {
   // Stricter cap on writes.
   const writeLimiter = rateLimit({ ...limiterOptions, limit: 60, skip: (req) => req.method === 'GET' });
   app.use('/api', apiLimiter, writeLimiter);
+
+  app.use('/api/puzzles', puzzleRoutes);
 
   app.get('/', (req, res) => {
     res.json({ message: 'Cryp-Cross API' });

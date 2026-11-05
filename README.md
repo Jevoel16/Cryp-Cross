@@ -20,7 +20,7 @@
     <img src="https://img.shields.io/badge/node-22-blue?style=flat" alt="Node 22" />
   </p>
   <p>
-    <img src="https://img.shields.io/badge/version-0.4.0-green?style=flat" alt="Version 0.4.0" />
+    <img src="https://img.shields.io/badge/version-0.5.0-green?style=flat" alt="Version 0.5.0" />
     <a href="LICENSE"><img src="https://img.shields.io/badge/license-Sprucetrap%20Source--Available-orange?style=flat" alt="License: Sprucetrap Source-Available" /></a>
     <img src="https://img.shields.io/badge/platform-web-lightgrey?style=flat" alt="Platform: web" />
     <a href="https://github.com/Jevoel16/Cryp-Cross/actions/workflows/ci.yml"><img src="https://github.com/Jevoel16/Cryp-Cross/actions/workflows/ci.yml/badge.svg" alt="CI status" /></a>
@@ -67,7 +67,10 @@ Cryp-Cross is a concept for a crossword platform that rewards players with block
 - Production security headers via `serve.json` (CSP, HSTS, `nosniff`, frame blocking) and long-term caching for hashed static files
 
 **Backend (Express)**
-- Express API foundation for the upcoming puzzle and account endpoints, with a 10 KB JSON body limit
+- **Daily cipher crossword generator**: each day (in `PUZZLE_TZ`) a crossword of 8–12 words is built from `server/data/words.txt`, deterministically from the date, and stored in MongoDB so it never changes afterwards
+- **Encrypted clues**: the day's cipher is Caesar (hidden shift), Atbash, or Vigenère (the key is the answer to an extra plain-text key clue)
+- Puzzle API: today's puzzle without answers or keys, plus an archive of past played days with answers revealed
+- 10 KB JSON body limit
 - Security headers with `helmet`, a CORS allow-list (`CORS_ORIGINS`) and rate limiting (300 requests / 15 min per IP, 60 writes)
 - Generic error responses: no internal messages or stack traces reach clients
 - Environment-based configuration with `dotenv`
@@ -82,7 +85,7 @@ Cryp-Cross is a concept for a crossword platform that rewards players with block
 |-------|-----------|
 | Frontend | React 19, React Router 7, Vite 8 (build and dev server), plain CSS |
 | Frontend tooling | ESLint 10 (flat config, react-hooks plugin), Vitest 5 |
-| Backend | Node.js 22, Express 4, Mongoose 7 (models arrive with the puzzle API), helmet, express-rate-limit, cors, dotenv |
+| Backend | Node.js 22, Express 4, Mongoose 7, helmet, express-rate-limit, cors, dotenv |
 | Database | MongoDB (MongoDB Atlas recommended) |
 | Production frontend server | `serve` with `serve.json` (SPA rewrites) |
 | CI | GitHub Actions |
@@ -132,6 +135,7 @@ npm install --prefix server
 | `DATABASE_URL` | yes | MongoDB connection string |
 | `PORT` | no | Port for the Express API (default `5000`, which the frontend expects in development) |
 | `CORS_ORIGINS` | in production | Comma-separated frontend origins allowed to call the API. Unset: `http://localhost:3000` in development, no browser origins in production. |
+| `PUZZLE_TZ` | no | IANA time zone that decides when the daily puzzle changes (default `UTC`) |
 | `TRUST_PROXY` | no | Set to `1` behind one reverse proxy (Render, Railway) so rate limiting sees real client IPs. Default `0`. |
 | `NODE_ENV` | no | Set to `production` in production |
 
@@ -178,6 +182,33 @@ The Vite dev server runs at `http://localhost:3000` and proxies `/api` requests 
 4. Use the theme toggle in the header to switch between light and dark mode.
 
 <details>
+<summary><strong>API reference</strong></summary>
+
+Base URL: `http://localhost:5000` in development (the Vite dev server proxies `/api`).
+
+| Method | Path | Description |
+|--------|------|-------------|
+| `GET` | `/api/puzzles/today` | Today's puzzle: `layout` (`#` block, `.` open cell), numbered `entries` with encrypted `clue`s, and `cipher` (`type`, plus `keyClue` and `keyLength` for Vigenère). No answers or keys. |
+| `GET` | `/api/puzzles` | Past days that were played (up to 60), newest first |
+| `GET` | `/api/puzzles/:date` | One day (`YYYY-MM-DD`). Past days include `solution`, each entry's `answer` and `plainClue`, and the cipher key. Unplayed or future days return 404. |
+
+Example:
+
+```bash
+curl http://localhost:5000/api/puzzles/today
+```
+
+| Status | Meaning |
+|--------|---------|
+| `400` | Invalid body, JSON or date. `message` explains why. |
+| `404` | Puzzle or route not found |
+| `413` | Body larger than 10 KB |
+| `429` | Rate limit exceeded |
+| `500` | Server error (details only in server logs) |
+
+</details>
+
+<details>
 <summary><strong>Deployment notes</strong></summary>
 
 - **Backend** (e.g. Render or Railway): root directory `server`, start command `npm start`. Set `DATABASE_URL`, `NODE_ENV=production`, `CORS_ORIGINS=<your frontend URL>` and `TRUST_PROXY=1`. The host provides `PORT`.
@@ -211,7 +242,11 @@ Cryp-Cross/
 ├── server/
 │   ├── server.js              # Entry point: connects to MongoDB and starts the API
 │   ├── app.js                 # Express app: security middleware, error handling
-│   ├── test/                  # Backend tests (node:test, no database needed)
+│   ├── data/words.txt         # Word bank: WORD|clue per line
+│   ├── puzzle/                # Generator, ciphers, PRNG, day key, puzzle service
+│   ├── models/                # Mongoose schemas (DailyPuzzle)
+│   ├── routes/                # Express routers (puzzles)
+│   ├── test/                  # Backend tests (node:test + in-memory MongoDB)
 │   └── .env.example           # Backend environment template
 ├── vite.config.js             # Vite: dev port and /api proxy, build/ output, Vitest settings
 ├── eslint.config.js           # ESLint flat config (react-hooks, react-refresh)
@@ -245,7 +280,7 @@ Cryp-Cross/
 |--------|-------------|
 | `npm start` | Start the Express API |
 | `npm run dev` | Start the API and restart on file changes (`node --watch`) |
-| `npm test` | Run the backend tests |
+| `npm test` | Run the backend tests (starts an in-memory MongoDB) |
 
 <p align="right"><a href="#readme-top">back to top</a></p>
 
@@ -253,7 +288,7 @@ Cryp-Cross/
 
 ## Testing
 
-The backend has automated tests in `server/test/` (Node's built-in `node:test`). They cover error handling, CORS and security headers, and need no database. The frontend has no automated tests yet; Vitest is set up for files named `src/**/*.test.{js,jsx}`. Every push and pull request to `main` runs [CI](.github/workflows/ci.yml): frontend install, lint, build, Vitest and `npm audit --audit-level=high`, then backend install, syntax check, tests and `npm audit --audit-level=high`.
+The backend has automated tests in `server/test/` (Node's built-in `node:test`). They cover the ciphers, a year of generated puzzles (every answer spelled, no unclued letters, correct numbering), the puzzle API against an in-memory MongoDB (`mongodb-memory-server`, downloaded on first install), error handling, CORS and security headers. The frontend has no automated tests yet; Vitest is set up for files named `src/**/*.test.{js,jsx}`. Every push and pull request to `main` runs [CI](.github/workflows/ci.yml): frontend install, lint, build, Vitest and `npm audit --audit-level=high`, then backend install, syntax check, tests and `npm audit --audit-level=high`.
 
 Run the same checks locally:
 

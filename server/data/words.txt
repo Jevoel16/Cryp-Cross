@@ -1,0 +1,202 @@
+# One entry per line: WORD|clue. Letters A-Z only, 3-10 letters. Lines starting with # are ignored.
+ACORN|Small nut that can become an oak
+ADOBE|Sun-dried brick
+AGENT|Spy working for a government
+ALARM|Bell that wakes you up
+ALBUM|Collection of songs or photos
+ALIBI|Proof you were somewhere else
+ALIEN|Visitor from another planet
+ANCHOR|Heavy hook that keeps a ship in place
+ANGLE|Corner measured in degrees
+ANKLE|Joint between foot and leg
+APPLE|Fruit that fell on Newton
+APRON|Garment worn while cooking
+ARENA|Stadium for games or concerts
+ARROW|Projectile shot from a bow
+ATLAS|Book of maps
+ATTIC|Room just under the roof
+AUDIT|Careful check of the accounts
+AVOCADO|Green fruit mashed into guacamole
+BADGE|Pin showing rank or membership
+BAGEL|Ring-shaped bread roll
+BAKER|Person who makes bread
+BALLOT|Paper used to cast a vote
+BANANA|Long yellow fruit
+BANJO|Stringed instrument with a round body
+BARREL|Wooden cask for wine or oil
+BASIN|Bowl for washing
+BEACON|Signal fire or light
+BEETLE|Insect with hard wing cases
+BINARY|Number system of ones and zeros
+BISON|Large shaggy American grazer
+BLANKET|Warm bed covering
+BORDER|Line between two countries
+BOTTLE|Glass container with a narrow neck
+BRIDGE|Structure that crosses a river
+BUCKET|Pail for carrying water
+BUTTON|Small disc that fastens a shirt
+CABIN|Small wooden house in the woods
+CACTUS|Spiny desert plant
+CAMEL|Desert animal with a hump
+CANDLE|Wax stick with a wick
+CANOE|Narrow boat paddled by hand
+CANYON|Deep valley carved by a river
+CARGO|Goods carried by a ship
+CASTLE|Fortified home of a king
+CIPHER|Secret code for scrambling text
+CIRCLE|Round shape with no corners
+CLOCK|Device that tells the time
+CLOUD|White puff in the sky
+COBALT|Deep blue metal
+COCOA|Powder used for hot chocolate
+COMET|Icy body with a glowing tail
+COMPASS|Tool whose needle points north
+CORAL|Reef-building sea creature
+COTTON|Soft fiber from a plant boll
+CRATER|Bowl-shaped hole left by an impact
+CROWN|Jeweled headpiece of a monarch
+CRYSTAL|Clear mineral with flat faces
+CURTAIN|Fabric hung over a window
+DAGGER|Short pointed knife
+DECODE|Turn a secret message back into plain text
+DESERT|Dry sandy region
+DIAMOND|Hardest natural gem
+DOLPHIN|Clever sea mammal that clicks
+DRAGON|Fire-breathing beast of legend
+DRUMMER|Band member who keeps the beat
+EAGLE|Large bird of prey
+ECLIPSE|When the moon blocks the sun
+ELBOW|Joint in the middle of the arm
+EMBER|Glowing piece of coal
+ENIGMA|Puzzle or mystery
+ESCAPE|Break free
+FABLE|Short story with a moral
+FALCON|Fast hunting bird
+FEATHER|Light plume on a bird
+FERRY|Boat that carries people across water
+FIDDLE|Violin, informally
+FOREST|Large area covered in trees
+FOSSIL|Ancient remains preserved in rock
+FROST|Ice crystals on a cold morning
+GALAXY|Huge system of stars
+GARDEN|Plot where flowers grow
+GARLIC|Pungent bulb used in cooking
+GEYSER|Hot spring that erupts
+GHOST|Spirit said to haunt a house
+GIANT|Very large being of folklore
+GINGER|Spicy root used in cooking
+GLACIER|Slow river of ice
+GLOBE|Spherical map of the earth
+GOBLIN|Mischievous creature of folklore
+GRAPE|Small fruit used for wine
+GUITAR|Six-stringed instrument
+HAMMER|Tool for driving nails
+HARBOR|Sheltered place for ships
+HARVEST|Gathering of the crops
+HELMET|Protective hat
+HERMIT|Person who lives alone
+HONEY|Sweet food made by bees
+HORIZON|Line where earth meets sky
+ICEBERG|Floating mass of ice
+IGLOO|Dome house made of snow
+INDIGO|Deep violet-blue
+INSECT|Six-legged creature
+ISLAND|Land surrounded by water
+IVORY|Creamy white color
+JACKET|Short coat
+JAGUAR|Spotted big cat of the Americas
+JIGSAW|Puzzle of interlocking pieces
+JUNGLE|Dense tropical forest
+KAYAK|Covered canoe for one
+KERNEL|Seed inside a nut or grain
+KETTLE|Pot for boiling water
+KEYHOLE|Opening for a lock
+KNIGHT|Armored warrior on horseback
+LADDER|Steps for climbing up a wall
+LANTERN|Portable lamp
+LEMON|Sour yellow citrus
+LEOPARD|Spotted big cat
+LIBRARY|Building full of books to borrow
+LIZARD|Small scaly reptile
+LOCKET|Pendant that holds a photo
+MAGNET|Object that attracts iron
+MANGO|Sweet tropical stone fruit
+MAPLE|Tree whose sap makes syrup
+MARBLE|Polished stone used in statues
+MEADOW|Grassy field
+MIRROR|Glass that shows your reflection
+MONKEY|Tree-climbing primate
+MUSEUM|Building that displays history and art
+NECTAR|Sweet liquid in flowers
+NEEDLE|Thin sewing tool
+NOODLE|Long strip of pasta
+NUTMEG|Spice grated over eggnog
+OASIS|Watering spot in a desert
+OCEAN|Vast body of salt water
+OLIVE|Small fruit pressed for oil
+ORANGE|Citrus fruit and its color
+ORBIT|Path around a planet
+OTTER|Playful river mammal
+OYSTER|Shellfish that can hold a pearl
+PALACE|Grand royal residence
+PANDA|Black and white bamboo eater
+PARROT|Colorful talking bird
+PEARL|Gem formed inside a shellfish
+PEPPER|Spice ground from black corns
+PILOT|Person who flies a plane
+PIRATE|Sea robber
+PLANET|World that circles a star
+POCKET|Small pouch sewn into clothing
+PUZZLE|Problem to be solved for fun
+PYRAMID|Ancient tomb with four triangular sides
+QUARTZ|Common crystal mineral
+QUEEN|Female monarch
+QUILL|Feather pen
+RABBIT|Long-eared burrowing animal
+RADAR|System that detects planes by radio waves
+RAINBOW|Arc of colors after rain
+RAVEN|Large black bird
+RIDDLE|Puzzling question
+RIVER|Flowing body of fresh water
+ROCKET|Vehicle launched into space
+SADDLE|Seat on a horse
+SALMON|Fish that swims upstream to spawn
+SATURN|Ringed planet
+SCROLL|Rolled-up document
+SECRET|Something kept hidden
+SHADOW|Dark shape cast by an object
+SHIELD|Protective plate carried in battle
+SIGNAL|Sign that sends a message
+SPIDER|Eight-legged web spinner
+SPIRAL|Curve that winds around a center
+SQUARE|Shape with four equal sides
+STATUE|Carved or cast figure
+STORM|Bad weather with wind and rain
+SUMMIT|Top of a mountain
+SUNSET|End of the day's light
+TABLET|Flat touchscreen computer
+TEAPOT|Vessel for brewing tea
+THUNDER|Rumble after lightning
+TIGER|Striped big cat
+TOMATO|Red fruit used in salads
+TORCH|Burning stick carried for light
+TRAIL|Path through the woods
+TREASURE|Hidden gold and jewels
+TUNNEL|Passage under the ground
+TURTLE|Reptile with a shell
+UMBRELLA|Shelter from the rain you carry
+UNICORN|Horned horse of legend
+VALLEY|Low land between hills
+VAULT|Secure room for valuables
+VELVET|Soft fabric with a thick pile
+VIOLIN|Bowed string instrument
+VOLCANO|Mountain that erupts lava
+WAFFLE|Grid-patterned breakfast cake
+WALNUT|Wrinkled nut in a hard shell
+WALRUS|Tusked Arctic sea mammal
+WINDOW|Glass opening in a wall
+WIZARD|Spell-casting magician
+YACHT|Luxury sailboat
+YOGURT|Fermented milk snack
+ZEBRA|Striped African horse
+ZENITH|Highest point
