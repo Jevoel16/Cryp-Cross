@@ -26,7 +26,7 @@
     <img src="https://img.shields.io/badge/node-22-blue?style=flat" alt="Node 22" />
   </p>
   <p>
-    <img src="https://img.shields.io/badge/version-2.0.0-green?style=flat" alt="Version 2.0.0" />
+    <img src="https://img.shields.io/badge/version-2.0.1-green?style=flat" alt="Version 2.0.1" />
     <a href="LICENSE"><img src="https://img.shields.io/badge/license-Sprucetrap%20Source--Available-orange?style=flat" alt="License: Sprucetrap Source-Available" /></a>
     <img src="https://img.shields.io/badge/platform-web-lightgrey?style=flat" alt="Platform: web" />
     <img src="https://img.shields.io/badge/hosting-Vercel-lightgrey?style=flat" alt="Hosting: Vercel" />
@@ -341,7 +341,13 @@ The site and the API run in one Vercel project on one origin: `vercel.json` buil
 
 **Upgrading a 1.x database**: the API drops the old unique email index on startup. Old email + password accounts keep working through username + password login (stored email fields are ignored), and can connect GitHub or Google from the Account page.
 
-With a custom domain later, update `APP_URL`, `CORS_ORIGINS`, `VITE_SITE_URL` and the OAuth callback URLs, then redeploy. Vercel's free Hobby plan is for non-commercial use, which matches this project's license.
+**Custom domain** (e.g. `https://cryp-cross.example.dev`): after adding it under Project > Domains,
+- set `APP_URL` and `VITE_SITE_URL` to the custom domain, and add it to `CORS_ORIGINS` (comma-separated, keep the `vercel.app` URL if you still use it);
+- register `<domain>/api/auth/oauth/github/callback` and `<domain>/api/auth/oauth/google/callback` with the OAuth apps (GitHub allows one callback, so replace it, and update its Homepage URL);
+- set the `vercel.app` domain to redirect (308) to the custom domain, so search engines index one copy;
+- redeploy: `VITE_SITE_URL` is baked into the build (sitemap, robots, canonical tags), so a new build is needed.
+
+Since v2.0.1 the API accepts writes from its own origin even if `CORS_ORIGINS` doesn't list it, so guest checks and saving keep working on a new domain; sign-in still needs `APP_URL` and the callbacks above. Vercel's free Hobby plan is for non-commercial use, which matches this project's license.
 
 <details>
 <summary><strong>Self-hosting notes (without Vercel)</strong></summary>
@@ -510,7 +516,8 @@ npm audit --audit-level=high --prefix server
 | No `sitemap.xml` in `build/` | `SITE_URL` / `VITE_SITE_URL` not set | Set it and rebuild |
 | Security headers missing in production | Server started without the config | On Vercel they come from `vercel.json`; self-hosted, use `npm run serve` (passes `-c ../serve.json`) |
 | Vercel: `/api/...` returns `503 Service unavailable` | The function couldn't start: a required variable is missing or Atlas refused the connection | Check the function logs in Vercel, set the missing variables, and allow `0.0.0.0/0` in Atlas Network Access |
-| Vercel: `403 Origin not allowed` on login | `CORS_ORIGINS` doesn't match the URL you opened (e.g. a preview URL) | Set `CORS_ORIGINS` to that exact origin and redeploy |
+| Vercel: `403 Origin not allowed` on login or guest Check/Submit | Before v2.0.1, `CORS_ORIGINS` had to list the exact URL you opened (custom domain or preview URL) | Update to v2.0.1+, or add that origin to `CORS_ORIGINS` and redeploy |
+| Custom domain: sitemap/canonical still show `vercel.app`, or sign-in lands on `vercel.app` | `VITE_SITE_URL` / `APP_URL` still point at the old domain | Follow *Custom domain* under Deploy to Vercel and redeploy |
 | Port already in use | Another process on 3000/5000 | Windows: `netstat -ano \| findstr :5000`, then `taskkill /PID <PID> /F` |
 
 <p align="right"><a href="#readme-top">back to top</a></p>

@@ -23,11 +23,15 @@ const UNSAFE_METHODS = new Set(['POST', 'PUT', 'PATCH', 'DELETE']);
 // CSRF guard for cookie-authenticated writes: the browser always sends Origin on
 // cross-site POSTs, so a foreign Origin is refused. Requiring a JSON body also blocks
 // plain HTML form posts, which can't send application/json without a CORS preflight.
+// Same-origin requests (site and /api on one host) are always allowed: a page on another
+// site can't make the browser send this Host together with this Origin, so it isn't CSRF.
+// This keeps a newly added custom domain working even before CORS_ORIGINS lists it.
 function csrfGuard(origins) {
   return (req, res, next) => {
     if (!UNSAFE_METHODS.has(req.method)) return next();
     const origin = req.get('origin');
-    if (origin && !origins.includes(origin)) {
+    const ownOrigin = `${req.protocol}://${req.get('host')}`;
+    if (origin && origin !== ownOrigin && !origins.includes(origin)) {
       return res.status(403).json({ success: false, message: 'Origin not allowed' });
     }
     if (!req.is('application/json')) {

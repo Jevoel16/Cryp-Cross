@@ -53,6 +53,30 @@ describe('HTTP API (no database)', () => {
     assert.equal(blocked.headers.get('access-control-allow-origin'), null);
   });
 
+  const postFrom = (origin) =>
+    fetch(`${base}/api/anything`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Origin: origin },
+      body: '{}',
+    });
+
+  test('writes from a foreign origin are refused', async () => {
+    const res = await postFrom('https://evil.example');
+    assert.equal(res.status, 403);
+    assert.equal((await res.json()).message, 'Origin not allowed');
+  });
+
+  test('same-origin writes pass without being listed in CORS_ORIGINS', async () => {
+    // base is http://127.0.0.1:<port>, which is not in CORS_ORIGINS.
+    const res = await postFrom(base);
+    assert.notEqual(res.status, 403);
+  });
+
+  test('a matching scheme is required for same-origin writes', async () => {
+    const res = await postFrom(base.replace('http://', 'https://'));
+    assert.equal(res.status, 403);
+  });
+
   test('sends security headers and rate-limit headers, hides x-powered-by', async () => {
     const res = await fetch(`${base}/api/nope`);
     assert.ok(res.headers.get('content-security-policy'));
