@@ -26,7 +26,7 @@
     <img src="https://img.shields.io/badge/node-22-blue?style=flat" alt="Node 22" />
   </p>
   <p>
-    <img src="https://img.shields.io/badge/version-2.0.2-green?style=flat" alt="Version 2.0.2" />
+    <img src="https://img.shields.io/badge/version-2.0.3-green?style=flat" alt="Version 2.0.3" />
     <a href="LICENSE"><img src="https://img.shields.io/badge/license-Sprucetrap%20Source--Available-orange?style=flat" alt="License: Sprucetrap Source-Available" /></a>
     <img src="https://img.shields.io/badge/platform-web-lightgrey?style=flat" alt="Platform: web" />
     <img src="https://img.shields.io/badge/hosting-Vercel-lightgrey?style=flat" alt="Hosting: Vercel" />
@@ -510,7 +510,7 @@ npm audit --audit-level=high --prefix server
 | My solve isn't on the leaderboard | Guests play unranked | Sign in with GitHub or Google before you start the puzzle |
 | No GitHub/Google buttons (nobody can create an account) | The provider's client ID or secret isn't set on the API | Set both in `server/.env` (or Vercel) and restart or redeploy |
 | GitHub/Google shows "redirect_uri mismatch" | The callback URL registered with the provider differs from `<API_URL or APP_URL>/api/auth/oauth/<provider>/callback` | Register exactly that URL (scheme, host, port and path) |
-| "That sign-in link expired or was opened in another browser" | The sign-in took more than 10 minutes, or cookies are blocked | Try again in the same browser and allow cookies for the site |
+| "That sign-in link expired or was opened in another browser" | The sign-in took more than 10 minutes, cookies are blocked, or the site was opened on a different domain than `APP_URL` (the OAuth callback then lands on a host without your session cookie) | Set `APP_URL`, `CORS_ORIGINS` and `VITE_SITE_URL` to the domain you browse, point the GitHub/Google callback URLs at it, redirect other domains to it, and redeploy |
 | Server tests hang on first run | `mongodb-memory-server` is downloading MongoDB (~100 MB, once) | Wait for the download; behind a proxy, see the mongodb-memory-server docs |
 | `429 Too many requests` | Rate limit reached | Wait 15 minutes; behind a proxy, set `TRUST_PROXY=1` so users aren't grouped under the proxy IP |
 | No `sitemap.xml` in `build/` | `SITE_URL` / `VITE_SITE_URL` not set | Set it and rebuild |

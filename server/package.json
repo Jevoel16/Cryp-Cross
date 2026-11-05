@@ -1,6 +1,6 @@
 {
   "name": "cryp-cross-api",
-  "version": "2.0.2",
+  "version": "2.0.3",
   "description": "Cryp-Cross API: daily cipher crossword generator, accounts, progress and leaderboard",
   "main": "server.js",
   "scripts": {
