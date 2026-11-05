@@ -23,6 +23,7 @@ describe('sign in with GitHub and Google', () => {
 
   before(async () => {
     process.env.AUTH_RATE_LIMIT = '1000';
+    process.env.OAUTH_RATE_LIMIT = '1000';
     ({ fake, tearDown } = await setUpProviders());
     await startDb();
     api = await listen(createApp());
@@ -32,6 +33,7 @@ describe('sign in with GitHub and Google', () => {
     await stopDb();
     await tearDown();
     delete process.env.AUTH_RATE_LIMIT;
+    delete process.env.OAUTH_RATE_LIMIT;
   });
   beforeEach(async () => {
     await clearDb();
@@ -224,5 +226,45 @@ describe('sign in with GitHub and Google', () => {
       (await createClient(api.base).post('/api/auth/login', { username: 'octo', password: 'a long enough password' })).status,
       200
     );
+  });
+});
+
+describe('GitHub/Google sign-in rate limit', () => {
+  let api;
+  let tearDown;
+
+  before(async () => {
+    process.env.AUTH_RATE_LIMIT = '2';
+    process.env.OAUTH_RATE_LIMIT = '3';
+    ({ tearDown } = await setUpProviders());
+    await startDb();
+    api = await listen(createApp());
+  });
+  after(async () => {
+    await api.close();
+    await stopDb();
+    await tearDown();
+    delete process.env.AUTH_RATE_LIMIT;
+    delete process.env.OAUTH_RATE_LIMIT;
+  });
+
+  test('has its own budget and sends players back to a page when it runs out', async () => {
+    const tab = createClient(api.base);
+    // More than the login budget (2) still works: OAuth no longer shares it.
+    for (let i = 0; i < 3; i++) {
+      const res = await tab.get('/api/auth/oauth/github');
+      assert.equal(res.status, 302);
+      assert.ok(!res.headers.get('location').startsWith(APP_URL));
+    }
+    const blocked = await tab.get('/api/auth/oauth/github');
+    assert.equal(blocked.status, 302);
+    assert.equal(blocked.headers.get('location'), `${APP_URL}/login?oauth=busy`);
+
+    const linking = await tab.get('/api/auth/oauth/google?link=1');
+    assert.equal(linking.headers.get('location'), `${APP_URL}/account?oauth=busy`);
+
+    // Password login keeps its own budget, untouched by the OAuth requests above.
+    const login = await createClient(api.base).post('/api/auth/login', { username: 'nobody', password: 'wrong password' });
+    assert.notEqual(login.status, 429);
   });
 });

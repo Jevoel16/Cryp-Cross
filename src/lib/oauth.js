@@ -10,6 +10,7 @@ export const OAUTH_ERRORS = {
     state: 'That sign-in link expired or was opened in another browser. Please try again.',
     failed: "We couldn't complete that sign-in. Please try again.",
     linked: 'That account is already connected to a different Cryp-Cross user.',
+    busy: 'Too many sign-in attempts from your network. Please wait a few minutes and try again.',
 };
 
 let cached = null;

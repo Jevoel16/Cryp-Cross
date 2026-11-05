@@ -61,7 +61,7 @@ async function resolveAccount(provider, profile, linkUser) {
   return { user };
 }
 
-function createOAuthRouter({ authLimiter, startSession }) {
+function createOAuthRouter({ oauthLimiter, startSession }) {
   const router = express.Router();
 
   // Lets the frontend show only the buttons that will work.
@@ -69,7 +69,7 @@ function createOAuthRouter({ authLimiter, startSession }) {
     res.json({ success: true, data: oauth.enabledProviders() });
   });
 
-  router.get('/oauth/:provider', authLimiter, async (req, res, next) => {
+  router.get('/oauth/:provider', oauthLimiter, async (req, res, next) => {
     const { provider } = req.params;
     if (!oauth.isEnabled(provider)) return res.status(404).json({ success: false, message: 'Not found' });
 
@@ -107,7 +107,7 @@ function createOAuthRouter({ authLimiter, startSession }) {
     }
   });
 
-  router.get('/oauth/:provider/callback', authLimiter, async (req, res) => {
+  router.get('/oauth/:provider/callback', oauthLimiter, async (req, res) => {
     const { provider } = req.params;
     const pending = req.session.oauth;
     delete req.session.oauth;

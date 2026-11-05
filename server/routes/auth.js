@@ -27,6 +27,25 @@ const createAuthLimiter = () =>
     message: { success: false, message: 'Too many attempts, please try again later' },
   });
 
+// GitHub/Google sign-in has its own, looser budget: each attempt costs two requests
+// (start + callback) and no password can be guessed through it, so sharing the login
+// budget locked players out after a few retries. Browsers reach these routes by
+// navigation, so going over the limit sends them back to a page with a message
+// instead of a raw JSON error.
+const createOAuthLimiter = () =>
+  rateLimit({
+    windowMs: 15 * 60 * 1000,
+    limit: Number(process.env.OAUTH_RATE_LIMIT) || 30,
+    store: createRateLimitStore('oauth'),
+    standardHeaders: 'draft-7',
+    legacyHeaders: false,
+    handler: (req, res) => {
+      const linking = req.query.link === '1' || Boolean(req.session && req.session.oauth && req.session.oauth.linkUserId);
+      const appUrl = (process.env.APP_URL || 'http://localhost:3000').replace(/\/$/, '');
+      res.redirect(302, `${appUrl}${linking ? '/account' : '/login'}?oauth=busy`);
+    },
+  });
+
 // Swaps the session id on login so a pre-set id can't be reused (session fixation).
 // `via` records how the player proved who they are ('password' or 'oauth').
 function startSession(req, user, via) {
@@ -137,7 +156,7 @@ function createAuthRouter() {
     }
   });
 
-  router.use(createOAuthRouter({ authLimiter, startSession }));
+  router.use(createOAuthRouter({ oauthLimiter: createOAuthLimiter(), startSession }));
 
   return router;
 }
