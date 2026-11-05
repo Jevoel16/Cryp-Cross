@@ -13,10 +13,12 @@
     <img src="https://img.shields.io/badge/react--scripts-5.0.1-blue?style=flat" alt="react-scripts 5.0.1" />
     <img src="https://img.shields.io/badge/express-4.22.3-blue?style=flat" alt="Express 4.22.3" />
     <img src="https://img.shields.io/badge/mongoose-7.8.13-blue?style=flat" alt="Mongoose 7.8.13" />
+    <img src="https://img.shields.io/badge/helmet-8.3.0-blue?style=flat" alt="helmet 8.3.0" />
+    <img src="https://img.shields.io/badge/express--rate--limit-7.5.1-blue?style=flat" alt="express-rate-limit 7.5.1" />
     <img src="https://img.shields.io/badge/node-22-blue?style=flat" alt="Node 22" />
   </p>
   <p>
-    <img src="https://img.shields.io/badge/version-0.1.5-green?style=flat" alt="Version 0.1.5" />
+    <img src="https://img.shields.io/badge/version-0.1.6-green?style=flat" alt="Version 0.1.6" />
     <a href="LICENSE"><img src="https://img.shields.io/badge/license-Sprucetrap%20Source--Available-orange?style=flat" alt="License: Sprucetrap Source-Available" /></a>
     <img src="https://img.shields.io/badge/platform-web-lightgrey?style=flat" alt="Platform: web" />
     <a href="https://github.com/Jevoel16/Cryp-Cross/actions/workflows/ci.yml"><img src="https://github.com/Jevoel16/Cryp-Cross/actions/workflows/ci.yml/badge.svg" alt="CI status" /></a>
@@ -64,6 +66,9 @@ Cryp-Cross is a concept for a crossword platform that rewards players with block
 **Backend (Express)**
 - REST API with four endpoints: `GET`, `POST`, `PATCH`, `DELETE` on `/api/projects`
 - MongoDB through Mongoose, with schema validation and automatic `createdAt` / `updatedAt`
+- Server-side input validation (types, lengths, allowed statuses, id format) and a 10 KB body limit
+- Security headers with `helmet`, a CORS allow-list (`CORS_ORIGINS`) and rate limiting (300 requests / 15 min per IP, 60 writes)
+- Generic error responses: no internal messages or stack traces reach clients
 - Environment-based configuration with `dotenv`
 
 <p align="right"><a href="#readme-top">back to top</a></p>
@@ -75,7 +80,7 @@ Cryp-Cross is a concept for a crossword platform that rewards players with block
 | Layer | Technology |
 |-------|-----------|
 | Frontend | React 19, React Router 7, Create React App (react-scripts 5), plain CSS |
-| Backend | Node.js 22, Express 4, Mongoose 7, cors, dotenv |
+| Backend | Node.js 22, Express 4, Mongoose 7, helmet, express-rate-limit, cors, dotenv |
 | Database | MongoDB (MongoDB Atlas recommended) |
 | Production frontend server | `serve` with `serve.json` (SPA rewrites) |
 | CI | GitHub Actions |
@@ -123,7 +128,10 @@ npm install --prefix server
 | Variable | Required | Description |
 |----------|----------|-------------|
 | `DATABASE_URL` | yes | MongoDB connection string |
-| `PORT` | yes | Port for the Express API (the frontend expects `5000` in development) |
+| `PORT` | no | Port for the Express API (default `5000`, which the frontend expects in development) |
+| `CORS_ORIGINS` | in production | Comma-separated frontend origins allowed to call the API. Unset: `http://localhost:3000` in development, no browser origins in production. |
+| `TRUST_PROXY` | no | Set to `1` behind one reverse proxy (Render, Railway) so rate limiting sees real client IPs. Default `0`. |
+| `NODE_ENV` | no | Set to `production` in production |
 
 **Frontend:** optional, set in a root `.env` file or in your hosting provider.
 
@@ -192,14 +200,22 @@ Example:
 curl -X POST http://localhost:5000/api/projects -H "Content-Type: application/json" -d '{"title":"New Project","description":"Project description","status":"Pending"}'
 ```
 
-`status` must be one of `Pending`, `InProgress` or `Complete`.
+Validation rules: `title` (max 200 characters) and `description` (max 2000) are non-empty strings, `status` is one of `Pending`, `InProgress` or `Complete` and defaults to `Pending`, and `:id` must be a 24-character MongoDB ObjectId.
+
+| Status | Meaning |
+|--------|---------|
+| `400` | Invalid body, JSON or id. `message` explains why. |
+| `404` | Project or route not found |
+| `413` | Body larger than 10 KB |
+| `429` | Rate limit exceeded |
+| `500` | Server error (details only in server logs) |
 
 </details>
 
 <details>
 <summary><strong>Deployment notes</strong></summary>
 
-- **Backend** (e.g. Render or Railway): root directory `server`, start command `npm start`, and set `DATABASE_URL` and `PORT`.
+- **Backend** (e.g. Render or Railway): root directory `server`, start command `npm start`. Set `DATABASE_URL`, `NODE_ENV=production`, `CORS_ORIGINS=<your frontend URL>` and `TRUST_PROXY=1`. The host provides `PORT`.
 - **Frontend**: build with `npm run build` and serve with `npm run serve` (uses `serve.json` for SPA rewrites), or deploy to a static host such as Vercel. Set `REACT_APP_API_URL` to the API URL at build time.
 
 </details>
@@ -221,7 +237,9 @@ Cryp-Cross/
 │   ├── config.js              # API base URL and endpoints
 │   └── index.js               # React entry point
 ├── server/
-│   ├── server.js              # Express API and MongoDB connection
+│   ├── server.js              # Entry point: connects to MongoDB and starts the API
+│   ├── app.js                 # Express app: routes, validation, security middleware
+│   ├── test/                  # Backend tests (node:test, no database needed)
 │   ├── models/projectLog.js   # Mongoose schema
 │   └── .env.example           # Backend environment template
 ├── serve.json                 # Production static-server config
@@ -250,7 +268,8 @@ Cryp-Cross/
 | Script | Description |
 |--------|-------------|
 | `npm start` | Start the Express API |
-| `npm run dev` | Same as `start` |
+| `npm run dev` | Start the API and restart on file changes (`node --watch`) |
+| `npm test` | Run the backend tests |
 
 <p align="right"><a href="#readme-top">back to top</a></p>
 
@@ -258,7 +277,7 @@ Cryp-Cross/
 
 ## Testing
 
-There are no automated tests yet. Every push and pull request to `main` runs [CI](.github/workflows/ci.yml): frontend install, build (with ESLint) and the test runner, then backend install, syntax check and `npm audit --audit-level=high`.
+The backend has automated tests in `server/test/` (Node's built-in `node:test`). They cover validation, error handling, CORS and security headers, and need no database. The frontend has no automated tests yet. Every push and pull request to `main` runs [CI](.github/workflows/ci.yml): frontend install, build (with ESLint) and the test runner, then backend install, syntax check, tests and `npm audit --audit-level=high`.
 
 Run the same checks locally:
 
@@ -268,6 +287,10 @@ npm run build
 
 ```bash
 npm test -- --watchAll=false --passWithNoTests
+```
+
+```bash
+npm test --prefix server
 ```
 
 ```bash
@@ -291,7 +314,9 @@ npm audit --audit-level=high --prefix server
 |---------|-------|-----|
 | `ECONNREFUSED` or "Cannot GET /api/projects" | API not running, or the wrong API URL | Start it with `npm start --prefix server`; check `REACT_APP_API_URL` / `src/config.js` |
 | `Database connection error` | Wrong `DATABASE_URL` or IP not allowed | Check `server/.env`; add your IP to the MongoDB Atlas access list |
-| Server listens on `undefined` | `PORT` not set | Set `PORT=5000` in `server/.env` |
+| `DATABASE_URL is not set` on startup | Missing `server/.env` | Copy `server/.env.example` to `server/.env` and fill it in |
+| Browser shows a CORS error | Frontend origin isn't in `CORS_ORIGINS` | Add the exact origin (scheme + host + port) to `CORS_ORIGINS` and restart the API |
+| `429 Too many requests` | Rate limit reached | Wait 15 minutes; behind a proxy, set `TRUST_PROXY=1` so users aren't grouped under the proxy IP |
 | Port already in use | Another process on 3000/5000 | Windows: `netstat -ano \| findstr :5000`, then `taskkill /PID <PID> /F` |
 
 <p align="right"><a href="#readme-top">back to top</a></p>

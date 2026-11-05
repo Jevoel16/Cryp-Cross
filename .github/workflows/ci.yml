@@ -43,6 +43,7 @@ jobs:
           cache: npm
           cache-dependency-path: server/package-lock.json
       - run: npm ci
-      - run: node --check server.js && node --check models/projectLog.js
+      - run: node --check server.js && node --check app.js
+      - run: npm test
       # Dependency audit is required for the backend (serious project with a database)
       - run: npm audit --audit-level=high
