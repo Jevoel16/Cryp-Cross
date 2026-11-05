@@ -1,7 +1,35 @@
 // These tests cover paths that never reach MongoDB, so no database is needed.
 const { test, describe, before, after } = require('node:test');
 const assert = require('node:assert/strict');
-const { createApp, allowedOrigins } = require('../app');
+const { createApp, allowedOrigins, trustProxyHops } = require('../app');
+
+describe('trustProxyHops', () => {
+  const saved = { TRUST_PROXY: process.env.TRUST_PROXY, VERCEL: process.env.VERCEL };
+  const restore = () => {
+    for (const [key, value] of Object.entries(saved)) {
+      if (value === undefined) delete process.env[key];
+      else process.env[key] = value;
+    }
+  };
+
+  test('defaults to 0 off Vercel and 1 on Vercel', () => {
+    delete process.env.TRUST_PROXY;
+    delete process.env.VERCEL;
+    assert.equal(trustProxyHops(), 0);
+    process.env.VERCEL = '1';
+    assert.equal(trustProxyHops(), 1);
+    restore();
+  });
+
+  test('TRUST_PROXY overrides the default, including 0', () => {
+    process.env.VERCEL = '1';
+    process.env.TRUST_PROXY = '0';
+    assert.equal(trustProxyHops(), 0);
+    process.env.TRUST_PROXY = '2';
+    assert.equal(trustProxyHops(), 2);
+    restore();
+  });
+});
 
 describe('allowedOrigins', () => {
   test('reads CORS_ORIGINS and strips trailing slashes', () => {

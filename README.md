@@ -26,7 +26,7 @@
     <img src="https://img.shields.io/badge/node-22-blue?style=flat" alt="Node 22" />
   </p>
   <p>
-    <img src="https://img.shields.io/badge/version-2.0.1-green?style=flat" alt="Version 2.0.1" />
+    <img src="https://img.shields.io/badge/version-2.0.2-green?style=flat" alt="Version 2.0.2" />
     <a href="LICENSE"><img src="https://img.shields.io/badge/license-Sprucetrap%20Source--Available-orange?style=flat" alt="License: Sprucetrap Source-Available" /></a>
     <img src="https://img.shields.io/badge/platform-web-lightgrey?style=flat" alt="Platform: web" />
     <img src="https://img.shields.io/badge/hosting-Vercel-lightgrey?style=flat" alt="Hosting: Vercel" />
@@ -173,7 +173,7 @@ npm install --prefix server
 | `PUZZLE_SECRET` | in production | Secret mixed into the puzzle seed (HMAC of the date), so future puzzles can't be generated from the public source. Changing it only affects puzzles not yet created. |
 | `MIN_SOLVE_SECONDS` | no | Correct submissions sooner than this after opening the puzzle are refused (default `30`) |
 | `PUZZLE_TZ` | no | IANA time zone that decides when the daily puzzle changes (default `UTC`) |
-| `TRUST_PROXY` | on Vercel | Set to `1` behind one reverse proxy (Vercel, Render, Railway) so rate limiting sees real client IPs. Default `0`. |
+| `TRUST_PROXY` | behind a proxy | Proxy hops to trust, so rate limiting sees real client IPs and https is detected. Default `1` on Vercel (detected from `VERCEL`), otherwise `0`; set `1` on Render or Railway. |
 | `NODE_ENV` | no | Set to `production` in production |
 
 **Frontend:** optional, set in a root `.env` file or in your hosting provider.
@@ -516,7 +516,7 @@ npm audit --audit-level=high --prefix server
 | No `sitemap.xml` in `build/` | `SITE_URL` / `VITE_SITE_URL` not set | Set it and rebuild |
 | Security headers missing in production | Server started without the config | On Vercel they come from `vercel.json`; self-hosted, use `npm run serve` (passes `-c ../serve.json`) |
 | Vercel: `/api/...` returns `503 Service unavailable` | The function couldn't start: a required variable is missing or Atlas refused the connection | Check the function logs in Vercel, set the missing variables, and allow `0.0.0.0/0` in Atlas Network Access |
-| Vercel: `403 Origin not allowed` on login or guest Check/Submit | Before v2.0.1, `CORS_ORIGINS` had to list the exact URL you opened (custom domain or preview URL) | Update to v2.0.1+, or add that origin to `CORS_ORIGINS` and redeploy |
+| Vercel: `403 Origin not allowed` on login or guest Check/Submit | Before v2.0.2, the API needed `CORS_ORIGINS` to list the exact URL you opened and `TRUST_PROXY=1` to see https | Update to v2.0.2+, or set both and redeploy |
 | Custom domain: sitemap/canonical still show `vercel.app`, or sign-in lands on `vercel.app` | `VITE_SITE_URL` / `APP_URL` still point at the old domain | Follow *Custom domain* under Deploy to Vercel and redeploy |
 | Port already in use | Another process on 3000/5000 | Windows: `netstat -ano \| findstr :5000`, then `taskkill /PID <PID> /F` |
 

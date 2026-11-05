@@ -18,6 +18,16 @@ function allowedOrigins() {
   return process.env.NODE_ENV === 'production' ? [] : ['http://localhost:3000'];
 }
 
+// Proxy hops to trust for client IP and protocol. Without it, behind a proxy every
+// player shares the proxy's IP (one rate-limit bucket) and https requests look like
+// http, which breaks the same-origin check below. Vercel sets VERCEL=1 and always
+// sits in front of the function, so it defaults to 1 there.
+function trustProxyHops() {
+  const fromEnv = process.env.TRUST_PROXY;
+  if (fromEnv !== undefined && fromEnv !== '') return Number(fromEnv) || 0;
+  return process.env.VERCEL ? 1 : 0;
+}
+
 const UNSAFE_METHODS = new Set(['POST', 'PUT', 'PATCH', 'DELETE']);
 
 // CSRF guard for cookie-authenticated writes: the browser always sends Origin on
@@ -44,8 +54,7 @@ function csrfGuard(origins) {
 function createApp() {
   const app = express();
 
-  // Behind Vercel/Render/Railway set TRUST_PROXY=1 so rate limiting sees real client IPs.
-  app.set('trust proxy', Number(process.env.TRUST_PROXY) || 0);
+  app.set('trust proxy', trustProxyHops());
   app.disable('x-powered-by');
 
   app.use(helmet());
@@ -112,4 +121,4 @@ function createApp() {
   return app;
 }
 
-module.exports = { createApp, allowedOrigins };
+module.exports = { createApp, allowedOrigins, trustProxyHops };
