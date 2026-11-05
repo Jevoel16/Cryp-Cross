@@ -1,19 +1,20 @@
 import { useState } from 'react';
-import { Link, useLocation, useNavigate, useSearchParams } from 'react-router-dom';
+import { useLocation, useNavigate, useSearchParams } from 'react-router-dom';
 import SectionWrapper from '../components/SectionWrapper';
 import FormMessage from '../components/FormMessage';
 import OAuthButtons from '../components/OAuthButtons';
-import { OAUTH_ERRORS } from '../lib/oauth';
+import { OAUTH_ERRORS, useOAuthProviders } from '../lib/oauth';
 import usePageMeta from '../usePageMeta';
 import { api } from '../api';
 import { useAuth } from '../auth/authContext';
 
 export default function LoginPage() {
-    usePageMeta({ title: 'Log In', description: 'Log in to Cryp-Cross to solve and submit the daily cipher crossword.', noindex: true });
+    usePageMeta({ title: 'Log In', description: 'Sign in to Cryp-Cross with GitHub or Google to solve and submit the daily cipher crossword.', noindex: true });
     const { setUser } = useAuth();
     const navigate = useNavigate();
     const location = useLocation();
-    const [form, setForm] = useState({ email: '', password: '' });
+    const providers = useOAuthProviders();
+    const [form, setForm] = useState({ username: '', password: '' });
     const [busy, setBusy] = useState(false);
     const [params] = useSearchParams();
     const oauthError = OAUTH_ERRORS[params.get('oauth')];
@@ -39,11 +40,15 @@ export default function LoginPage() {
 
     return (
         <SectionWrapper title="Log In" className="auth-section">
-            <OAuthButtons from={safeFrom} />
+            <p className="hint">
+                New here? Continue with GitHub or Google to create your account. No email address is stored.
+            </p>
+            <OAuthButtons from={safeFrom} divider="or log in with your username" />
+            {!providers.length && <p className="hint">Sign-in providers are not set up on this server yet.</p>}
             <form className="auth-form" onSubmit={onSubmit}>
                 <div className="form-group">
-                    <label htmlFor="email">Email</label>
-                    <input id="email" name="email" type="email" autoComplete="email" required value={form.email} onChange={onChange} disabled={busy} />
+                    <label htmlFor="username">Username</label>
+                    <input id="username" name="username" autoComplete="username" required value={form.username} onChange={onChange} disabled={busy} />
                 </div>
                 <div className="form-group">
                     <label htmlFor="password">Password</label>
@@ -53,7 +58,8 @@ export default function LoginPage() {
                 <FormMessage message={message} />
             </form>
             <p className="auth-links">
-                <Link to="/forgot-password">Forgot your password?</Link> · New here? <Link to="/signup">Create an account</Link>
+                Username login works once you set a password on your Account page. Forgot it? Continue with GitHub or
+                Google above, then set a new one there within 10 minutes.
             </p>
         </SectionWrapper>
     );

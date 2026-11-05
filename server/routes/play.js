@@ -2,7 +2,7 @@ const express = require('express');
 const Attempt = require('../models/attempt');
 const { getTodayPuzzle } = require('../puzzle/service');
 const { dayKey, isValidDayKey, previousDayKey } = require('../puzzle/dayKey');
-const { requireAuth, requireVerified } = require('../middleware/auth');
+const { requireAuth } = require('../middleware/auth');
 const { isObject } = require('../lib/validate');
 
 const LEADERBOARD_SIZE = 50;
@@ -69,7 +69,8 @@ const notStarted = (res) =>
   res.status(409).json({ success: false, message: "Open today's puzzle first to start your timer" });
 
 const router = express.Router();
-const player = [requireAuth, requireVerified];
+// Every account comes from a GitHub/Google sign-in, so any signed-in player can play ranked.
+const player = [requireAuth];
 
 router.get('/puzzles/today/progress', player, async (req, res, next) => {
   try {
@@ -118,8 +119,8 @@ router.post('/puzzles/today/check', player, async (req, res, next) => {
   }
 });
 
-// Guests (and unverified accounts) can check and finish today's puzzle, but nothing is
-// stored and nothing reaches the leaderboard: only server-timed, verified solves rank.
+// Guests can check and finish today's puzzle, but nothing is
+// stored and nothing reaches the leaderboard: only server-timed solves by signed-in players rank.
 router.post('/puzzles/today/guest-check', async (req, res, next) => {
   try {
     const puzzle = await getTodayPuzzle();
@@ -168,7 +169,7 @@ router.post('/puzzles/today/submit', player, async (req, res, next) => {
   }
 });
 
-// Fastest verified solves for a day (default today). Only usernames and times are public.
+// Fastest solves by signed-in players for a day (default today). Only usernames and times are public.
 router.get('/leaderboard', async (req, res, next) => {
   const date = req.query.date === undefined ? dayKey() : req.query.date;
   if (!isValidDayKey(date)) return badRequest(res, 'date must be YYYY-MM-DD');

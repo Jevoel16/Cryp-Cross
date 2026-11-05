@@ -5,7 +5,7 @@ const { createApp } = require('../app');
 const DailyPuzzle = require('../models/dailyPuzzle');
 const Attempt = require('../models/attempt');
 const User = require('../models/user');
-const { outbox } = require('../lib/mailer');
+const bcrypt = require('bcryptjs');
 const { streaks } = require('../routes/play');
 const { dayKey, previousDayKey } = require('../puzzle/dayKey');
 
@@ -41,34 +41,28 @@ describe('playing the daily puzzle', () => {
   });
   beforeEach(async () => {
     await clearDb();
-    outbox.length = 0;
     await createClient(api.base).get('/api/puzzles/today');
     puzzle = await DailyPuzzle.findOne({ date: dayKey() }).lean();
   });
 
-  async function player(name, { verify = true } = {}) {
+  // Accounts come from GitHub/Google sign-in; here one is created directly with a
+  // password and signed in with it, which gives the same kind of session.
+  async function player(name) {
+    await User.create({ username: name, passwordHash: bcrypt.hashSync('a long enough password', 4) });
     const tab = createClient(api.base);
-    const email = `${name}@example.com`;
-    await tab.post('/api/auth/signup', { email, username: name, password: 'a long enough password' });
-    if (verify) {
-      const mail = outbox.find((m) => m.to === email);
-      const token = mail.text.match(/token=([a-f0-9]{64})/)[1];
-      await tab.post('/api/auth/verify-email', { token });
-    }
+    const res = await tab.post('/api/auth/login', { username: name, password: 'a long enough password' });
+    assert.equal(res.status, 200);
     return tab;
   }
 
   const blank = () => puzzle.solution.map((row) => row.replace(/[A-Z]/g, ' '));
   const body = (grid) => ({ date: puzzle.date, grid });
 
-  test('guests and unverified players cannot use the ranked routes', async () => {
+  test('guests cannot use the ranked routes', async () => {
     const guest = createClient(api.base);
     assert.equal((await guest.get('/api/puzzles/today/progress')).status, 401);
     assert.equal((await guest.post('/api/puzzles/today/submit', body(puzzle.solution))).status, 401);
-
-    const unverified = await player('newbie', { verify: false });
-    assert.equal((await unverified.get('/api/puzzles/today/progress')).status, 403);
-    assert.equal((await unverified.post('/api/puzzles/today/check', body(blank()))).status, 403);
+    assert.equal((await guest.post('/api/puzzles/today/check', body(blank()))).status, 401);
   });
 
   test('guest-check grades the grid but stores nothing and never ranks', async () => {
@@ -86,9 +80,9 @@ describe('playing the daily puzzle', () => {
     const solved = await guest.post('/api/puzzles/today/guest-check', body(puzzle.solution));
     assert.equal(solved.body.data.solved, true);
 
-    // Unverified accounts play the same unranked way.
-    const unverified = await player('newbie', { verify: false });
-    assert.equal((await unverified.post('/api/puzzles/today/guest-check', body(puzzle.solution))).body.data.solved, true);
+    // Signed-in players can use it too; it still ranks nothing.
+    const signedIn = await player('newbie');
+    assert.equal((await signedIn.post('/api/puzzles/today/guest-check', body(puzzle.solution))).body.data.solved, true);
 
     assert.equal(await Attempt.countDocuments(), 0);
     assert.equal((await guest.get('/api/leaderboard')).body.data.solvers, 0);

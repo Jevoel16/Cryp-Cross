@@ -14,7 +14,7 @@ export default function LeaderboardPage() {
     const date = requested && DATE.test(requested) ? requested : '';
     usePageMeta({
         title: date ? `Leaderboard ${date}` : 'Leaderboard',
-        description: "The fastest solvers of today's Cryp-Cross cipher crossword. Sign up, solve and see your rank.",
+        description: "The fastest solvers of today's Cryp-Cross cipher crossword. Sign in, solve and see your rank.",
         path: date ? undefined : '/leaderboard',
         noindex: Boolean(date),
     });

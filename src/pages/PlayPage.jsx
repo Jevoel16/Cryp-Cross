@@ -229,8 +229,8 @@ function PuzzlePlayer({ puzzle, progress, initialRows }) {
             {solved && result.guest && (
                 <p className="form-message success" role="status">
                     {result.timeMs === null ? 'Solved' : `Solved in ${formatDuration(result.timeMs)}`} · not ranked.{' '}
-                    <Link to="/signup">Sign up</Link> or <Link to="/login" state={{ from: '/play' }}>log in</Link> to join
-                    the leaderboard tomorrow.
+                    <Link to="/login" state={{ from: '/play' }}>Sign in with GitHub or Google</Link> to join the
+                    leaderboard tomorrow.
                 </p>
             )}
             {message && (
@@ -244,7 +244,8 @@ function PuzzlePlayer({ puzzle, progress, initialRows }) {
 
 function TodayPuzzle({ puzzle }) {
     const { user, loading } = useAuth();
-    const isPlayer = Boolean(user?.emailVerified);
+    // Every account comes from a GitHub/Google sign-in, so any signed-in player is ranked.
+    const isPlayer = Boolean(user);
     const [progress, setProgress] = useState(null);
     const [error, setError] = useState('');
 
@@ -270,9 +271,9 @@ function TodayPuzzle({ puzzle }) {
                 <p className="play-hint">
                     You&apos;re playing as a guest: Check and Submit work, but your time isn&apos;t ranked.{' '}
                     <Link to="/login" state={{ from: '/play' }}>
-                        Log in
+                        Sign in
                     </Link>{' '}
-                    or <Link to="/signup">sign up</Link> to save progress across devices and join the{' '}
+                    with GitHub or Google to save progress across devices and join the{' '}
                     <Link to="/leaderboard">leaderboard</Link>.
                 </p>
             )}

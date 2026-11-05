@@ -1,6 +1,6 @@
 const User = require('../models/user');
 
-// Returns the signed-in user, or null. A password reset invalidates sessions
+// Returns the signed-in user, or null. A password change invalidates sessions
 // that were created before it.
 async function loadSessionUser(req) {
   const userId = req.session && req.session.userId;
@@ -25,11 +25,4 @@ async function requireAuth(req, res, next) {
   }
 }
 
-function requireVerified(req, res, next) {
-  if (!req.user.emailVerified) {
-    return res.status(403).json({ success: false, message: 'Verify your email first' });
-  }
-  next();
-}
-
-module.exports = { loadSessionUser, requireAuth, requireVerified };
+module.exports = { loadSessionUser, requireAuth };

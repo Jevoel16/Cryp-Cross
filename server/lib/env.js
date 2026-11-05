@@ -1,6 +1,6 @@
-const { halfConfiguredProviders } = require('./oauth');
+const { halfConfiguredProviders, enabledProviders } = require('./oauth');
 
-const REQUIRED_IN_PRODUCTION = ['SESSION_SECRET', 'PUZZLE_SECRET', 'SMTP_HOST', 'APP_URL'];
+const REQUIRED_IN_PRODUCTION = ['SESSION_SECRET', 'PUZZLE_SECRET', 'APP_URL'];
 
 // Checks the settings both entry points (server.js and the Vercel function) need.
 // Returns fatal problems as a list; warnings are logged here.
@@ -19,6 +19,10 @@ function checkEnv(env = process.env) {
   const halfConfigured = halfConfiguredProviders();
   if (halfConfigured.length) {
     console.warn(`OAuth sign-in disabled for ${halfConfigured.join(', ')}: set both the client ID and the client secret.`);
+  }
+  // Accounts are created only through GitHub/Google, so with neither set nobody can sign up.
+  if (!enabledProviders().length) {
+    console.warn('No sign-in provider configured (GITHUB_* or GOOGLE_*): players can only play as guests.');
   }
   return errors;
 }

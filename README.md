@@ -22,12 +22,11 @@
     <img src="https://img.shields.io/badge/express--session-1.19.0-blue?style=flat" alt="express-session 1.19.0" />
     <img src="https://img.shields.io/badge/connect--mongo-6.0.0-blue?style=flat" alt="connect-mongo 6.0.0" />
     <img src="https://img.shields.io/badge/bcryptjs-3.0.3-blue?style=flat" alt="bcryptjs 3.0.3" />
-    <img src="https://img.shields.io/badge/nodemailer-10.3.1-blue?style=flat" alt="nodemailer 10.3.1" />
     <img src="https://img.shields.io/badge/mongodb--memory--server-10.4.3-blue?style=flat" alt="mongodb-memory-server 10.4.3" />
     <img src="https://img.shields.io/badge/node-22-blue?style=flat" alt="Node 22" />
   </p>
   <p>
-    <img src="https://img.shields.io/badge/version-1.0.0-green?style=flat" alt="Version 1.0.0" />
+    <img src="https://img.shields.io/badge/version-2.0.0-green?style=flat" alt="Version 2.0.0" />
     <a href="LICENSE"><img src="https://img.shields.io/badge/license-Sprucetrap%20Source--Available-orange?style=flat" alt="License: Sprucetrap Source-Available" /></a>
     <img src="https://img.shields.io/badge/platform-web-lightgrey?style=flat" alt="Platform: web" />
     <img src="https://img.shields.io/badge/hosting-Vercel-lightgrey?style=flat" alt="Hosting: Vercel" />
@@ -70,14 +69,14 @@ Cryp-Cross is a free daily crossword where every clue is encrypted. Each day the
 - **Play page** (`/play`): today's grid with keyboard and touch input (letters, Backspace, arrows, Space to switch direction, Tab/Enter for the next clue), across/down clue lists, and the current clue above the grid
 - **Decoder workbench** for the day's cipher: a Caesar shift slider with an "all 25 shifts" view, Atbash, and Vigenère with a keyword box and the plain key clue
 - Unsaved letters are kept per browser, so a refresh doesn't lose them
-- **Guest play**: without an account (or before verifying), **Check** and **Submit** still work and a timer runs in the browser, but the solve is unranked: nothing is stored on the server
-- **For verified players**: progress saved to the server as you type, a running timer, **Check** (marks each clue right, wrong or unfinished without revealing answers) and **Submit** (one timed solve per day, then the grid locks)
+- **Guest play**: without an account, **Check** and **Submit** still work and a timer runs in the browser, but the solve is unranked: nothing is stored on the server
+- **For signed-in players**: progress saved to the server as you type, a running timer, **Check** (marks each clue right, wrong or unfinished without revealing answers) and **Submit** (one timed solve per day, then the grid locks)
 - **Leaderboard** (`/leaderboard`): today's fastest solves, or any past day with `?date=YYYY-MM-DD`
 - **Archive** (`/puzzles`, `/puzzles/:date`): past days with the solution, decoded clues and the cipher key
 - **Account stats**: puzzles solved, current and best streak, best time and recent solves
 - Info pages: Home, How it works (`/idea`) and a Team carousel
-- Accounts: sign up, log in, log out, verify email, forgot/reset password and an account page; a banner reminds unverified players to confirm their email
-- **Sign in with GitHub or Google** (buttons appear only for providers configured on the API), plus **Connected accounts** on the Account page to connect or disconnect them, and a username you can change
+- **Accounts through GitHub or Google only**: the first sign-in creates the account (no email address is asked for or stored). Buttons appear only for providers configured on the API.
+- **Account page**: change the username, add or change a password for username + password login, connect or disconnect GitHub/Google, and see your stats
 - **Dark cipher-terminal design**: deep ink background with a faint grid, glassy cards, a lime accent taken from the puzzle-piece logo and cyan cipher text; Space Grotesk for the interface and JetBrains Mono for ciphers and the grid. The logo appears in the header, the home hero and the footer.
 - Home page hero with a one-time "decrypt" animation of the tagline, today's cipher at a glance, and a Decode / Fill / Race walkthrough
 - Play page with a glowing cursor and active entry, right/wrong marks, a Ranked or Guest badge with a timer pill, and the decoder styled as a terminal pane that stays in view beside the grid
@@ -94,10 +93,10 @@ Cryp-Cross is a free daily crossword where every clue is encrypted. Each day the
 - **Encrypted clues**: the day's cipher is Caesar (hidden shift), Atbash, or Vigenère (the key is the answer to an extra plain-text key clue)
 - Puzzle API: today's puzzle without answers or keys, plus an archive of past played days with answers revealed
 - **Guest check** (`POST /api/puzzles/today/guest-check`): grades a grid per clue for anyone, stores nothing and never touches the leaderboard
-- **Attempts**: per-player progress, server-side answer checking, timed submissions (the timer starts only when a verified player opens the day with `GET /progress`; saving, checking and submitting require that, solves faster than `MIN_SOLVE_SECONDS` are refused, and the puzzle seed includes `PUZZLE_SECRET` so answers can't be computed in advance), a leaderboard that exposes only usernames and times, and streak stats
-- **Accounts**: email + username + password (bcrypt, cost 12), email verification and password reset with single-use, expiring links (only SHA-256 hashes stored), and sessions in MongoDB behind an `httpOnly`, `SameSite=Lax` cookie (`Secure` in production). A password reset signs out every other session.
-- **OAuth sign-in** (GitHub, Google): authorization-code flow with `state` and PKCE, written with Node's built-in `fetch` (no extra dependencies). Only a provider-verified email is trusted. A new user gets a verified account and a username from their GitHub login or Google name; a matching email signs into the existing account and links the provider. When that existing account was never verified, its password and any linked providers are removed first, so an account pre-registered with someone else's email can't be kept by its creator. Linking from the Account page requires a verified email, and the last way to sign in can't be disconnected. Access tokens are used once and never stored or logged.
-- Brute-force and abuse protection: 10 login/signup/reset attempts per 15 minutes per IP, constant-time login answers, and no account enumeration on signup or forgot-password
+- **Attempts**: per-player progress, server-side answer checking, timed submissions (the timer starts only when a signed-in player opens the day with `GET /progress`; saving, checking and submitting require that, solves faster than `MIN_SOLVE_SECONDS` are refused, and the puzzle seed includes `PUZZLE_SECRET` so answers can't be computed in advance), a leaderboard that exposes only usernames and times, and streak stats
+- **Accounts**: created by GitHub/Google sign-in and stored as username + provider IDs, with no email address. An optional password (bcrypt, cost 12) enables username login. Setting or changing it needs the current password or a GitHub/Google sign-in within the last 10 minutes (that is also the forgot-password path), and it signs out every other session. Sessions live in MongoDB behind an `httpOnly`, `SameSite=Lax` cookie (`Secure` in production).
+- **OAuth sign-in** (GitHub, Google): authorization-code flow with `state` and PKCE, written with Node's built-in `fetch` (no extra dependencies). Only the public profile is requested (GitHub: no scope; Google: `openid profile`). Accounts are matched by provider user ID; a new one gets a username from the GitHub login or Google name. GitHub and Google are joined only by connecting the second one from the Account page, and the last way to sign in can't be disconnected. Access tokens are used once and never stored or logged.
+- Brute-force protection: 10 login, password-change and OAuth attempts per 15 minutes per IP, and constant-time login answers that don't reveal whether a username exists
 - CSRF protection for cookie-authenticated writes: foreign `Origin` headers are refused and writes must be JSON
 - 10 KB JSON body limit
 - Security headers with `helmet`, a CORS allow-list (`CORS_ORIGINS`) and rate limiting (300 requests / 15 min per IP, 60 writes). Rate-limit counters live in MongoDB, so the limits hold across serverless instances on Vercel.
@@ -115,7 +114,7 @@ Cryp-Cross is a free daily crossword where every clue is encrypted. Each day the
 | Frontend | React 19, React Router 7, Vite 8 (build and dev server), plain CSS with design tokens, self-hosted Space Grotesk and JetBrains Mono (Fontsource) |
 | Frontend tooling | ESLint 10 (flat config, react-hooks plugin), Vitest 5 |
 | Backend testing | node:test, mongodb-memory-server (in-memory MongoDB) |
-| Backend | Node.js 22, Express 4, Mongoose 7, express-session + connect-mongo, bcryptjs, nodemailer, helmet, express-rate-limit, cors, dotenv |
+| Backend | Node.js 22, Express 4, Mongoose 7, express-session + connect-mongo, bcryptjs, helmet, express-rate-limit, cors, dotenv |
 | Database | MongoDB (MongoDB Atlas recommended) |
 | Hosting | Vercel: static `build/` plus the API as a serverless function (`api/index.js`) on one origin. Self-hosting: `serve` with `serve.json` and `npm start --prefix server`. |
 | CI | GitHub Actions |
@@ -166,13 +165,11 @@ npm install --prefix server
 | `PORT` | no | Port for the Express API (default `5000`, which the frontend expects in development) |
 | `CORS_ORIGINS` | in production | Comma-separated frontend origins allowed to call the API and send cookie-authenticated writes; must include the site's own origin. Unset: `http://localhost:3000` in development, no browser origins in production. |
 | `SESSION_SECRET` | in production | Long random string that signs the session cookie. Development uses a random one per start (sessions end when the API restarts). |
-| `APP_URL` | in production | Public site URL used in email links and as the destination after GitHub/Google sign-in (default `http://localhost:3000`) |
+| `APP_URL` | in production | Public site URL, the destination after GitHub/Google sign-in (default `http://localhost:3000`) |
 | `API_URL` | no | Public origin of the API, used to build the OAuth callback URLs. Leave empty when the API is on the same origin as the site (or behind the Vite proxy in development); it then defaults to `APP_URL`. |
-| `GITHUB_CLIENT_ID`, `GITHUB_CLIENT_SECRET` | no | Enables **Continue with GitHub**. Both must be set; with one missing the button stays hidden and the API warns at startup. |
+| `GITHUB_CLIENT_ID`, `GITHUB_CLIENT_SECRET` | at least one provider | Enables **Continue with GitHub**, the only way (with Google) to create an account. Both must be set; with one missing the button stays hidden and the API warns at startup. |
 | `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET` | no | Enables **Continue with Google**, same rules as GitHub |
-| `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASS` | in production | SMTP server for account emails (port 465 uses TLS). Empty `SMTP_HOST` in development prints emails to the API console. |
-| `MAIL_FROM` | no | Sender address for account emails |
-| `AUTH_RATE_LIMIT` | no | Login/signup/reset attempts per IP per 15 minutes (default `10`) |
+| `AUTH_RATE_LIMIT` | no | Login, password-change and OAuth attempts per IP per 15 minutes (default `10`) |
 | `PUZZLE_SECRET` | in production | Secret mixed into the puzzle seed (HMAC of the date), so future puzzles can't be generated from the public source. Changing it only affects puzzles not yet created. |
 | `MIN_SOLVE_SECONDS` | no | Correct submissions sooner than this after opening the puzzle are refused (default `30`) |
 | `PUZZLE_TZ` | no | IANA time zone that decides when the daily puzzle changes (default `UTC`) |
@@ -205,7 +202,7 @@ In production use your real https origin. On Vercel that is `https://<project>.v
 4. Put the Client ID and secret in `server/.env` as `GITHUB_CLIENT_ID` and `GITHUB_CLIENT_SECRET`, and restart the API.
 
 **Google**
-1. In the Google Cloud console, open APIs & Services → **OAuth consent screen** and set it up (External, app name, support email; scopes `openid`, `email`, `profile`).
+1. In the Google Cloud console, open APIs & Services → **OAuth consent screen** and set it up (External, app name, support email; scopes `openid` and `profile`).
 2. APIs & Services → Credentials → **Create credentials → OAuth client ID**, type **Web application**.
 3. Authorized redirect URI: the Google callback above.
 4. Put the Client ID and secret in `server/.env` as `GOOGLE_CLIENT_ID` and `GOOGLE_CLIENT_SECRET`, and restart the API.
@@ -258,13 +255,13 @@ This starts the API on an in-memory database (nothing to install or configure, d
 
 ### Player flow (account)
 
-1. **Sign up** (`/signup`) with email, username and password. You are signed in straight away.
-2. Open the link in the verification email. In development without SMTP, the email (and link) is printed in the API terminal.
-3. Open **Play**. Your letters now save to your account and the timer starts.
-4. **Check** marks each clue green (right) or red (wrong); editing clears the marks. **Submit** is enabled once every cell is filled.
-5. When solved, the grid locks and shows your time and rank. See **Leaderboard** and your streaks on your **Account** page (click your username).
-6. Prefer GitHub or Google? Use **Continue with GitHub/Google** on Log in or Sign up (when configured). Your email is taken from the provider and already counts as verified, so you can play ranked straight away. Change the generated username on your **Account** page, where you can also connect or disconnect providers.
-7. Forgot your password? **Log in** → *Forgot your password?* sends a reset link; resetting signs out your other sessions.
+1. **Log In** (`/login`) → **Continue with GitHub** or **Continue with Google**. The first time, this creates your account with a username from your GitHub login or Google name. No email address is asked for or stored.
+2. Open **Play**. Your letters now save to your account and the timer starts.
+3. **Check** marks each clue green (right) or red (wrong); editing clears the marks. **Submit** is enabled once every cell is filled.
+4. When solved, the grid locks and shows your time and rank. See **Leaderboard** and your streaks on your **Account** page (click your username).
+5. On **Account**, change the generated username, connect the other provider, and optionally **Add a password**. Right after a GitHub/Google sign-in no current password is needed; later, changing it asks for the current one.
+6. With a password set, log in on `/login` with **username + password** instead.
+7. Forgot your password? On **Account**, use *Sign in again with GitHub/Google*, then set a new password within 10 minutes. Saving it signs out your other sessions.
 
 ### Visitor flow
 
@@ -280,20 +277,16 @@ Base URL: `http://localhost:5000` in development (the Vite dev server proxies `/
 
 | Method | Path | Description |
 |--------|------|-------------|
-| `POST` | `/api/auth/signup` | `{ email, username, password }`: creates the account, signs in and emails a verification link |
-| `POST` | `/api/auth/login` | `{ email, password }` |
+| `POST` | `/api/auth/login` | `{ username, password }` (accounts that have set a password) |
 | `POST` | `/api/auth/logout` | Ends the session |
-| `GET` | `/api/auth/me` | The signed-in user (`username`, `email`, `emailVerified`, `hasPassword`, `providers`) or `null` |
-| `POST` | `/api/auth/verify-email` | `{ token }` from the email link |
-| `POST` | `/api/auth/resend-verification` | Signed in: sends a new verification link |
-| `POST` | `/api/auth/forgot-password` | `{ email }`: same answer whether or not the account exists |
-| `POST` | `/api/auth/reset-password` | `{ token, password }` |
+| `GET` | `/api/auth/me` | The signed-in user (`username`, `hasPassword`, `providers`, `canSetPasswordWithoutCurrent`) or `null` |
+| `PUT` | `/api/auth/password` | Signed in: `{ password, currentPassword? }`. `currentPassword` is needed unless you signed in with GitHub/Google in the last 10 minutes (`403` otherwise). Signs out other sessions. |
 | `PUT` | `/api/auth/username` | Signed in: `{ username }`; `409` if taken |
 | `GET` | `/api/auth/providers` | Enabled sign-in providers, e.g. `["github", "google"]` |
-| `GET` | `/api/auth/oauth/:provider?from=/play` | Browser navigation: redirects to GitHub/Google. Add `link=1` while signed in (verified) to connect it to your account |
+| `GET` | `/api/auth/oauth/:provider?from=/play` | Browser navigation: redirects to GitHub/Google. Add `link=1` while signed in to connect it to your account |
 | `GET` | `/api/auth/oauth/:provider/callback` | Provider redirect target; signs in and redirects to `APP_URL` + `from`, or to `/login?oauth=<error>` |
 | `POST` | `/api/auth/oauth/:provider/unlink` | Signed in: disconnect a provider (refused if it is your only way to sign in) |
-| `GET` | `/api/puzzles/today/progress` | Verified player: your saved `grid`, `startedAt`, `solvedAt`, `timeMs` (starts the timer on first call) |
+| `GET` | `/api/puzzles/today/progress` | Signed-in player: your saved `grid`, `startedAt`, `solvedAt`, `timeMs` (starts the timer on first call) |
 | `PUT` | `/api/puzzles/today/progress` | `{ date, grid }`: save letters (`409` until you have opened the puzzle with `GET`). `grid` is rows like the layout: `#` blocks, `A-Z` or space in open cells |
 | `POST` | `/api/puzzles/today/check` | `{ date, grid }` → `entries`: `right` / `wrong` / `incomplete` per clue |
 | `POST` | `/api/puzzles/today/guest-check` | Anyone: `{ date, grid }` → `{ entries, solved }`. Graded like `check`, but nothing is stored and nothing is ranked |
@@ -313,8 +306,8 @@ curl http://localhost:5000/api/puzzles/today
 | Status | Meaning |
 |--------|---------|
 | `400` | Invalid body, JSON, date or token. `message` explains why. |
-| `401` | Not logged in, or wrong email/password |
-| `403` | Foreign `Origin`, or email not verified yet |
+| `401` | Not logged in, or wrong username/password |
+| `403` | Foreign `Origin`, or a password change without proof (current password or a recent GitHub/Google sign-in) |
 | `409` | Username taken, or puzzle already solved |
 | `415` | Write request without a JSON body |
 | `404` | Puzzle or route not found |
@@ -329,7 +322,7 @@ curl http://localhost:5000/api/puzzles/today
 The site and the API run in one Vercel project on one origin: `vercel.json` builds the frontend into `build/`, serves it with the security headers, and rewrites `/api/*` to the serverless function `api/index.js`, which runs the same Express app as `server/`. Because both share an origin, the `SameSite=Lax` session cookie works and `VITE_API_URL` stays empty.
 
 1. **Database**: create a free [MongoDB Atlas](https://www.mongodb.com/cloud/atlas) cluster and a database user. Under Network Access allow `0.0.0.0/0` (Vercel functions have no fixed IPs). Copy the connection string.
-2. **Email**: create an SMTP account (e.g. Resend, Brevo, Postmark) and verify your sending address or domain. The API refuses to run in production without `SMTP_HOST`.
+2. **Sign-in**: create a production GitHub OAuth app and/or Google OAuth client (see *Setting up GitHub and Google sign-in* above). They are the only way to create accounts.
 3. **Import**: on [vercel.com](https://vercel.com) choose **Add New > Project** and import `Jevoel16/Cryp-Cross`. Leave the framework preset as **Other**; install, build and output settings come from `vercel.json`.
 4. **Environment variables** (Production), with `<site>` = `https://<project>.vercel.app`:
 
@@ -340,12 +333,13 @@ The site and the API run in one Vercel project on one origin: `vercel.json` buil
    | `SESSION_SECRET`, `PUZZLE_SECRET` | two different long random strings, e.g. from `node -e "console.log(require('crypto').randomBytes(48).toString('hex'))"` |
    | `APP_URL`, `CORS_ORIGINS`, `VITE_SITE_URL` | `<site>` |
    | `TRUST_PROXY` | `1` |
-   | `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASS`, `MAIL_FROM` | from your SMTP provider |
-   | `GITHUB_CLIENT_ID/SECRET`, `GOOGLE_CLIENT_ID/SECRET` | optional, from production OAuth apps |
+   | `GITHUB_CLIENT_ID/SECRET`, `GOOGLE_CLIENT_ID/SECRET` | at least one pair, from the production OAuth apps |
    | `PUZZLE_TZ`, `MIN_SOLVE_SECONDS`, `AUTH_RATE_LIMIT` | optional |
 
 5. **Deploy**, then register `<site>/api/auth/oauth/github/callback` and `<site>/api/auth/oauth/google/callback` with the OAuth apps.
 6. From then on every push to `main` deploys to production, and other branches get preview URLs. Previews have a different origin, so logins there are refused unless you set Preview variables to match.
+
+**Upgrading a 1.x database**: the API drops the old unique email index on startup. Old email + password accounts keep working through username + password login (stored email fields are ignored), and can connect GitHub or Google from the Account page.
 
 With a custom domain later, update `APP_URL`, `CORS_ORIGINS`, `VITE_SITE_URL` and the OAuth callback URLs, then redeploy. Vercel's free Hobby plan is for non-commercial use, which matches this project's license.
 
@@ -378,10 +372,10 @@ Cryp-Cross/
 │   ├── App.jsx                # Router, theme and layout
 │   ├── api.js                 # fetch wrapper (JSON, session cookie, errors)
 │   ├── auth/                  # AuthProvider and useAuth
-│   ├── components/            # CrosswordGrid, ClueList, CipherTool, PuzzleBoard, NavBar, Footer, OAuthButtons, DecryptText, VerifyBanner, ...
+│   ├── components/            # CrosswordGrid, ClueList, CipherTool, PuzzleBoard, NavBar, Footer, OAuthButtons, DecryptText, ...
 │   ├── hooks/useCrossword.js  # Grid state reducer (letters, cursor, keyboard)
 │   ├── lib/                   # Pure logic: ciphers.js (decoders), grid.js (board navigation), format.js
-│   ├── pages/                 # One file per route (Home, Play, Leaderboard, Archive, Idea, Team, auth pages, Account, 404)
+│   ├── pages/                 # One file per route (Home, Play, Leaderboard, Archive, Idea, Team, Login, Account, 404)
 │   ├── App.css / index.css    # Design tokens (dark and light themes) and component styles
 │   ├── config.js              # API base URL and site URL
 │   ├── usePageMeta.js         # Per-route title, description, canonical and robots tags
@@ -393,8 +387,8 @@ Cryp-Cross/
 │   ├── puzzle/                # Generator, ciphers, PRNG, day key, puzzle service
 │   ├── models/                # Mongoose schemas (User, DailyPuzzle, Attempt)
 │   ├── routes/                # Express routers (auth, oauth, puzzles, play: progress/check/submit/guest-check/leaderboard/stats)
-│   ├── lib/                   # Sessions, MongoDB rate-limit store, env checks, DB connection, mailer, tokens, validators, OAuth
-│   ├── middleware/            # requireAuth, requireVerified
+│   ├── lib/                   # Sessions, MongoDB rate-limit store, env checks, DB connection, validators, OAuth
+│   ├── middleware/            # requireAuth
 │   ├── scripts/dev-memory.js  # Runs the API on a throwaway in-memory MongoDB
 │   ├── test/                  # Backend tests (node:test + in-memory MongoDB)
 │   └── .env.example           # Backend environment template
@@ -440,7 +434,7 @@ Cryp-Cross/
 
 ## Testing
 
-The backend has automated tests in `server/test/` (Node's built-in `node:test`). They cover the ciphers, a year of generated puzzles (every answer spelled, no unclued letters, correct numbering), progress/check/submit, the leaderboard and streaks, the account flows (signup, verification, login, logout, password reset and expiry, session invalidation, enumeration resistance, CSRF and rate limits), GitHub/Google sign-in against a fake OAuth provider (state and PKCE, account creation and linking, pre-registered account takeover, unsafe redirects, connect/disconnect, username changes), guest checks and the puzzle API against an in-memory MongoDB (`mongodb-memory-server`, downloaded on first install), error handling, CORS and security headers. The frontend has Vitest tests (`src/**/*.test.js`) for the cipher decoders, board navigation the keyboard reducer (fast typing, Backspace, direction toggles, Tab) and time formatting. Every push and pull request to `main` runs [CI](.github/workflows/ci.yml): frontend install, lint, build, Vitest and `npm audit --audit-level=high`, then backend install, syntax check, tests (with an in-memory MongoDB whose binary is cached between runs) and `npm audit --audit-level=high`.
+The backend has automated tests in `server/test/` (Node's built-in `node:test`). They cover the ciphers, a year of generated puzzles (every answer spelled, no unclued letters, correct numbering), progress/check/submit, the leaderboard and streaks, the account flows (username login, setting and changing a password, the 10-minute OAuth recovery window, session invalidation, no stored email, CSRF and rate limits), GitHub/Google sign-in against a fake OAuth provider (state and PKCE, no email scope, account creation, connect/disconnect, unsafe redirects, username changes), the MongoDB rate-limit store, guest checks and the puzzle API against an in-memory MongoDB (`mongodb-memory-server`, downloaded on first install), error handling, CORS and security headers. The frontend has Vitest tests (`src/**/*.test.js`) for the cipher decoders, board navigation the keyboard reducer (fast typing, Backspace, direction toggles, Tab) and time formatting. Every push and pull request to `main` runs [CI](.github/workflows/ci.yml): frontend install, lint, build, Vitest and `npm audit --audit-level=high`, then backend install, syntax check, tests (with an in-memory MongoDB whose binary is cached between runs) and `npm audit --audit-level=high`.
 
 Run the same checks locally:
 
@@ -474,17 +468,16 @@ npm audit --audit-level=high --prefix server
 - [ ] On **Play**, typing fills cells and moves along the clue, Space/second click switches direction, Tab moves to the next clue, and letters survive a refresh
 - [ ] The decoder turns the selected clue into English with the right Caesar shift, Atbash, or the Vigenère keyword
 - [ ] On a phone-width window the grid fits without sideways scrolling
-- [ ] Sign up, open the verification link from the API terminal, and the banner disappears
 - [ ] As a guest, Check marks a wrong clue red, Submit on a full correct grid shows "not ranked", and the leaderboard is unchanged
-- [ ] With `GITHUB_CLIENT_ID`/`SECRET` set, **Continue with GitHub** signs in, creates a verified account, and returns to the page you came from; without them the button is hidden
+- [ ] With `GITHUB_CLIENT_ID`/`SECRET` set, **Continue with GitHub** creates an account (GitHub's consent screen asks for no email), and returns to the page you came from; without them the button is hidden
 - [ ] On **Account**, change the username, connect a second provider and disconnect one; disconnecting the only sign-in method is refused
-- [ ] As a verified player, letters survive a refresh on another browser, Check marks a wrong clue red, and Submit records a time that appears on the leaderboard and Account page
+- [ ] As a signed-in player, letters survive a refresh on another browser, Check marks a wrong clue red, and Submit records a time that appears on the leaderboard and Account page
 - [ ] After solving, the grid is locked and Submit is gone
-- [ ] Log out, forgot password and reset password work, and the old session is signed out after a reset
+- [ ] On **Account**, add a password right after a GitHub sign-in, log out, and log in with username + password; changing it later asks for the current one and signs out other browsers
 - [ ] Each page has its own browser-tab title
 - [ ] With `SITE_URL` set, `build/sitemap.xml` lists the six public pages and `build/robots.txt` links to it
 - [ ] `npm run serve` responses include `Content-Security-Policy` and `Strict-Transport-Security` headers
-- [ ] After a Vercel deploy: `curl -I <site>/play` shows the CSP and HSTS headers, `<site>/api/puzzles/today` returns JSON, and sign-up, email verification, ranked submit and GitHub/Google sign-in work on the live site
+- [ ] After a Vercel deploy: `curl -I <site>/play` shows the CSP and HSTS headers, `<site>/api/puzzles/today` returns JSON, and GitHub/Google sign-in, adding a password, username login and ranked submit work on the live site
 - [ ] The theme toggle switches between dark and light and persists after a refresh; with no saved choice the site follows the system theme
 - [ ] At 375px wide the header collapses into a menu button, and Home, Play and Account have no sideways scrolling
 - [ ] With "reduce motion" turned on in the OS, the tagline, logo and cursor do not animate
@@ -502,16 +495,16 @@ npm audit --audit-level=high --prefix server
 | `Database connection error` | Wrong `DATABASE_URL` or IP not allowed | Check `server/.env`; add your IP to the MongoDB Atlas access list |
 | `DATABASE_URL is not set` on startup | Missing `server/.env` | Copy `server/.env.example` to `server/.env` and fill it in |
 | Browser shows a CORS error | Frontend origin isn't in `CORS_ORIGINS` | Add the exact origin (scheme + host + port) to `CORS_ORIGINS` and restart the API |
-| Verification email never arrives | No SMTP configured, or it went to spam | In development, copy the link from the API terminal (`[dev mail]`). In production, check `SMTP_*` and the spam folder, then use **Resend email** in the banner. |
 | `403 Origin not allowed` when logging in or saving | The site's origin isn't in `CORS_ORIGINS` | Add the exact origin (e.g. `http://localhost:3001` if Vite picked another port) and restart the API |
 | Logged out after every API restart in development | No `SESSION_SECRET` set, so a random one is used per start | Set `SESSION_SECRET` in `server/.env` |
-| Logged out right after a password reset | By design: a reset signs out all other sessions | Log in with the new password |
+| Logged out right after a password change | By design: a change signs out all other sessions | Log in with the new password |
+| "Current password is wrong" and you forgot it | Changing a password needs proof | On **Account**, *Sign in again with GitHub/Google*, then set a new password within 10 minutes |
+| GitHub and Google created two accounts | Accounts are matched by provider ID, not email | Sign in to the one you keep, then **Connect** the other provider on **Account** (only works if that provider isn't already on another account) |
 | "That solve was too fast to record" | Submitted sooner than `MIN_SOLVE_SECONDS` after opening the puzzle | Wait a few seconds and submit again |
-| My solve isn't on the leaderboard | Guests and unverified accounts play unranked | Sign up (or sign in with GitHub/Google) and verify your email |
-| No GitHub/Google buttons | The provider's client ID or secret isn't set on the API | Set both in `server/.env` and restart the API |
+| My solve isn't on the leaderboard | Guests play unranked | Sign in with GitHub or Google before you start the puzzle |
+| No GitHub/Google buttons (nobody can create an account) | The provider's client ID or secret isn't set on the API | Set both in `server/.env` (or Vercel) and restart or redeploy |
 | GitHub/Google shows "redirect_uri mismatch" | The callback URL registered with the provider differs from `<API_URL or APP_URL>/api/auth/oauth/<provider>/callback` | Register exactly that URL (scheme, host, port and path) |
 | "That sign-in link expired or was opened in another browser" | The sign-in took more than 10 minutes, or cookies are blocked | Try again in the same browser and allow cookies for the site |
-| "That account has no verified email we can use" | The GitHub primary email or Google email isn't verified | Verify it with the provider, or sign up with email |
 | Server tests hang on first run | `mongodb-memory-server` is downloading MongoDB (~100 MB, once) | Wait for the download; behind a proxy, see the mongodb-memory-server docs |
 | `429 Too many requests` | Rate limit reached | Wait 15 minutes; behind a proxy, set `TRUST_PROXY=1` so users aren't grouped under the proxy IP |
 | No `sitemap.xml` in `build/` | `SITE_URL` / `VITE_SITE_URL` not set | Set it and rebuild |
@@ -527,7 +520,7 @@ npm audit --audit-level=high --prefix server
 ## Contributing
 
 - **Branches:** `feat/short-description`, `fix/short-description`, `docs/...`, `chore/...`
-- **Commits:** [Conventional Commits](https://www.conventionalcommits.org/) with the bumped SemVer version at the end of the subject, e.g. `feat: add CSV export (v1.1.0)`. Breaking change → major; `feat` → minor; everything else → patch. Bump `package.json` and the version badge in the same commit.
+- **Commits:** [Conventional Commits](https://www.conventionalcommits.org/) with the bumped SemVer version at the end of the subject, e.g. `feat: add CSV export (v2.1.0)`. Breaking change → major; `feat` → minor; everything else → patch. Bump `package.json` and the version badge in the same commit.
 - Make sure CI checks pass locally before committing.
 - **Update this README with every change.**
 

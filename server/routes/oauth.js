@@ -9,7 +9,7 @@ const { requireAuth, loadSessionUser } = require('../middleware/auth');
 const ATTEMPT_TTL_MS = 10 * 60 * 1000;
 
 // Errors go back to the login page as a fixed code; nothing from the provider is echoed.
-const ERROR_CODES = new Set(['denied', 'state', 'failed', 'noemail', 'linked', 'unverified']);
+const ERROR_CODES = new Set(['denied', 'state', 'failed', 'linked']);
 
 const appUrl = () => (process.env.APP_URL || 'http://localhost:3000').replace(/\/$/, '');
 
@@ -50,33 +50,11 @@ async function resolveAccount(provider, profile, linkUser) {
   }
 
   if (owner) return { user: owner };
-  // Without a provider-verified email there is no safe way to match or create an account.
-  if (!profile.email) return { error: 'noemail' };
 
-  const existing = await User.findOne({ email: profile.email });
-  if (existing) {
-    // The provider has proven this person owns the email. If the account was never
-    // verified, whoever created it never proved that, so their password and any linked
-    // providers are dropped (and their sessions ended) to stop a pre-registered account
-    // being taken over.
-    if (!existing.emailVerified) {
-      existing.passwordHash = undefined;
-      existing.githubId = undefined;
-      existing.googleId = undefined;
-      existing.passwordChangedAt = new Date();
-      existing.verifyTokenHash = undefined;
-      existing.verifyTokenExpires = undefined;
-    }
-    existing.emailVerified = true;
-    existing[field] = profile.providerId;
-    await existing.save();
-    return { user: existing };
-  }
-
+  // No email is requested or stored, so accounts are matched by provider ID only: a new
+  // provider ID is a new account. Players join GitHub and Google from the Account page.
   const user = new User({
-    email: profile.email,
     username: await uniqueUsername(profile.usernameHint),
-    emailVerified: true,
     [field]: profile.providerId,
   });
   await user.save();
@@ -98,8 +76,6 @@ function createOAuthRouter({ authLimiter, startSession }) {
       const link = req.query.link === '1';
       const linkUser = link ? await loadSessionUser(req) : null;
       if (link && !linkUser) return res.redirect(302, `${appUrl()}/login?oauth=failed`);
-      // Only an account whose email is proven may gain another way to sign in.
-      if (link && !linkUser.emailVerified) return res.redirect(302, `${appUrl()}/account?oauth=unverified`);
 
       const attempt = oauth.createAttempt();
       req.session.oauth = {
@@ -150,7 +126,6 @@ function createOAuthRouter({ authLimiter, startSession }) {
       if (pending.linkUserId) {
         linkUser = await loadSessionUser(req);
         if (!linkUser || String(linkUser._id) !== pending.linkUserId) return fail('failed');
-        if (!linkUser.emailVerified) return fail('unverified');
       }
 
       const { user, error } = await resolveAccount(provider, profile, linkUser);
@@ -160,7 +135,7 @@ function createOAuthRouter({ authLimiter, startSession }) {
         await new Promise((resolve, reject) => req.session.save((err) => (err ? reject(err) : resolve())));
         return res.redirect(302, `${appUrl()}${pending.from}${pending.from.includes('?') ? '&' : '?'}linked=${provider}`);
       }
-      await startSession(req, user);
+      await startSession(req, user, 'oauth');
       res.redirect(302, `${appUrl()}${pending.from}`);
     } catch (error) {
       // Only the message: tokens and profile data never reach the logs.
@@ -181,7 +156,7 @@ function createOAuthRouter({ authLimiter, startSession }) {
         if (!user.passwordHash && !others.length) {
           return res.status(400).json({
             success: false,
-            message: 'This is your only way to sign in. Set a password (Forgot password) or connect another account first.',
+            message: 'This is your only way to sign in. Set a password or connect another account first.',
           });
         }
         user[field] = undefined;

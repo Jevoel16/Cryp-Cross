@@ -9,9 +9,7 @@ export const OAUTH_ERRORS = {
     denied: 'Sign-in was cancelled.',
     state: 'That sign-in link expired or was opened in another browser. Please try again.',
     failed: "We couldn't complete that sign-in. Please try again.",
-    noemail: 'That account has no verified email we can use. Verify your email with the provider, or sign up with email.',
     linked: 'That account is already connected to a different Cryp-Cross user.',
-    unverified: 'Verify your email before connecting another sign-in method.',
 };
 
 let cached = null;

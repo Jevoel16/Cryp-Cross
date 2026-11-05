@@ -22,7 +22,7 @@ export function ProviderIcon({ provider }) {
 }
 
 // "Continue with GitHub / Google" links. Plain navigations: the API redirects to the provider.
-export default function OAuthButtons({ from, verb = 'Continue' }) {
+export default function OAuthButtons({ from, verb = 'Continue', divider }) {
     const providers = useOAuthProviders();
     if (!providers.length) return null;
     return (
@@ -35,9 +35,11 @@ export default function OAuthButtons({ from, verb = 'Continue' }) {
                     </a>
                 ))}
             </div>
-            <p className="oauth-divider">
-                <span>or use email</span>
-            </p>
+            {divider && (
+                <p className="oauth-divider">
+                    <span>{divider}</span>
+                </p>
+            )}
         </div>
     );
 }

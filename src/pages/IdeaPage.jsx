@@ -40,7 +40,7 @@ export default function IdeaPage() {
                     <li>A fresh crossword generated every day, the same for everyone</li>
                     <li>A decoder workbench for the day&apos;s cipher</li>
                     <li>Guest play: check and submit today&apos;s puzzle without an account (unranked)</li>
-                    <li>Free accounts with email verification, or sign in with GitHub or Google</li>
+                    <li>Free accounts through GitHub or Google sign-in (no email address stored), with an optional username + password login</li>
                     <li>Saved progress, answer checking and server-timed submissions</li>
                     <li>Daily leaderboard, solve streaks and an archive of past puzzles</li>
                 </ul>

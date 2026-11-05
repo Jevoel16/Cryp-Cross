@@ -9,7 +9,8 @@ const PROVIDERS = {
     authorizeUrl: 'https://github.com/login/oauth/authorize',
     tokenUrl: 'https://github.com/login/oauth/access_token',
     apiBase: 'https://api.github.com',
-    scope: 'read:user user:email',
+    // No scope: the public profile (ID and login) is all the app needs, and no email is requested.
+    scope: '',
   },
   google: {
     label: 'Google',
@@ -17,7 +18,7 @@ const PROVIDERS = {
     authorizeUrl: 'https://accounts.google.com/o/oauth2/v2/auth',
     tokenUrl: 'https://oauth2.googleapis.com/token',
     userinfoUrl: 'https://openidconnect.googleapis.com/v1/userinfo',
-    scope: 'openid email profile',
+    scope: 'openid profile',
   },
 };
 
@@ -82,7 +83,7 @@ function authorizeUrl(id, { state, challenge }) {
     client_id: p.clientId,
     redirect_uri: callbackUrl(id),
     response_type: 'code',
-    scope: p.scope,
+    ...(p.scope ? { scope: p.scope } : {}),
     state,
     code_challenge: challenge,
     code_challenge_method: 'S256',
@@ -115,30 +116,17 @@ async function exchangeCode(id, code, verifier) {
   return json.access_token;
 }
 
-// Normalized profile: provider user ID, the verified email (or null) and a username hint.
+// Normalized profile: provider user ID and a username hint. No email is read.
 async function fetchProfile(id, accessToken) {
   const p = config(id);
   const auth = { Authorization: `Bearer ${accessToken}` };
   if (id === 'github') {
     const headers = { ...auth, Accept: 'application/vnd.github+json', 'User-Agent': 'Cryp-Cross' };
-    const [user, emails] = await Promise.all([
-      getJson(`${p.apiBase}/user`, { headers }),
-      getJson(`${p.apiBase}/user/emails`, { headers }),
-    ]);
-    // Only the primary address GitHub has verified counts.
-    const primary = Array.isArray(emails) ? emails.find((e) => e && e.primary && e.verified) : null;
-    return {
-      providerId: String(user.id),
-      email: primary && typeof primary.email === 'string' ? primary.email.trim().toLowerCase() : null,
-      usernameHint: user.login || user.name || '',
-    };
+    const user = await getJson(`${p.apiBase}/user`, { headers });
+    return { providerId: String(user.id), usernameHint: user.login || user.name || '' };
   }
   const info = await getJson(p.userinfoUrl, { headers: auth });
-  return {
-    providerId: String(info.sub),
-    email: info.email_verified === true && typeof info.email === 'string' ? info.email.trim().toLowerCase() : null,
-    usernameHint: info.given_name || info.name || (info.email || '').split('@')[0] || '',
-  };
+  return { providerId: String(info.sub), usernameHint: info.given_name || info.name || '' };
 }
 
 function safeEqual(a, b) {

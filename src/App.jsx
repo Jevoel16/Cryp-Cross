@@ -1,6 +1,6 @@
 import './App.css';
 import { useState, useEffect } from 'react';
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import NavBar from './components/NavBar';
 import Footer from './components/Footer';
 import HomePage from './pages/HomePage';
@@ -8,17 +8,12 @@ import IdeaPage from './pages/IdeaPage';
 import TeamPage from './pages/TeamPage';
 import NotFoundPage from './pages/NotFoundPage';
 import LoginPage from './pages/LoginPage';
-import SignupPage from './pages/SignupPage';
-import VerifyEmailPage from './pages/VerifyEmailPage';
-import ForgotPasswordPage from './pages/ForgotPasswordPage';
-import ResetPasswordPage from './pages/ResetPasswordPage';
 import AccountPage from './pages/AccountPage';
 import PlayPage from './pages/PlayPage';
 import LeaderboardPage from './pages/LeaderboardPage';
 import ArchiveListPage from './pages/ArchiveListPage';
 import ArchivePage from './pages/ArchivePage';
 import AuthProvider from './auth/AuthProvider';
-import VerifyBanner from './components/VerifyBanner';
 
 // public/theme.js sets data-theme before React loads (saved choice, else the system setting).
 const readTheme = () => (document.documentElement.getAttribute('data-theme') === 'light' ? 'light' : 'dark');
@@ -49,7 +44,6 @@ export default function App() {
                 </a>
                 <NavBar isDark={theme === 'dark'} onToggleTheme={handleToggleTheme} />
                 <main id="content">
-                    <VerifyBanner />
                     <Routes>
                         <Route path="/" element={<HomePage />} />
                         <Route path="/play" element={<PlayPage />} />
@@ -59,10 +53,8 @@ export default function App() {
                         <Route path="/idea" element={<IdeaPage />} />
                         <Route path="/team" element={<TeamPage />} />
                         <Route path="/login" element={<LoginPage />} />
-                        <Route path="/signup" element={<SignupPage />} />
-                        <Route path="/verify-email" element={<VerifyEmailPage />} />
-                        <Route path="/forgot-password" element={<ForgotPasswordPage />} />
-                        <Route path="/reset-password" element={<ResetPasswordPage />} />
+                        {/* Accounts are created by GitHub/Google sign-in on the login page; old links land there. */}
+                        <Route path="/signup" element={<Navigate to="/login" replace />} />
                         <Route path="/account" element={<AccountPage />} />
                         <Route path="*" element={<NotFoundPage />} />
                     </Routes>
