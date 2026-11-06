@@ -8,55 +8,52 @@
   <p><strong>A daily cryptographic crossword: decode the encrypted clues, fill the grid, keep your streak.</strong></p>
 
   <p>
-    <img src="https://img.shields.io/badge/react-19.2.0-blue?style=flat" alt="React 19.2.0" />
-    <img src="https://img.shields.io/badge/react--router--dom-7.18.5-blue?style=flat" alt="React Router 7.18.5" />
-    <img src="https://img.shields.io/badge/vite-8.3.5-blue?style=flat" alt="Vite 8.3.5" />
-    <img src="https://img.shields.io/badge/vitest-5.1.0-blue?style=flat" alt="Vitest 5.1.0" />
-    <img src="https://img.shields.io/badge/eslint-10.14.0-blue?style=flat" alt="ESLint 10.14.0" />
-    <img src="https://img.shields.io/badge/@fontsource/space--grotesk-5.3.0-blue?style=flat" alt="@fontsource/space-grotesk 5.3.0" />
-    <img src="https://img.shields.io/badge/@fontsource/jetbrains--mono-5.3.0-blue?style=flat" alt="@fontsource/jetbrains-mono 5.3.0" />
-    <img src="https://img.shields.io/badge/express-4.22.3-blue?style=flat" alt="Express 4.22.3" />
-    <img src="https://img.shields.io/badge/mongoose-7.8.13-blue?style=flat" alt="Mongoose 7.8.13" />
-    <img src="https://img.shields.io/badge/helmet-8.3.0-blue?style=flat" alt="helmet 8.3.0" />
-    <img src="https://img.shields.io/badge/express--rate--limit-7.5.1-blue?style=flat" alt="express-rate-limit 7.5.1" />
-    <img src="https://img.shields.io/badge/express--session-1.19.0-blue?style=flat" alt="express-session 1.19.0" />
-    <img src="https://img.shields.io/badge/connect--mongo-6.0.0-blue?style=flat" alt="connect-mongo 6.0.0" />
-    <img src="https://img.shields.io/badge/bcryptjs-3.0.3-blue?style=flat" alt="bcryptjs 3.0.3" />
-    <img src="https://img.shields.io/badge/mongodb--memory--server-10.4.3-blue?style=flat" alt="mongodb-memory-server 10.4.3" />
-    <img src="https://img.shields.io/badge/node-22-blue?style=flat" alt="Node 22" />
-  </p>
-  <p>
-    <img src="https://img.shields.io/badge/version-2.0.7-green?style=flat" alt="Version 2.0.7" />
+    <img src="https://img.shields.io/badge/version-2.0.8-green?style=flat" alt="Version 2.0.8" />
     <a href="LICENSE"><img src="https://img.shields.io/badge/license-Sprucetrap%20Source--Available-orange?style=flat" alt="License: Sprucetrap Source-Available" /></a>
-    <img src="https://img.shields.io/badge/platform-web-lightgrey?style=flat" alt="Platform: web" />
-    <img src="https://img.shields.io/badge/hosting-Vercel-lightgrey?style=flat" alt="Hosting: Vercel" />
     <a href="https://github.com/Jevoel16/Cryp-Cross/actions/workflows/ci.yml"><img src="https://img.shields.io/github/actions/workflow/status/Jevoel16/Cryp-Cross/ci.yml?branch=main&amp;label=CI&amp;style=flat" alt="CI status" /></a>
+    <img src="https://img.shields.io/badge/platform-web-lightgrey?style=flat" alt="Platform: web" />
   </p>
 </div>
 
 ---
 
-## Table of Contents
+## About
 
-- [About](#about)
-- [Features](#features)
-- [Tech Stack](#tech-stack)
-- [Prerequisites](#prerequisites)
-- [Installation](#installation)
-- [Configuration and Environment Variables](#configuration-and-environment-variables)
-- [Usage](#usage)
-- [Documentation](#documentation)
-- [Project Structure](#project-structure)
-- [Scripts](#scripts)
-- [Contributing](#contributing)
-- [License](#license)
-- [Author](#author)
+Cryp-Cross is a free daily crossword where every clue is encrypted. Each day the server generates one grid for everyone and hides its clues behind a classical cipher (Caesar, Atbash or Vigenère). Players crack the cipher with a built-in decoder, fill the grid, and check and submit their answers. Guests play unranked; with a free account, solves are timed by the server and climb the leaderboard. It is a MERN app (MongoDB, Express, React, Node.js). Play it at [cryp-cross.jevoelorbilla.dev](https://cryp-cross.jevoelorbilla.dev).
+
+<p align="right"><a href="#readme-top">back to top</a></p>
 
 ---
 
-## About
+## Screenshots
 
-Cryp-Cross is a free daily crossword where every clue is encrypted. Each day the server generates one grid for everyone and hides its clues behind a classical cipher (Caesar, Atbash or Vigenère). Players crack the cipher with a built-in decoder, fill the grid, and check and submit their answers. Guests play unranked; with a free account, solves are timed by the server and climb the leaderboard. It is a MERN app (MongoDB, Express, React, Node.js).
+<details>
+<summary><b>Screenshots</b></summary>
+
+<table>
+  <tr>
+    <td width="50%" align="center"><b>Home</b><br><a href="docs/images/home.png"><img src="docs/images/home.png" width="100%" alt="Home page with the puzzle-piece logo and the Decode, Fill, Race steps"></a></td>
+    <td width="50%" align="center"><b>Play</b><br><a href="docs/images/play.png"><img src="docs/images/play.png" width="100%" alt="Play page with the crossword grid and the Atbash decoder turning the selected clue into English"></a></td>
+  </tr>
+  <tr>
+    <td width="50%" align="center"><b>How it works</b><br><a href="docs/images/how-it-works.png"><img src="docs/images/how-it-works.png" width="100%" alt="How it works page explaining the three ciphers"></a></td>
+    <td width="50%" align="center"><b>Leaderboard</b><br><a href="docs/images/leaderboard.png"><img src="docs/images/leaderboard.png" width="100%" alt="Leaderboard page for today's puzzle"></a></td>
+  </tr>
+  <tr>
+    <td width="50%" align="center"><b>Past puzzles</b><br><a href="docs/images/past-puzzles.png"><img src="docs/images/past-puzzles.png" width="100%" alt="Archive of past puzzles and their leaderboards"></a></td>
+    <td width="50%" align="center"><b>Log in</b><br><a href="docs/images/login.png"><img src="docs/images/login.png" width="100%" alt="Log in page with GitHub and Google buttons and username login"></a></td>
+  </tr>
+  <tr>
+    <td width="50%" align="center"><b>Team</b><br><a href="docs/images/team.png"><img src="docs/images/team.png" width="100%" alt="Team page with the member carousel"></a></td>
+    <td width="50%" align="center"><b>Light mode</b><br><a href="docs/images/light-mode.png"><img src="docs/images/light-mode.png" width="100%" alt="Home page in the light theme"></a></td>
+  </tr>
+  <tr>
+    <td width="50%" align="center"><b>Phone (light and dark)</b><br><a href="docs/images/phone.png"><img src="docs/images/phone.png" width="100%" alt="Play page on a phone in the light and dark themes, side by side"></a></td>
+    <td width="50%"></td>
+  </tr>
+</table>
+
+</details>
 
 <p align="right"><a href="#readme-top">back to top</a></p>
 
@@ -64,43 +61,15 @@ Cryp-Cross is a free daily crossword where every clue is encrypted. Each day the
 
 ## Features
 
-**Frontend (React)**
-- **Play page** (`/play`): today's grid with keyboard and touch input (letters, Backspace, arrows, Space to switch direction, Tab/Enter for the next clue), across/down clue lists, and the current clue above the grid
-- **Decoder workbench** for the day's cipher: a Caesar shift slider with an "all 25 shifts" view, Atbash, and Vigenère with a keyword box and the plain key clue
-- Unsaved letters are kept per browser, so a refresh doesn't lose them
-- **Guest play**: without an account, **Check** and **Submit** still work and a timer runs in the browser, but the solve is unranked: nothing is stored on the server
-- **For signed-in players**: progress saved to the server as you type, a running timer, **Check** (marks each clue right, wrong or unfinished without revealing answers) and **Submit** (one timed solve per day, then the grid locks)
-- **Leaderboard** (`/leaderboard`): today's fastest solves, or any past day with `?date=YYYY-MM-DD`
-- **Archive** (`/puzzles`, `/puzzles/:date`): past days with the solution, decoded clues and the cipher key
-- **Account stats**: puzzles solved, current and best streak, best time and recent solves
-- Info pages: Home, How it works (`/idea`) and a Team carousel
-- **Accounts through GitHub or Google only**: the first sign-in creates the account (no email address is asked for or stored). Buttons appear only for providers configured on the API.
-- **Account page**: change the username, add or change a password for username + password login, connect or disconnect GitHub/Google, and see your stats
-- **Dark cipher-terminal design**: deep ink background with a faint grid, glassy cards, a lime accent taken from the puzzle-piece logo and cyan cipher text; Space Grotesk for the interface and JetBrains Mono for ciphers and the grid. The logo appears in the header, the home hero and the footer.
-- Home page hero with a one-time "decrypt" animation of the tagline, today's cipher at a glance, and a Decode / Fill / Race walkthrough
-- Play page with a glowing cursor and active entry, right/wrong marks, a Ranked or Guest badge with a timer pill, and the decoder styled as a terminal pane that stays in view beside the grid
-- Leaderboard with gold, silver and bronze ranks and your own row highlighted; stat tiles on the Account page
-- Sticky header with a mobile menu, a skip link, visible focus rings and `prefers-reduced-motion` support (animations off)
-- Dark theme by default with a light theme toggle; the choice is remembered in `localStorage`, and without one the site follows the system setting. `public/theme.js` applies it before the app renders, so there is no flash.
-- Client-side routing with React Router and a 404 page
-- SEO: a unique title, description and canonical URL per page, `noindex` on the error page, JSON-LD, Open Graph tags, `llms.txt`, and a `sitemap.xml` + `robots.txt` generated at build time
-- Optimized assets: WebP team photos at display size and correctly sized app icons
-- Production security headers via `vercel.json` on Vercel or `serve.json` when self-hosting (CSP, HSTS, `nosniff`, frame blocking) and long-term caching for hashed static files
+- One new encrypted crossword for everyone, every day
+- A built-in decoder for Caesar, Atbash and Vigenère clues
+- Play as a guest, or sign in with GitHub or Google (no email stored)
+- Progress saved as you type, with Check to mark right and wrong clues
+- Server-timed solves on a daily leaderboard, plus streaks and stats
+- An archive of past puzzles with their solutions and leaderboards
+- Dark and light themes, keyboard and touch input, works on phones
 
-**Backend (Express)**
-- **Daily cipher crossword generator**: each day (in `PUZZLE_TZ`) a crossword of 8–12 words is built from `server/data/words.txt`, deterministically from the date, and stored in MongoDB so it never changes afterwards
-- **Encrypted clues**: the day's cipher is Caesar (hidden shift), Atbash, or Vigenère (the key is the answer to an extra plain-text key clue)
-- Puzzle API: today's puzzle without answers or keys, plus an archive of past played days with answers revealed
-- **Guest check** (`POST /api/puzzles/today/guest-check`): grades a grid per clue for anyone, stores nothing and never touches the leaderboard
-- **Attempts**: per-player progress, server-side answer checking, timed submissions (the timer starts only when a signed-in player opens the day with `GET /progress`; saving, checking and submitting require that, solves faster than `MIN_SOLVE_SECONDS` are refused, and the puzzle seed includes `PUZZLE_SECRET` so answers can't be computed in advance), a leaderboard that exposes only usernames and times, and streak stats
-- **Accounts**: created by GitHub/Google sign-in and stored as username + provider IDs, with no email address. An optional password (bcrypt, cost 12) enables username login. Setting or changing it needs the current password or a GitHub/Google sign-in within the last 10 minutes (that is also the forgot-password path), and it signs out every other session. Sessions live in MongoDB behind an `httpOnly`, `SameSite=Lax` cookie (`Secure` in production).
-- **OAuth sign-in** (GitHub, Google): authorization-code flow with `state` and PKCE, written with Node's built-in `fetch` (no extra dependencies). Only the public profile is requested (GitHub: no scope; Google: `openid profile`). Accounts are matched by provider user ID; a new one gets a username from the GitHub login or Google name. GitHub and Google are joined only by connecting the second one from the Account page, and the last way to sign in can't be disconnected. Access tokens are used once and never stored or logged.
-- Brute-force protection: 10 login, password-change and OAuth attempts per 15 minutes per IP, and constant-time login answers that don't reveal whether a username exists
-- CSRF protection for cookie-authenticated writes: foreign `Origin` headers are refused and writes must be JSON
-- 10 KB JSON body limit
-- Security headers with `helmet`, a CORS allow-list (`CORS_ORIGINS`) and rate limiting (300 requests / 15 min per IP, 60 writes). Rate-limit counters live in MongoDB, so the limits hold across serverless instances on Vercel.
-- Generic error responses: no internal messages or stack traces reach clients
-- Environment-based configuration with `dotenv`
+Full list: [docs/features.md](docs/features.md).
 
 <p align="right"><a href="#readme-top">back to top</a></p>
 
@@ -108,110 +77,58 @@ Cryp-Cross is a free daily crossword where every clue is encrypted. Each day the
 
 ## Tech Stack
 
-| Layer | Technology |
-|-------|-----------|
-| Frontend | React 19, React Router 7, Vite 8 (build and dev server), plain CSS with design tokens, self-hosted Space Grotesk and JetBrains Mono (Fontsource) |
-| Frontend tooling | ESLint 10 (flat config, react-hooks plugin), Vitest 5 |
-| Backend testing | node:test, mongodb-memory-server (in-memory MongoDB) |
-| Backend | Node.js 22, Express 4, Mongoose 7, express-session + connect-mongo, bcryptjs, helmet, express-rate-limit, cors, dotenv |
-| Database | MongoDB (MongoDB Atlas recommended) |
-| Hosting | Vercel: static `build/` plus the API as a serverless function (`api/index.js`) on one origin. Self-hosting: `serve` with `serve.json` and `npm start --prefix server`. |
-| CI | GitHub Actions |
+| Layer | Tools |
+|-------|-------|
+| Frontend | React 19.2.0, React Router 7.18.5, Vite 8.3.5, Vitest 5.1.0, ESLint 10.14.0 |
+| Backend | Node.js 22.14.0, Express 4.22.3, Mongoose 7.8.13, express-session 1.19.0, connect-mongo 6.0.0, bcryptjs 3.0.3, helmet 8.3.0, express-rate-limit 7.5.1 |
+| Database | MongoDB (Atlas in production, mongodb-memory-server for tests and local dev) |
+| Hosting | Vercel (static site and serverless API on one origin), GitHub Actions CI |
 
 <p align="right"><a href="#readme-top">back to top</a></p>
 
 ---
 
-## Prerequisites
+## Getting Started
 
-- Node.js 22 (see `.nvmrc`) and npm
-- A MongoDB database, for example a free [MongoDB Atlas](https://www.mongodb.com/cloud/atlas) cluster
-- Git
+Prerequisites: Node.js 22 (`.nvmrc`), npm and Git. No MongoDB is needed to try it.
+
+```bash
+git clone https://github.com/Jevoel16/Cryp-Cross.git && cd Cryp-Cross
+npm install && npm install --prefix server
+npm run dev:memory --prefix server   # API on :5000 with an in-memory database
+npm start                            # in a second terminal: site on http://localhost:3000
+```
+
+With a real database, copy `server/.env.example` to `server/.env`, set `DATABASE_URL`, and run `npm start --prefix server` instead. To deploy, see [docs/deployment.md](docs/deployment.md).
 
 <p align="right"><a href="#readme-top">back to top</a></p>
 
 ---
 
-## Installation
+## Configuration
 
-```bash
-git clone https://github.com/Jevoel16/Cryp-Cross.git
-```
-
-```bash
-cd Cryp-Cross
-```
-
-```bash
-npm install
-```
-
-```bash
-npm install --prefix server
-```
-
-<p align="right"><a href="#readme-top">back to top</a></p>
-
----
-
-## Configuration and Environment Variables
-
-**Backend:** copy `server/.env.example` to `server/.env` and fill it in.
-
-| Variable | Required | Description |
-|----------|----------|-------------|
-| `DATABASE_URL` | yes | MongoDB connection string |
-| `PORT` | no | Port for the Express API (default `5000`, which the frontend expects in development) |
-| `CORS_ORIGINS` | in production | Comma-separated frontend origins allowed to call the API and send cookie-authenticated writes; must include the site's own origin. Unset: `http://localhost:3000` in development, no browser origins in production. |
-| `SESSION_SECRET` | in production | Long random string that signs the session cookie. Development uses a random one per start (sessions end when the API restarts). |
-| `APP_URL` | in production | Public site URL, the destination after GitHub/Google sign-in (default `http://localhost:3000`) |
-| `API_URL` | no | Public origin of the API, used to build the OAuth callback URLs. Leave empty when the API is on the same origin as the site (or behind the Vite proxy in development); it then defaults to `APP_URL`. |
-| `GITHUB_CLIENT_ID`, `GITHUB_CLIENT_SECRET` | at least one provider | Enables **Continue with GitHub**, the only way (with Google) to create an account. Both must be set; with one missing the button stays hidden and the API warns at startup. |
-| `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET` | no | Enables **Continue with Google**, same rules as GitHub |
-| `AUTH_RATE_LIMIT` | no | Login and password-change attempts per IP per 15 minutes (default `10`) |
-| `OAUTH_RATE_LIMIT` | no | GitHub/Google sign-in requests per IP per 15 minutes; each sign-in uses two (default `30`). Over the limit, players return to the login page with a message |
-| `PUZZLE_SECRET` | in production | Secret mixed into the puzzle seed (HMAC of the date), so future puzzles can't be generated from the public source. Changing it only affects puzzles not yet created. |
-| `MIN_SOLVE_SECONDS` | no | Correct submissions sooner than this after opening the puzzle are refused (default `30`) |
-| `PUZZLE_TZ` | no | IANA time zone that decides when the daily puzzle changes (default `UTC`) |
-| `TRUST_PROXY` | behind a proxy | Proxy hops to trust, so rate limiting sees real client IPs and https is detected. Default `1` on Vercel (detected from `VERCEL`), otherwise `0`; set `1` on Render or Railway. |
-| `NODE_ENV` | no | Set to `production` in production |
-
-**Frontend:** optional, set in a root `.env` file or in your hosting provider.
-
-| Variable | Required | Description |
-|----------|----------|-------------|
-| `VITE_API_URL` | no | Base URL of the API when it is on another origin. Empty (default) means same origin: in development Vite proxies `/api` to `http://localhost:5000`. |
-| `VITE_SITE_URL` | in production | Public site URL (https, no trailing slash). Used for canonical links and to generate `sitemap.xml` / `robots.txt` after `npm run build`. `SITE_URL` also works for the sitemap step. Vite only exposes variables prefixed with `VITE_` to the browser bundle, so never put secrets in them. |
-
-See `.env.example` for a template.
+The API reads `server/.env` (template: [`server/.env.example`](server/.env.example)) and the frontend reads a root `.env` (template: [`.env.example`](.env.example)). Signing in needs a GitHub or Google OAuth app; the setup steps are in [docs/configuration.md](docs/configuration.md).
 
 <details>
-<summary><strong>Setting up GitHub and Google sign-in</strong></summary>
+<summary><b>Environment variables</b></summary>
 
-The callback URL is `<API_URL or APP_URL>/api/auth/oauth/<provider>/callback`. In development (Vite on port 3000 proxying `/api`) that is:
+| Variable | Where | Description |
+|----------|-------|-------------|
+| `DATABASE_URL` | API | MongoDB connection string (required) |
+| `SESSION_SECRET` | API | Signs the session cookie (required in production) |
+| `PUZZLE_SECRET` | API | Mixed into the puzzle seed so future puzzles can't be computed (required in production) |
+| `APP_URL` | API | Public site URL, where sign-in returns to |
+| `CORS_ORIGINS` | API | Comma-separated allowed frontend origins |
+| `GITHUB_CLIENT_ID`, `GITHUB_CLIENT_SECRET` | API | Enables GitHub sign-in |
+| `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET` | API | Enables Google sign-in |
+| `API_URL`, `PORT`, `TRUST_PROXY`, `NODE_ENV` | API | Hosting options |
+| `PUZZLE_TZ`, `MIN_SOLVE_SECONDS`, `AUTH_RATE_LIMIT`, `OAUTH_RATE_LIMIT` | API | Puzzle day, minimum solve time and rate limits |
+| `VITE_API_URL` | Frontend | API base URL when it is on another origin (empty means same origin) |
+| `VITE_SITE_URL` | Frontend | Public site URL for canonical links and `sitemap.xml` |
 
-- `http://localhost:3000/api/auth/oauth/github/callback`
-- `http://localhost:3000/api/auth/oauth/google/callback`
-
-In production use your real https origin. On Vercel that is `https://<project>.vercel.app/api/auth/oauth/github/callback` and `.../google/callback`.
-
-**GitHub**
-1. Go to GitHub → Settings → Developer settings → OAuth Apps → **New OAuth App**.
-2. Homepage URL: your `APP_URL`. Authorization callback URL: the GitHub callback above.
-3. Create the app, then **Generate a new client secret**.
-4. Put the Client ID and secret in `server/.env` as `GITHUB_CLIENT_ID` and `GITHUB_CLIENT_SECRET`, and restart the API.
-
-**Google**
-1. In the Google Cloud console, open APIs & Services → **OAuth consent screen** and set it up (External, app name, support email; scopes `openid` and `profile`).
-2. APIs & Services → Credentials → **Create credentials → OAuth client ID**, type **Web application**.
-3. Authorized redirect URI: the Google callback above.
-4. Put the Client ID and secret in `server/.env` as `GOOGLE_CLIENT_ID` and `GOOGLE_CLIENT_SECRET`, and restart the API.
-
-Use separate OAuth apps (or at least separate redirect URIs) for development and production. Keep the secrets in `server/.env` or your host's secret settings, never in the frontend.
+Defaults and details: [docs/configuration.md](docs/configuration.md).
 
 </details>
-
-`.env` files are gitignored. Never commit real credentials.
 
 <p align="right"><a href="#readme-top">back to top</a></p>
 
@@ -219,277 +136,50 @@ Use separate OAuth apps (or at least separate redirect URIs) for development and
 
 ## Usage
 
-### Run locally
+1. Open **Play** (`/play`). The decoder names today's cipher.
+2. Pick a clue and decode it: move the Caesar slider, read the Atbash output, or solve the Vigenère key clue and type the keyword.
+3. Type the answer. Tab or Enter jumps to the next clue.
+4. **Check** marks each clue right or wrong. **Submit** records your time once the grid is full.
+5. Sign in with GitHub or Google before you start to save progress and get ranked on the **Leaderboard**.
 
-Start the API in one terminal:
-
-```bash
-npm start --prefix server
-```
-
-You should see `Server is running on http://localhost:5000` and `Database Connected`.
-
-Start the frontend in a second terminal:
-
-```bash
-npm start
-```
-
-The Vite dev server runs at `http://localhost:3000` and proxies `/api` requests to `http://localhost:5000`.
-
-### Try it without MongoDB
-
-```bash
-npm run dev:memory --prefix server
-```
-
-This starts the API on an in-memory database (nothing to install or configure, data is lost on exit). Then run `npm start` in a second terminal.
-
-### Player flow (guest)
-
-1. Open **Play** (`/play`). The title shows today's date; the decoder names today's cipher.
-2. Click a cell (click it again or press Space to switch across/down) and pick a clue from the lists. The decoder shows the selected clue.
-3. Decode it: move the Caesar slider until the clue reads as English, read the Atbash output, or (Vigenère) solve the plain key clue and type that keyword.
-4. Type the answer. Tab or Enter jumps to the next clue. Your letters stay after a refresh, and the guest timer starts with your first letter.
-5. **Check** marks each clue green or red; **Submit** (once every cell is filled) shows "Solved in 4:12 · not ranked". Guest solves never appear on the leaderboard.
-
-### Player flow (account)
-
-1. **Log In** (`/login`) → **Continue with GitHub** or **Continue with Google**. The first time, this creates your account with a username from your GitHub login or Google name. No email address is asked for or stored.
-2. Open **Play**. Your letters now save to your account and the timer starts.
-3. **Check** marks each clue green (right) or red (wrong); editing clears the marks. **Submit** is enabled once every cell is filled.
-4. When solved, the grid locks and shows your time and rank. See **Leaderboard** and your streaks on your **Account** page (click your username).
-5. On **Account**, change the generated username, connect the other provider, and optionally **Add a password**. Right after a GitHub/Google sign-in no current password is needed; later, changing it asks for the current one.
-6. With a password set, log in on `/login` with **username + password** instead.
-7. Forgot your password? On **Account**, use *Sign in again with GitHub/Google*, then set a new password within 10 minutes. Saving it signs out your other sessions.
-
-### Visitor flow
-
-1. **Home** (`/`): introduction to Cryp-Cross.
-2. **How it works** (`/idea`): the three ciphers and the features.
-3. **Team** (`/team`): team member carousel.
-4. Use the sun/moon button in the header to switch between the dark and light themes. On a phone, the menu button opens the page links.
-
-<details>
-<summary><strong>API reference</strong></summary>
-
-Base URL: `http://localhost:5000` in development (the Vite dev server proxies `/api`).
-
-| Method | Path | Description |
-|--------|------|-------------|
-| `POST` | `/api/auth/login` | `{ username, password }` (accounts that have set a password) |
-| `POST` | `/api/auth/logout` | Ends the session |
-| `GET` | `/api/auth/me` | The signed-in user (`username`, `hasPassword`, `providers`, `canSetPasswordWithoutCurrent`) or `null` |
-| `PUT` | `/api/auth/password` | Signed in: `{ password, currentPassword? }`. `currentPassword` is needed unless you signed in with GitHub/Google in the last 10 minutes (`403` otherwise). Signs out other sessions. |
-| `PUT` | `/api/auth/username` | Signed in: `{ username }`; `409` if taken |
-| `GET` | `/api/auth/providers` | Enabled sign-in providers, e.g. `["github", "google"]` |
-| `GET` | `/api/auth/oauth/:provider?from=/play` | Browser navigation: redirects to GitHub/Google. Add `link=1` while signed in to connect it to your account |
-| `GET` | `/api/auth/oauth/:provider/callback` | Provider redirect target; signs in and redirects to `APP_URL` + `from`, or to `/login?oauth=<error>` |
-| `POST` | `/api/auth/oauth/:provider/unlink` | Signed in: disconnect a provider (refused if it is your only way to sign in) |
-| `GET` | `/api/puzzles/today/progress` | Signed-in player: your saved `grid`, `startedAt`, `solvedAt`, `timeMs` (starts the timer on first call) |
-| `PUT` | `/api/puzzles/today/progress` | `{ date, grid }`: save letters (`409` until you have opened the puzzle with `GET`). `grid` is rows like the layout: `#` blocks, `A-Z` or space in open cells |
-| `POST` | `/api/puzzles/today/check` | `{ date, grid }` → `entries`: `right` / `wrong` / `incomplete` per clue |
-| `POST` | `/api/puzzles/today/guest-check` | Anyone: `{ date, grid }` → `{ entries, solved }`. Graded like `check`, but nothing is stored and nothing is ranked |
-| `POST` | `/api/puzzles/today/submit` | `{ date, grid }` → `{ solved: true, timeMs, rank }` or `{ solved: false, wrong, incomplete }`; `409` if not opened yet or already solved; `400` if sooner than `MIN_SOLVE_SECONDS` after opening |
-| `GET` | `/api/leaderboard?date=` | Top 50 solves for a day (default today): `rank`, `username`, `timeMs` |
-| `GET` | `/api/me/stats` | Signed in: `solves`, `currentStreak`, `bestStreak`, `bestTimeMs`, last 30 solves |
-| `GET` | `/api/puzzles/today` | Today's puzzle: `layout` (`#` block, `.` open cell), numbered `entries` with encrypted `clue`s, and `cipher` (`type`, plus `keyClue` and `keyLength` for Vigenère). No answers or keys. |
-| `GET` | `/api/puzzles` | Past days that were played (up to 60), newest first |
-| `GET` | `/api/puzzles/:date` | One day (`YYYY-MM-DD`). Past days include `solution`, each entry's `answer` and `plainClue`, and the cipher key. Unplayed or future days return 404. |
-
-Example:
-
-```bash
-curl http://localhost:5000/api/puzzles/today
-```
-
-| Status | Meaning |
-|--------|---------|
-| `400` | Invalid body, JSON, date or token. `message` explains why. |
-| `401` | Not logged in, or wrong username/password |
-| `403` | Foreign `Origin`, or a password change without proof (current password or a recent GitHub/Google sign-in) |
-| `409` | Username taken, or puzzle already solved |
-| `415` | Write request without a JSON body |
-| `404` | Puzzle or route not found |
-| `413` | Body larger than 10 KB |
-| `429` | Rate limit exceeded |
-| `500` | Server error (details only in server logs) |
-
-</details>
-
-### Deploy to Vercel
-
-The site and the API run in one Vercel project on one origin: `vercel.json` builds the frontend into `build/`, serves it with the security headers, and rewrites `/api/*` to the serverless function `api/index.js`, which runs the same Express app as `server/`. Because both share an origin, the `SameSite=Lax` session cookie works and `VITE_API_URL` stays empty.
-
-1. **Database**: create a free [MongoDB Atlas](https://www.mongodb.com/cloud/atlas) cluster and a database user. Under Network Access allow `0.0.0.0/0` (Vercel functions have no fixed IPs). Copy the connection string.
-2. **Sign-in**: create a production GitHub OAuth app and/or Google OAuth client (see *Setting up GitHub and Google sign-in* above). They are the only way to create accounts.
-3. **Import**: on [vercel.com](https://vercel.com) choose **Add New > Project** and import `Jevoel16/Cryp-Cross`. Leave the framework preset as **Other**; install, build and output settings come from `vercel.json`.
-4. **Environment variables** (Production), with `<site>` = `https://<project>.vercel.app`:
-
-   | Variable | Value |
-   |----------|-------|
-   | `NODE_ENV` | `production` |
-   | `DATABASE_URL` | Atlas connection string |
-   | `SESSION_SECRET`, `PUZZLE_SECRET` | two different long random strings, e.g. from `node -e "console.log(require('crypto').randomBytes(48).toString('hex'))"` |
-   | `APP_URL`, `CORS_ORIGINS`, `VITE_SITE_URL` | `<site>` |
-   | `TRUST_PROXY` | `1` |
-   | `GITHUB_CLIENT_ID/SECRET`, `GOOGLE_CLIENT_ID/SECRET` | at least one pair, from the production OAuth apps |
-   | `PUZZLE_TZ`, `MIN_SOLVE_SECONDS`, `AUTH_RATE_LIMIT`, `OAUTH_RATE_LIMIT` | optional |
-
-5. **Deploy**, then register `<site>/api/auth/oauth/github/callback` and `<site>/api/auth/oauth/google/callback` with the OAuth apps.
-6. From then on every push to `main` deploys to production, and other branches get preview URLs. Previews have a different origin, so logins there are refused unless you set Preview variables to match.
-
-**Upgrading a 1.x database**: the API drops the old unique email index on startup. Old email + password accounts keep working through username + password login (stored email fields are ignored), and can connect GitHub or Google from the Account page.
-
-**Custom domain** (e.g. `https://cryp-cross.example.dev`): after adding it under Project > Domains,
-- set `APP_URL` and `VITE_SITE_URL` to the custom domain, and add it to `CORS_ORIGINS` (comma-separated, keep the `vercel.app` URL if you still use it);
-- register `<domain>/api/auth/oauth/github/callback` and `<domain>/api/auth/oauth/google/callback` with the OAuth apps (GitHub allows one callback, so replace it, and update its Homepage URL);
-- set the `vercel.app` domain to redirect (308) to the custom domain, so search engines index one copy;
-- redeploy: `VITE_SITE_URL` is baked into the build (sitemap, robots, canonical tags), so a new build is needed.
-
-Since v2.0.1 the API accepts writes from its own origin even if `CORS_ORIGINS` doesn't list it, so guest checks and saving keep working on a new domain; sign-in still needs `APP_URL` and the callbacks above. Vercel's free Hobby plan is for non-commercial use, which matches this project's license. Since v2.0.4, a sign-in started on any other domain (such as the old `vercel.app` URL) first moves to the callback host, so the session cookie and the callback always share a host.
-
-<details>
-<summary><strong>Self-hosting notes (without Vercel)</strong></summary>
-
-- **Backend** (e.g. Render or Railway): root directory `server`, start command `npm start`. Set the same variables as above plus `TRUST_PROXY=1`; the host provides `PORT`.
-- **Cookies**: the session cookie is `SameSite=Lax`, so the API must be on the same site as the frontend: the same origin behind a reverse proxy (leave `VITE_API_URL` empty and route `/api` to the API), or a subdomain of the same domain. An API on a different domain will not keep players logged in.
-- **Frontend**: set `VITE_SITE_URL` (and `VITE_API_URL` if needed) at build time, run `npm run build`, then `npm run serve`, which applies `serve.json` (SPA rewrites and security headers). If the API is on another origin, add it to the CSP `connect-src` in `serve.json`.
-
-</details>
+More: [player and account flows](docs/usage.md), [API reference](docs/api.md), [deployment](docs/deployment.md), [troubleshooting](docs/troubleshooting.md).
 
 <p align="right"><a href="#readme-top">back to top</a></p>
 
 ---
 
-## Documentation
+## More
 
-Screenshots from the running app (dark theme, 1280px wide).
-
-**Home page**
-
-<img src="docs/images/home.png" alt="Home" width="800" />
-
-<sub>Home page: what Cryp-Cross is and how a day goes.</sub>
-
-**Play**
-
-<img src="docs/images/play.png" alt="Play page as a guest" width="800" />
-
-<sub>Play: today's grid, the selected clue and the decoder (here Atbash) turning it into English.</sub>
-
-**How it works**
-
-<img src="docs/images/how-it-works.png" alt="How it works page" width="800" />
-
-<sub>How it works: the three ciphers and the features.</sub>
-
-**Leaderboard**
-
-<img src="docs/images/leaderboard.png" alt="Leaderboard page" width="800" />
-
-<sub>Leaderboard: ranked, server-timed solves for today's puzzle (empty on a fresh database).</sub>
-
-**Past puzzles**
-
-<img src="docs/images/past-puzzles.png" alt="Past puzzles page" width="800" />
-
-<sub>Past puzzles: earlier days and their leaderboards.</sub>
-
-**Log in**
-
-<img src="docs/images/login.png" alt="Log in page" width="800" />
-
-<sub>Log in: Continue with GitHub or Google, or username + password once one is set.</sub>
-
-**Team**
-
-<img src="docs/images/team.png" alt="Team page" width="800" />
-
-<sub>Team: the people behind the project.</sub>
-
-The **Account** page is not shown because it needs a real GitHub/Google sign-in.
-
-More docs:
-
-- [Troubleshooting](docs/troubleshooting.md): common errors when running or deploying, with their cause and fix
-
-<p align="right"><a href="#readme-top">back to top</a></p>
-
----
-
-## Project Structure
+<details>
+<summary><b>Project structure</b></summary>
 
 ```
 Cryp-Cross/
-├── .github/workflows/ci.yml   # GitHub Actions CI
-├── docs/                      # README screenshots (images/) and troubleshooting guide
-├── api/index.js               # Vercel serverless entry: connects to MongoDB once per instance, runs the Express app
-├── index.html                 # Vite HTML entry (meta tags, JSON-LD)
-├── public/                    # Static files copied as-is: manifest, icons, robots.txt, llms.txt
-│   ├── theme.js               # Applies the saved/system theme before React renders (no flash)
-│   └── img/                   # Logo (logo-72.webp, logo-440.webp) and team photos (WebP)
-├── scripts/
-│   └── generate-seo.js        # Post-build: writes build/sitemap.xml and build/robots.txt
-├── src/
-│   ├── App.jsx                # Router, theme and layout
-│   ├── api.js                 # fetch wrapper (JSON, session cookie, errors)
-│   ├── auth/                  # AuthProvider and useAuth
-│   ├── components/            # CrosswordGrid, ClueList, CipherTool, PuzzleBoard, NavBar, Footer, OAuthButtons, DecryptText, ...
-│   ├── hooks/useCrossword.js  # Grid state reducer (letters, cursor, keyboard)
-│   ├── lib/                   # Pure logic: ciphers.js (decoders), grid.js (board navigation), format.js
-│   ├── pages/                 # One file per route (Home, Play, Leaderboard, Archive, Idea, Team, Login, Account, 404)
-│   ├── App.css / index.css    # Design tokens (dark and light themes) and component styles
-│   ├── config.js              # API base URL and site URL
-│   ├── usePageMeta.js         # Per-route title, description, canonical and robots tags
-│   └── index.jsx              # React entry point
-├── server/
-│   ├── server.js              # Self-hosted entry point: connects to MongoDB and starts the API
-│   ├── app.js                 # Express app: security middleware, error handling
-│   ├── data/words.txt         # Word bank: WORD|clue per line
-│   ├── puzzle/                # Generator, ciphers, PRNG, day key, puzzle service
-│   ├── models/                # Mongoose schemas (User, DailyPuzzle, Attempt)
-│   ├── routes/                # Express routers (auth, oauth, puzzles, play: progress/check/submit/guest-check/leaderboard/stats)
-│   ├── lib/                   # Sessions, MongoDB rate-limit store, env checks, DB connection, validators, OAuth
-│   ├── middleware/            # requireAuth
-│   ├── scripts/dev-memory.js  # Runs the API on a throwaway in-memory MongoDB
-│   ├── test/                  # Backend tests (node:test + in-memory MongoDB)
-│   └── .env.example           # Backend environment template
-├── vite.config.js             # Vite: dev port and /api proxy, build/ output, Vitest settings
-├── eslint.config.js           # ESLint flat config (react-hooks, react-refresh)
-├── vercel.json                # Vercel: install/build commands, /api rewrite, SPA fallback, security headers
-├── serve.json                 # Self-hosted static-server config (rewrites, security headers, caching)
-├── .env.example               # Frontend environment template
-├── .nvmrc                     # Node version
-├── LICENSE
-└── package.json               # Frontend dependencies and scripts
+├── .github/workflows/   # CI
+├── api/                 # Vercel serverless entry for the Express app
+├── docs/                # Guides and README screenshots
+├── public/              # Static files: icons, theme script, robots.txt, llms.txt
+├── scripts/             # Post-build sitemap and robots.txt generator
+├── server/              # Express API, puzzle generator, models, tests
+└── src/                 # React app: pages, components, hooks, ciphers
 ```
 
-<p align="right"><a href="#readme-top">back to top</a></p>
+</details>
 
----
-
-## Scripts
-
-**Root (frontend)**
+<details>
+<summary><b>Scripts</b></summary>
 
 | Script | Description |
 |--------|-------------|
-| `npm start` / `npm run dev` | Start the Vite dev server on port 3000 (proxies `/api` to port 5000) |
-| `npm run build` | Production build into `build/`, then `postbuild` generates `sitemap.xml` and `robots.txt` |
-| `npm run serve` | Serve `build/` on port 3000 with `serve.json` (rewrites and headers) |
-| `npm run preview` | Preview `build/` with Vite (no `serve.json` headers; use `npm run serve` to check those) |
-| `npm run lint` | Lint `src/`, configs and scripts with ESLint |
-| `npm test` | Run frontend tests once with Vitest (`src/**/*.test.{js,jsx}`; passes when there are none) |
+| `npm start` | Vite dev server on port 3000 (proxies `/api` to port 5000) |
+| `npm run build` | Production build into `build/`, plus `sitemap.xml` and `robots.txt` |
+| `npm run serve` | Serve `build/` with the `serve.json` headers |
+| `npm run lint` / `npm test` | ESLint / Vitest |
+| `npm start --prefix server` | Start the API |
+| `npm run dev:memory --prefix server` | Start the API on a throwaway in-memory MongoDB |
+| `npm test --prefix server` | Backend tests |
 
-**`server/` (backend)**
-
-| Script | Description |
-|--------|-------------|
-| `npm start` | Start the Express API |
-| `npm run dev` | Start the API and restart on file changes (`node --watch`) |
-| `npm run dev:memory` | Start the API on a throwaway in-memory MongoDB (no `DATABASE_URL` needed; data is lost on exit) |
-| `npm test` | Run the backend tests (starts an in-memory MongoDB) |
+</details>
 
 <p align="right"><a href="#readme-top">back to top</a></p>
 
@@ -497,29 +187,7 @@ Cryp-Cross/
 
 ## Contributing
 
-- **Branches:** `feat/short-description`, `fix/short-description`, `docs/...`, `chore/...`
-- **Commits:** [Conventional Commits](https://www.conventionalcommits.org/) with the bumped SemVer version at the end of the subject, e.g. `feat: add CSV export (v2.1.0)`. Breaking change → major; `feat` → minor; everything else → patch. Bump `package.json` and the version badge in the same commit.
-- **Before committing**, run the same checks as [CI](.github/workflows/ci.yml) (frontend lint, build, Vitest and audit, then backend syntax check, tests and audit):
-
-  ```bash
-  npm run lint && npm run build && npm test && npm audit --audit-level=high
-  ```
-
-  ```bash
-  npm test --prefix server && npm audit --audit-level=high --prefix server
-  ```
-- Retake the matching screenshot in `docs/images/` when a screen changes.
-- **Update this README with every change.**
-
-<details>
-<summary><strong>SEO backlink ideas</strong></summary>
-
-- Link the live site from the GitHub repository description and topics (`react`, `mern`, `crossword`, `cipher`, `cryptography`, `puzzle`)
-- Add it to team members' GitHub profile READMEs, LinkedIn and portfolios
-- Write a short dev post (DEV.to, Hashnode, Medium) about building Cryp-Cross and link back
-- Submit it to course or school project showcases and puzzle and cryptography communities (r/crossword, r/codes, puzzle newsletters)
-
-</details>
+Branches: `feat/short-description` or `fix/short-description`. Commits follow [Conventional Commits](https://www.conventionalcommits.org/) with the bumped SemVer version at the end of the subject, e.g. `feat: add CSV export (v2.1.0)`. Update this README with every change. SEO ideas: [docs/backlinks.md](docs/backlinks.md).
 
 <p align="right"><a href="#readme-top">back to top</a></p>
 
@@ -527,7 +195,7 @@ Cryp-Cross/
 
 ## License
 
-Licensed under the **Sprucetrap Source-Available License 1.0**. See [LICENSE](LICENSE). Non-commercial use, study and modification are allowed with visible credit: "Based on Cryp-Cross by Sprucetrap (https://github.com/Jevoel16)". Commercial use needs written permission.
+[Sprucetrap Source-Available License 1.0](LICENSE): non-commercial use with visible credit; commercial use needs written permission.
 
 <p align="right"><a href="#readme-top">back to top</a></p>
 
