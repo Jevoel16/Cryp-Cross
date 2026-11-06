@@ -32,6 +32,8 @@ The site and the API run in one Vercel project on one origin: `vercel.json` buil
 
 Since v2.0.1 the API accepts writes from its own origin even if `CORS_ORIGINS` doesn't list it, so guest checks and saving keep working on a new domain; sign-in still needs `APP_URL` and the callbacks above. Vercel's free Hobby plan is for non-commercial use, which matches this project's license. Since v2.0.4, a sign-in started on any other domain (such as the old `vercel.app` URL) first moves to the callback host, so the session cookie and the callback always share a host.
 
+**Analytics**: since v2.1.0 the site includes Vercel Web Analytics (`@vercel/analytics`, cookieless page views, no personal data). Turn it on under Project > Analytics > Enable, then redeploy; until then the script request returns 404 and nothing is recorded. The script and its beacons use `/_vercel/insights/*` on the same origin, so the CSP needs no change. When self-hosting, the script is not served and the component does nothing.
+
 ## Self-hosting (without Vercel)
 
 - **Backend** (e.g. Render or Railway): root directory `server`, start command `npm start`. Set the same variables as for Vercel plus `TRUST_PROXY=1`; the host provides `PORT`.

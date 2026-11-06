@@ -8,7 +8,7 @@
   <p><strong>A daily cryptographic crossword: decode the encrypted clues, fill the grid, keep your streak.</strong></p>
 
   <p>
-    <img src="https://img.shields.io/badge/version-2.0.8-green?style=flat" alt="Version 2.0.8" />
+    <img src="https://img.shields.io/badge/version-2.1.0-green?style=flat" alt="Version 2.1.0" />
     <a href="LICENSE"><img src="https://img.shields.io/badge/license-Sprucetrap%20Source--Available-orange?style=flat" alt="License: Sprucetrap Source-Available" /></a>
     <a href="https://github.com/Jevoel16/Cryp-Cross/actions/workflows/ci.yml"><img src="https://img.shields.io/github/actions/workflow/status/Jevoel16/Cryp-Cross/ci.yml?branch=main&amp;label=CI&amp;style=flat" alt="CI status" /></a>
     <img src="https://img.shields.io/badge/platform-web-lightgrey?style=flat" alt="Platform: web" />
@@ -82,7 +82,7 @@ Full list: [docs/features.md](docs/features.md).
 | Frontend | React 19.2.0, React Router 7.18.5, Vite 8.3.5, Vitest 5.1.0, ESLint 10.14.0 |
 | Backend | Node.js 22.14.0, Express 4.22.3, Mongoose 7.8.13, express-session 1.19.0, connect-mongo 6.0.0, bcryptjs 3.0.3, helmet 8.3.0, express-rate-limit 7.5.1 |
 | Database | MongoDB (Atlas in production, mongodb-memory-server for tests and local dev) |
-| Hosting | Vercel (static site and serverless API on one origin), GitHub Actions CI |
+| Hosting | Vercel (static site and serverless API on one origin), Vercel Analytics 2.0.1, GitHub Actions CI |
 
 <p align="right"><a href="#readme-top">back to top</a></p>
 

@@ -6,11 +6,14 @@ import '@fontsource/space-grotesk/500.css';
 import '@fontsource/space-grotesk/700.css';
 import '@fontsource/jetbrains-mono/400.css';
 import '@fontsource/jetbrains-mono/700.css';
+import { Analytics } from '@vercel/analytics/react';
 import './index.css';
 import App from './App';
 
 ReactDOM.createRoot(document.getElementById('root')).render(
     <React.StrictMode>
         <App />
+        {/* Cookieless page views; served from /_vercel/insights on the same origin, so CSP 'self' still holds. */}
+        <Analytics />
     </React.StrictMode>
 );
