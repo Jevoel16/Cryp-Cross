@@ -7,7 +7,7 @@ Common problems when running or deploying [Cryp-Cross](../README.md), with their
 | `ECONNREFUSED` on `/api` requests | API not running, or the wrong API URL | Start it with `npm start --prefix server`; check `VITE_API_URL` / `src/config.js` |
 | API URL or site URL from `.env` is ignored | Variables still use the old Create React App `REACT_APP_` prefix | Rename them to `VITE_API_URL` / `VITE_SITE_URL` (v0.3.0+) and restart or rebuild |
 | `Database connection error` | Wrong `DATABASE_URL` or IP not allowed | Check `server/.env`; add your IP to the MongoDB Atlas access list |
-| `DATABASE_URL is not set` on startup | Missing `server/.env` | Copy `server/.env.example` to `server/.env` and fill it in |
+| `DATABASE_URL is not set` on startup | Missing `server/.env` | Copy the Local block of `server/.env.example` into `server/.env` and fill it in |
 | Browser shows a CORS error | Frontend origin isn't in `CORS_ORIGINS` | Add the exact origin (scheme + host + port) to `CORS_ORIGINS` and restart the API |
 | `403 Origin not allowed` when logging in or saving | The site's origin isn't in `CORS_ORIGINS` | Add the exact origin (e.g. `http://localhost:3001` if Vite picked another port) and restart the API |
 | Logged out after every API restart in development | No `SESSION_SECRET` set, so a random one is used per start | Set `SESSION_SECRET` in `server/.env` |

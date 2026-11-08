@@ -2,7 +2,7 @@
 
 Environment variables for the API and the frontend, and how to set up GitHub and Google sign-in.
 
-**Backend:** copy `server/.env.example` to `server/.env` and fill it in.
+**Backend:** `server/.env.example` has three blocks (Local, Development, Production) with the same keys. Copy the Local block into `server/.env` and fill it in; set the Development or Production block in your host.
 
 | Variable | Required | Description |
 |----------|----------|-------------|
@@ -22,7 +22,7 @@ Environment variables for the API and the frontend, and how to set up GitHub and
 | `TRUST_PROXY` | behind a proxy | Proxy hops to trust, so rate limiting sees real client IPs and https is detected. Default `1` on Vercel (detected from `VERCEL`), otherwise `0`; set `1` on Render or Railway. |
 | `NODE_ENV` | no | Set to `production` in production |
 
-**Frontend:** optional, set in a root `.env` file or in your hosting provider.
+**Frontend:** optional. `.env.example` has the same three blocks; copy the one you need into a root `.env` or your host.
 
 | Variable | Required | Description |
 |----------|----------|-------------|

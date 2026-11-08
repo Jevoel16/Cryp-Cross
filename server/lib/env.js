@@ -15,7 +15,7 @@ function originOf(url) {
 function checkEnv(env = process.env) {
   const errors = [];
   if (!env.DATABASE_URL) {
-    errors.push('DATABASE_URL is not set. Copy server/.env.example to server/.env.');
+    errors.push('DATABASE_URL is not set. Copy the Local block of server/.env.example into server/.env.');
   }
 
   if (env.NODE_ENV === 'production') {

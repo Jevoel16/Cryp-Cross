@@ -8,7 +8,7 @@
   <p><strong>A daily cryptographic crossword: decode the encrypted clues, fill the grid, keep your streak.</strong></p>
 
   <p>
-    <img src="https://img.shields.io/badge/version-2.1.2-green?style=flat" alt="Version 2.1.2" />
+    <img src="https://img.shields.io/badge/version-2.1.3-green?style=flat" alt="Version 2.1.3" />
     <a href="LICENSE"><img src="https://img.shields.io/badge/license-Sprucetrap%20Source--Available-orange?style=flat" alt="License: Sprucetrap Source-Available" /></a>
     <a href="https://github.com/Jevoel16/Cryp-Cross/actions/workflows/ci.yml"><img src="https://img.shields.io/github/actions/workflow/status/Jevoel16/Cryp-Cross/ci.yml?branch=main&amp;label=CI&amp;style=flat" alt="CI status" /></a>
     <img src="https://img.shields.io/badge/platform-web-lightgrey?style=flat" alt="Platform: web" />
@@ -87,11 +87,11 @@ npm run dev:memory --prefix server   # API on :5000 with an in-memory database
 npm start                            # in a second terminal: site on http://localhost:3000
 ```
 
-With a real database, copy `server/.env.example` to `server/.env`, set `DATABASE_URL`, and run `npm start --prefix server` instead. To deploy, see [docs/deployment.md](docs/deployment.md).
+With a real database, copy the Local block of `server/.env.example` into `server/.env`, set `DATABASE_URL`, and run `npm start --prefix server` instead. To deploy, see [docs/deployment.md](docs/deployment.md).
 
 ## Configuration
 
-The API reads `server/.env` (template: [`server/.env.example`](server/.env.example)) and the frontend reads a root `.env` (template: [`.env.example`](.env.example)). Signing in needs a GitHub or Google OAuth app; the setup steps are in [docs/configuration.md](docs/configuration.md).
+The API reads `server/.env` (template: [`server/.env.example`](server/.env.example)) and the frontend reads a root `.env` (template: [`.env.example`](.env.example); each has Local, Development and Production blocks). Signing in needs a GitHub or Google OAuth app; the setup steps are in [docs/configuration.md](docs/configuration.md).
 
 <details>
 <summary><b>Environment variables</b></summary>

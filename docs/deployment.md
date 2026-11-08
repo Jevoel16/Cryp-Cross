@@ -7,7 +7,7 @@ The site and the API run in one Vercel project on one origin: `vercel.json` buil
 1. **Database**: create a free [MongoDB Atlas](https://www.mongodb.com/cloud/atlas) cluster and a database user. Under Network Access allow `0.0.0.0/0` (Vercel functions have no fixed IPs). Copy the connection string.
 2. **Sign-in**: create a production GitHub OAuth app and/or Google OAuth client (see [Setting up GitHub and Google sign-in](configuration.md#setting-up-github-and-google-sign-in)). They are the only way to create accounts.
 3. **Import**: on [vercel.com](https://vercel.com) choose **Add New > Project** and import `Jevoel16/Cryp-Cross`. Leave the framework preset as **Other**; install, build and output settings come from `vercel.json`.
-4. **Environment variables** (Production), with `<site>` = `https://<project>.vercel.app`:
+4. **Environment variables** (Production; the Production block of `server/.env.example` and `.env.example` lists them), with `<site>` = `https://<project>.vercel.app`:
 
    | Variable | Value |
    |----------|-------|
