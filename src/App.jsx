@@ -14,6 +14,7 @@ import LeaderboardPage from './pages/LeaderboardPage';
 import ArchiveListPage from './pages/ArchiveListPage';
 import ArchivePage from './pages/ArchivePage';
 import AuthProvider from './auth/AuthProvider';
+import { themeColor } from './lib/theme';
 
 // public/theme.js sets data-theme before React loads (saved choice, else the system setting).
 const readTheme = () => (document.documentElement.getAttribute('data-theme') === 'light' ? 'light' : 'dark');
@@ -23,6 +24,7 @@ export default function App() {
 
     useEffect(() => {
         document.documentElement.setAttribute('data-theme', theme);
+        document.querySelector('meta[name="theme-color"]')?.setAttribute('content', themeColor(theme));
     }, [theme]);
 
     // Theme choice is a per-browser convenience, so localStorage is fine; guarded for blocked storage.

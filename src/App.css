@@ -14,7 +14,7 @@
     --surface-solid: #0f1622;
     --surface-raised: #151e2d;
     --border: rgba(148, 170, 200, 0.14);
-    --border-strong: rgba(148, 170, 200, 0.3);
+    --border-strong: rgba(148, 170, 200, 0.6);
     --text: #e7eef7;
     --text-muted: #93a1b5;
     --accent: #9be23c;
@@ -48,7 +48,7 @@
     --surface-solid: #ffffff;
     --surface-raised: #f6f9f2;
     --border: rgba(20, 40, 60, 0.12);
-    --border-strong: rgba(20, 40, 60, 0.26);
+    --border-strong: rgba(20, 40, 60, 0.5);
     --text: #0f1722;
     --text-muted: #556274;
     --accent: #3f7a0c;
@@ -66,9 +66,9 @@
     --cell-bg: #ffffff;
     --cell-text: #0f1722;
     --block: #142030;
-    --gold: #a77400;
-    --silver: #5d6b7c;
-    --bronze: #9a5a2b;
+    --gold: #7a5500;
+    --silver: #4a5666;
+    --bronze: #7d4520;
     --shadow: 0 18px 40px -26px rgba(20, 40, 60, 0.45);
 }
 
@@ -1213,6 +1213,12 @@ input[type='range'] {
     font-size: 0.92rem;
 }
 
+.submit-hint {
+    margin: 0;
+    color: var(--text-muted);
+    font-size: 0.88rem;
+}
+
 .timer.idle {
     font-weight: 400;
     color: var(--text-muted);
@@ -1478,6 +1484,7 @@ input[type='range'] {
 
 .leaderboard td {
     padding: 12px 14px;
+    overflow-wrap: anywhere;
     background: var(--surface-raised);
     border-top: 1px solid var(--border);
     border-bottom: 1px solid var(--border);

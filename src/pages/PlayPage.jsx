@@ -102,6 +102,7 @@ function PuzzlePlayer({ puzzle, progress, initialRows }) {
     const [message, setMessage] = useState(null);
     const solved = Boolean(result?.solved);
     const rows = lettersToRows(board, letters);
+    const filled = isFilled(board, letters);
     const rowsKey = rows.join('|');
     const lastSaved = useRef(rowsKey);
 
@@ -212,11 +213,16 @@ function PuzzlePlayer({ puzzle, progress, initialRows }) {
                             type="button"
                             className="submit-btn"
                             onClick={onSubmit}
-                            disabled={busy || !isFilled(board, letters)}
-                            title={isFilled(board, letters) ? undefined : 'Fill every cell first'}
+                            disabled={busy || !filled}
+                            aria-describedby={filled ? undefined : 'submit-hint'}
                         >
                             Submit
                         </button>
+                        {!filled && (
+                            <p id="submit-hint" className="submit-hint">
+                                Fill every cell to submit.
+                            </p>
+                        )}
                     </>
                 )}
             </div>

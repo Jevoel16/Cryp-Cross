@@ -3,7 +3,7 @@ import { useLocation, useNavigate, useSearchParams } from 'react-router-dom';
 import SectionWrapper from '../components/SectionWrapper';
 import FormMessage from '../components/FormMessage';
 import OAuthButtons from '../components/OAuthButtons';
-import { OAUTH_ERRORS, useOAuthProviders } from '../lib/oauth';
+import { OAUTH_ERRORS, useOAuthProviderState } from '../lib/oauth';
 import usePageMeta from '../usePageMeta';
 import { api } from '../api';
 import { useAuth } from '../auth/authContext';
@@ -13,7 +13,7 @@ export default function LoginPage() {
     const { setUser } = useAuth();
     const navigate = useNavigate();
     const location = useLocation();
-    const providers = useOAuthProviders();
+    const { providers, status } = useOAuthProviderState();
     const [form, setForm] = useState({ username: '', password: '' });
     const [busy, setBusy] = useState(false);
     const [params] = useSearchParams();
@@ -44,7 +44,8 @@ export default function LoginPage() {
                 New here? Continue with GitHub or Google to create your account. No email address is stored.
             </p>
             <OAuthButtons from={safeFrom} divider="or log in with your username" />
-            {!providers.length && <p className="hint">Sign-in providers are not set up on this server yet.</p>}
+            {status === 'ready' && !providers.length && <p className="hint">Sign-in providers are not set up on this server yet.</p>}
+            {status === 'error' && <p className="hint">Couldn&apos;t load the sign-in options. Refresh to try again.</p>}
             <form className="auth-form" onSubmit={onSubmit}>
                 <div className="form-group">
                     <label htmlFor="username">Username</label>

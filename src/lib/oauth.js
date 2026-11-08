@@ -15,20 +15,29 @@ export const OAUTH_ERRORS = {
 
 let cached = null;
 
-// The enabled providers, fetched once per page load.
-export function useOAuthProviders() {
-    const [providers, setProviders] = useState(cached || []);
+// Keeps only providers this frontend knows how to show.
+export function parseProviders(list) {
+    return Array.isArray(list) ? list.filter((p) => Object.hasOwn(PROVIDER_LABELS, p)) : [];
+}
+
+// The enabled providers, fetched once per page load; status is 'loading', 'ready' or 'error'.
+export function useOAuthProviderState() {
+    const [state, setState] = useState(() => (cached ? { providers: cached, status: 'ready' } : { providers: [], status: 'loading' }));
     useEffect(() => {
         if (cached) return;
         api('/auth/providers').then(
             (list) => {
-                cached = Array.isArray(list) ? list : [];
-                setProviders(cached);
+                cached = parseProviders(list);
+                setState({ providers: cached, status: 'ready' });
             },
-            () => setProviders([])
+            () => setState({ providers: [], status: 'error' })
         );
     }, []);
-    return providers;
+    return state;
+}
+
+export function useOAuthProviders() {
+    return useOAuthProviderState().providers;
 }
 
 export function oauthStartUrl(provider, { from, link } = {}) {
