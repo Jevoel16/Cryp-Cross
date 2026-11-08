@@ -1,4 +1,4 @@
-<a id="readme-top"></a>
+<a id="top"></a>
 
 <div align="center">
   <img src="public/logomain.png" alt="Cryp-Cross logo" width="120" />
@@ -8,22 +8,22 @@
   <p><strong>A daily cryptographic crossword: decode the encrypted clues, fill the grid, keep your streak.</strong></p>
 
   <p>
-    <img src="https://img.shields.io/badge/version-2.1.0-green?style=flat" alt="Version 2.1.0" />
+    <img src="https://img.shields.io/badge/version-2.1.1-green?style=flat" alt="Version 2.1.1" />
     <a href="LICENSE"><img src="https://img.shields.io/badge/license-Sprucetrap%20Source--Available-orange?style=flat" alt="License: Sprucetrap Source-Available" /></a>
     <a href="https://github.com/Jevoel16/Cryp-Cross/actions/workflows/ci.yml"><img src="https://img.shields.io/github/actions/workflow/status/Jevoel16/Cryp-Cross/ci.yml?branch=main&amp;label=CI&amp;style=flat" alt="CI status" /></a>
     <img src="https://img.shields.io/badge/platform-web-lightgrey?style=flat" alt="Platform: web" />
   </p>
 </div>
 
+<p align="center">
+  <a href="#about">About</a> · <a href="#screenshots">Screenshots</a> · <a href="#features">Features</a> · <a href="#tech-stack">Tech Stack</a> · <a href="#getting-started">Getting Started</a> · <a href="#configuration">Configuration</a> · <a href="#usage">Usage</a> · <a href="#more">More</a> · <a href="#contributing">Contributing</a> · <a href="#license">License</a> · <a href="#author">Author</a>
+</p>
+
 ---
 
 ## About
 
 Cryp-Cross is a free daily crossword where every clue is encrypted. Each day the server generates one grid for everyone and hides its clues behind a classical cipher (Caesar, Atbash or Vigenère). Players crack the cipher with a built-in decoder, fill the grid, and check and submit their answers. Guests play unranked; with a free account, solves are timed by the server and climb the leaderboard. It is a MERN app (MongoDB, Express, React, Node.js). Play it at [cryp-cross.jevoelorbilla.dev](https://cryp-cross.jevoelorbilla.dev).
-
-<p align="right"><a href="#readme-top">back to top</a></p>
-
----
 
 ## Screenshots
 
@@ -55,10 +55,6 @@ Cryp-Cross is a free daily crossword where every clue is encrypted. Each day the
 
 </details>
 
-<p align="right"><a href="#readme-top">back to top</a></p>
-
----
-
 ## Features
 
 - One new encrypted crossword for everyone, every day
@@ -71,10 +67,6 @@ Cryp-Cross is a free daily crossword where every clue is encrypted. Each day the
 
 Full list: [docs/features.md](docs/features.md).
 
-<p align="right"><a href="#readme-top">back to top</a></p>
-
----
-
 ## Tech Stack
 
 | Layer | Tools |
@@ -83,10 +75,6 @@ Full list: [docs/features.md](docs/features.md).
 | Backend | Node.js 22.14.0, Express 4.22.3, Mongoose 7.8.13, express-session 1.19.0, connect-mongo 6.0.0, bcryptjs 3.0.3, helmet 8.3.0, express-rate-limit 7.5.1 |
 | Database | MongoDB (Atlas in production, mongodb-memory-server for tests and local dev) |
 | Hosting | Vercel (static site and serverless API on one origin), Vercel Analytics 2.0.1, GitHub Actions CI |
-
-<p align="right"><a href="#readme-top">back to top</a></p>
-
----
 
 ## Getting Started
 
@@ -100,10 +88,6 @@ npm start                            # in a second terminal: site on http://loca
 ```
 
 With a real database, copy `server/.env.example` to `server/.env`, set `DATABASE_URL`, and run `npm start --prefix server` instead. To deploy, see [docs/deployment.md](docs/deployment.md).
-
-<p align="right"><a href="#readme-top">back to top</a></p>
-
----
 
 ## Configuration
 
@@ -130,10 +114,6 @@ Defaults and details: [docs/configuration.md](docs/configuration.md).
 
 </details>
 
-<p align="right"><a href="#readme-top">back to top</a></p>
-
----
-
 ## Usage
 
 1. Open **Play** (`/play`). The decoder names today's cipher.
@@ -143,10 +123,6 @@ Defaults and details: [docs/configuration.md](docs/configuration.md).
 5. Sign in with GitHub or Google before you start to save progress and get ranked on the **Leaderboard**.
 
 More: [player and account flows](docs/usage.md), [API reference](docs/api.md), [deployment](docs/deployment.md), [troubleshooting](docs/troubleshooting.md).
-
-<p align="right"><a href="#readme-top">back to top</a></p>
-
----
 
 ## More
 
@@ -181,28 +157,16 @@ Cryp-Cross/
 
 </details>
 
-<p align="right"><a href="#readme-top">back to top</a></p>
-
----
-
 ## Contributing
 
 Branches: `feat/short-description` or `fix/short-description`. Commits follow [Conventional Commits](https://www.conventionalcommits.org/) with the bumped SemVer version at the end of the subject, e.g. `feat: add CSV export (v2.1.0)`. Update this README with every change. SEO ideas: [docs/backlinks.md](docs/backlinks.md).
-
-<p align="right"><a href="#readme-top">back to top</a></p>
-
----
 
 ## License
 
 [Sprucetrap Source-Available License 1.0](LICENSE): non-commercial use with visible credit; commercial use needs written permission.
 
-<p align="right"><a href="#readme-top">back to top</a></p>
-
----
-
 ## Author
 
 **Sprucetrap** ([@Jevoel16](https://github.com/Jevoel16)), for CCC181 Lab Activity Final (Orbilla team).
 
-<p align="right"><a href="#readme-top">back to top</a></p>
+<p align="right"><a href="#top">Back to top</a></p>
