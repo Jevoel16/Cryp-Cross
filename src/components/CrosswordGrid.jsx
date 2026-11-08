@@ -1,7 +1,6 @@
 import { useRef } from 'react';
 
-// Renders the board. A visually hidden input holds focus so both physical and
-// on-screen (mobile) keyboards work; letters arrive via onInput, navigation via onKeyDown.
+// A hidden focused input takes physical and on-screen keyboards (onInput letters, onKeyDown moves).
 export default function CrosswordGrid({ crossword, marks = {}, locked = false, solution = null, label }) {
     const { board, letters, cursor, activeCells, selectCell, handleKey } = crossword;
     const inputRef = useRef(null);

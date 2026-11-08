@@ -1,5 +1,4 @@
-// Runs before the app renders so the saved (or system) theme applies without a flash.
-// Kept as a file, not an inline script, so the CSP can stay script-src 'self'.
+// Applies the saved or system theme before render; a file (not inline) so CSP stays script-src 'self'.
 (function () {
   var theme;
   try {

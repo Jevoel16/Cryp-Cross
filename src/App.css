@@ -1,7 +1,4 @@
-/* =========================================================================
-   Cryp-Cross: dark cipher-terminal theme (light theme via [data-theme=light]).
-   Lime accent from the puzzle-piece logo, cyan for cipher text.
-   ========================================================================= */
+/* Cryp-Cross styles: tokens first, light theme via [data-theme='light']. */
 
 :root,
 :root[data-theme='dark'] {
@@ -89,7 +86,6 @@
     --header-h: 64px;
 }
 
-/* --- Base ---------------------------------------------------------------- */
 html {
     scroll-padding-top: calc(var(--header-h) + 16px);
 }
@@ -226,7 +222,6 @@ ol {
     color: var(--text-muted);
 }
 
-/* --- Header -------------------------------------------------------------- */
 .site-header {
     position: sticky;
     top: 0;
@@ -439,7 +434,6 @@ ol {
     }
 }
 
-/* --- Main layout and cards ------------------------------------------------ */
 main {
     flex: 1;
     width: 100%;
@@ -479,7 +473,6 @@ article + article {
     }
 }
 
-/* --- Buttons and links ----------------------------------------------------- */
 .primary-btn,
 .submit-btn,
 .secondary-link,
@@ -564,7 +557,6 @@ article + article {
     margin: var(--space-5) 0 0;
 }
 
-/* --- Home ---------------------------------------------------------------- */
 .hero {
     display: grid;
     grid-template-columns: minmax(0, 1.3fr) minmax(0, 0.7fr);
@@ -657,7 +649,6 @@ article + article {
     }
 }
 
-/* --- Forms and messages ---------------------------------------------------- */
 .auth-section {
     max-width: 480px;
     margin: 0 auto;
@@ -794,7 +785,6 @@ input[type='range'] {
     padding: var(--space-2) var(--space-4);
 }
 
-/* --- Sign in with GitHub / Google ----------------------------------------- */
 .oauth {
     max-width: 420px;
     margin: 0 auto var(--space-1);
@@ -848,7 +838,6 @@ input[type='range'] {
     border-top: 1px solid var(--border);
 }
 
-/* --- Play page ----------------------------------------------------------- */
 .puzzle-layout {
     display: grid;
     grid-template-columns: minmax(0, 1fr) minmax(280px, 360px);
@@ -1259,7 +1248,6 @@ input[type='range'] {
     }
 }
 
-/* --- Tables: leaderboard and history -------------------------------------- */
 .leaderboard {
     width: 100%;
     border-collapse: separate;
@@ -1342,7 +1330,6 @@ input[type='range'] {
     font-weight: 700;
 }
 
-/* --- Account ------------------------------------------------------------- */
 .account-details {
     display: grid;
     grid-template-columns: max-content minmax(0, 1fr);
@@ -1424,7 +1411,6 @@ input[type='range'] {
     box-shadow: none;
 }
 
-/* --- Archive ------------------------------------------------------------- */
 .archive-list {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
@@ -1453,7 +1439,6 @@ input[type='range'] {
     text-decoration: none;
 }
 
-/* --- Team carousel ------------------------------------------------------- */
 #teamContainer {
     display: flex;
     align-items: center;
@@ -1522,7 +1507,6 @@ input[type='range'] {
     color: var(--text-muted);
 }
 
-/* --- Footer -------------------------------------------------------------- */
 .site-footer {
     border-top: 1px solid var(--border);
     background: color-mix(in srgb, var(--bg) 80%, transparent);
@@ -1580,7 +1564,6 @@ input[type='range'] {
     }
 }
 
-/* --- Loading skeletons --------------------------------------------------- */
 .skeleton {
     display: block;
     border-radius: var(--radius-sm);
@@ -1650,7 +1633,6 @@ input[type='range'] {
     }
 }
 
-/* --- Motion preferences -------------------------------------------------- */
 @media (prefers-reduced-motion: reduce) {
     *,
     *::before,

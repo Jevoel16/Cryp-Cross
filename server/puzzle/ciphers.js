@@ -1,5 +1,4 @@
-// Classical ciphers used to hide the clues. Only A-Z letters change (case kept);
-// spaces and punctuation stay so the clue's shape is still readable.
+// Clue ciphers: only A-Z change (case kept) so the clue's shape stays readable.
 
 const A = 'A'.charCodeAt(0);
 const a = 'a'.charCodeAt(0);

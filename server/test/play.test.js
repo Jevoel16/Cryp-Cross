@@ -45,8 +45,7 @@ describe('playing the daily puzzle', () => {
     puzzle = await DailyPuzzle.findOne({ date: dayKey() }).lean();
   });
 
-  // Accounts come from GitHub/Google sign-in; here one is created directly with a
-  // password and signed in with it, which gives the same kind of session.
+  // Creates a password account directly; its session matches an OAuth one.
   async function player(name) {
     await User.create({ username: name, passwordHash: bcrypt.hashSync('a long enough password', 4) });
     const tab = createClient(api.base);

@@ -14,8 +14,7 @@ function upsertHeadTag(tag, matchAttr, matchValue, attrs) {
     Object.entries(attrs).forEach(([key, value]) => el.setAttribute(key, value));
 }
 
-// Sets a unique title, description and canonical URL per route.
-// `noindex` keeps dynamic or error pages out of search results.
+// Unique title, description and canonical per route; `noindex` for dynamic and error pages.
 export default function usePageMeta({ title, description, path, noindex = false }) {
     useEffect(() => {
         const fullTitle = title === SITE_NAME ? title : `${title} | ${SITE_NAME}`;

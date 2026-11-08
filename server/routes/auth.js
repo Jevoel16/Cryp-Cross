@@ -8,8 +8,7 @@ const { requireAuth, loadSessionUser } = require('../middleware/auth');
 const { createOAuthRouter } = require('./oauth');
 
 const BCRYPT_ROUNDS = 12;
-// A GitHub/Google sign-in this recent counts as proof of identity for setting a new
-// password without the current one (the "forgot password" path).
+// A GitHub/Google sign-in this recent can set a new password without the current one.
 const RECENT_OAUTH_MS = 10 * 60 * 1000;
 // Compared against when the username is unknown so login takes the same time either way.
 const DUMMY_HASH = bcrypt.hashSync('not-a-real-password', BCRYPT_ROUNDS);
@@ -27,11 +26,7 @@ const createAuthLimiter = () =>
     message: { success: false, message: 'Too many attempts, please try again later' },
   });
 
-// GitHub/Google sign-in has its own, looser budget: each attempt costs two requests
-// (start + callback) and no password can be guessed through it, so sharing the login
-// budget locked players out after a few retries. Browsers reach these routes by
-// navigation, so going over the limit sends them back to a page with a message
-// instead of a raw JSON error.
+// Looser OAuth limit: two requests per sign-in, no password to guess (see docs/architecture.md#rate-limits).
 const createOAuthLimiter = () =>
   rateLimit({
     windowMs: 15 * 60 * 1000,
@@ -46,8 +41,7 @@ const createOAuthLimiter = () =>
     },
   });
 
-// Swaps the session id on login so a pre-set id can't be reused (session fixation).
-// `via` records how the player proved who they are ('password' or 'oauth').
+// New session id on login (no fixation); `via` records 'password' or 'oauth'.
 function startSession(req, user, via) {
   return new Promise((resolve, reject) => {
     req.session.regenerate((err) => {
@@ -67,8 +61,7 @@ function createAuthRouter() {
   const router = express.Router();
   const authLimiter = createAuthLimiter();
 
-  // Only accounts that have set a password can log in this way; accounts themselves
-  // are created through GitHub/Google sign-in.
+  // Only accounts with a password can log in here; accounts come from GitHub/Google.
   router.post('/login', authLimiter, async (req, res, next) => {
     const { errors, data } = validateLogin(req.body);
     if (errors.length) return badRequest(res, errors);
@@ -125,8 +118,7 @@ function createAuthRouter() {
     }
   });
 
-  // Sets or changes the password. Needs the current password, or a GitHub/Google sign-in
-  // within the last 10 minutes, so a stolen session alone can't take over the account.
+  // Needs the current password or a sign-in within 10 minutes, so a stolen session can't take over.
   router.put('/password', authLimiter, requireAuth, async (req, res, next) => {
     const { errors, data } = validatePasswordChange(req.body);
     if (errors.length) return badRequest(res, errors);
@@ -146,8 +138,7 @@ function createAuthRouter() {
       user.passwordHash = await bcrypt.hash(data.password, BCRYPT_ROUNDS);
       user.passwordChangedAt = new Date();
       await user.save();
-      // Every other session ends; this one stays signed in. The OAuth grace window closes
-      // too, so the new authAt can't be used to set yet another password without proof.
+      // Ends every other session and closes the OAuth grace window.
       req.session.authAt = user.passwordChangedAt.getTime();
       req.session.authVia = 'password';
       res.json({ success: true, message: 'Password saved', data: user.toPublic() });

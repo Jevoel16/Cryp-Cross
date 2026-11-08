@@ -1,5 +1,4 @@
-// Across and down clues. Each shows the encrypted text, plus (after the puzzle day)
-// the plain clue and answer. Clicking a clue moves the cursor to it.
+// Across/down clues; past days also show the plain clue and answer. Click to move the cursor.
 export default function ClueList({ entries, activeIndex, onSelect, status = {} }) {
     const groups = ['across', 'down'].map((direction) => ({
         direction,

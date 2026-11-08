@@ -37,8 +37,7 @@ function validateLogin(body) {
   return { errors, data: { username, password: body.password } };
 }
 
-// New password plus, when the account already has one, the current password (optional:
-// a recent GitHub/Google sign-in also proves who is asking).
+// Current password is optional: a recent GitHub/Google sign-in also proves identity.
 function validatePasswordChange(body) {
   if (!isObject(body)) return { errors: ['Request body must be a JSON object'], data: {} };
   const errors = [];

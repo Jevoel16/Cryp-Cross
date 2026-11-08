@@ -12,8 +12,7 @@ function sessionSecret() {
   return crypto.randomBytes(32).toString('hex');
 }
 
-// Session id in an httpOnly cookie; the session itself lives in MongoDB.
-// Falls back to the in-memory store only when no database is connected (DB-less tests).
+// httpOnly session cookie backed by MongoDB; memory store only without a database (tests).
 function createSessionMiddleware() {
   const store =
     mongoose.connection.readyState === 1

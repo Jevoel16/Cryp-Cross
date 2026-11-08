@@ -12,8 +12,7 @@ const ENV = {
   GOOGLE_CLIENT_SECRET: 'g-secret',
 };
 
-// The access token is the code, and each code maps to a profile the test sets up.
-// It also records the PKCE verifiers and the scopes it was asked for.
+// Fake provider: the token is the code; records PKCE verifiers and requested scopes.
 function startFakeProvider() {
   const profiles = new Map();
   const verifiers = new Map();

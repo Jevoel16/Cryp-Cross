@@ -69,8 +69,7 @@ function Timer({ startedAt, timeMs }) {
     );
 }
 
-// The board itself. Players (verified accounts) have a server attempt in `progress` and
-// rank on the leaderboard; guests get the same Check and Submit, graded but never stored.
+// Players rank via a server attempt in `progress`; guests get the same Check and Submit, never stored.
 function PuzzlePlayer({ puzzle, progress, initialRows }) {
     const isGuest = !progress;
     const board = useMemo(() => buildBoard(puzzle), [puzzle]);

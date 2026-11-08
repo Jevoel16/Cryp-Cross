@@ -51,8 +51,7 @@ async function resolveAccount(provider, profile, linkUser) {
 
   if (owner) return { user: owner };
 
-  // No email is requested or stored, so accounts are matched by provider ID only: a new
-  // provider ID is a new account. Players join GitHub and Google from the Account page.
+  // Matched by provider ID only (no email); players link providers from the Account page.
   const user = new User({
     username: await uniqueUsername(profile.usernameHint),
     [field]: profile.providerId,
@@ -73,10 +72,7 @@ function createOAuthRouter({ oauthLimiter, startSession }) {
     const { provider } = req.params;
     if (!oauth.isEnabled(provider)) return res.status(404).json({ success: false, message: 'Not found' });
 
-    // The provider returns to the callback's host, and the session cookie holding `state` only
-    // exists on the host where sign-in started. When the site is also served on another domain
-    // (e.g. *.vercel.app beside a custom domain), start over on the callback's host first.
-    // The target comes from env vars only, so this is not an open redirect.
+    // Restart sign-in on the callback's host so the state cookie matches (see docs/architecture.md#oauth-host).
     if (process.env.NODE_ENV === 'production') {
       const target = new URL(oauth.callbackUrl(provider)).origin;
       if (`${req.protocol}://${req.get('host')}` !== target) {

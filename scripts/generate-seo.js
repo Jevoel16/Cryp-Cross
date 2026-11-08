@@ -1,5 +1,4 @@
-// Runs after `npm run build`: writes build/sitemap.xml and build/robots.txt.
-// Both need absolute URLs, so they're generated from SITE_URL (or VITE_SITE_URL).
+// Post-build: writes sitemap.xml and robots.txt with absolute URLs from SITE_URL.
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';

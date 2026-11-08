@@ -1,5 +1,4 @@
-// Development only: runs the API on a throwaway in-memory MongoDB, so you can try the app
-// without installing MongoDB or creating an Atlas cluster. All data is lost on exit.
+// Development only: runs the API on a throwaway in-memory MongoDB.
 require('dotenv').config();
 const mongoose = require('mongoose');
 const { MongoMemoryServer } = require('mongodb-memory-server');

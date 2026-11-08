@@ -15,10 +15,7 @@ const DIRS = {
 
 const inBounds = (r, c) => r >= 0 && c >= 0 && r < SIZE && c < SIZE;
 
-// Returns how many existing letters the word would cross, or -1 if it can't go there.
-// Rules: stay on the board, match crossing letters, leave the cells just before and
-// after the word empty, and never touch a parallel word side by side (that would
-// create unclued letter runs).
+// Crossing count for a placement, or -1 if illegal (see docs/architecture.md#puzzle-generator).
 function scorePlacement(grid, word, row, col, dir) {
   const { dr, dc } = DIRS[dir];
   const endR = row + dr * (word.length - 1);
@@ -153,9 +150,7 @@ function chooseCipher(rng, words, usedWords) {
   return { type, key: keyWord.word, keyClue: keyWord.clue };
 }
 
-// With a secret, the seed is an HMAC of the date, so nobody can work out a future
-// puzzle from the public source code and word list. Without one (development and tests)
-// the date alone is the seed.
+// HMAC(secret, date) seed so future puzzles can't be computed from the public source.
 function seedFor(date, attempt, secret) {
   const text = `${date}#${attempt}`;
   return secret ? crypto.createHmac('sha256', secret).update(text).digest('hex') : text;

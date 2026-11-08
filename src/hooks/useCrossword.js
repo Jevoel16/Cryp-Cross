@@ -13,8 +13,7 @@ const other = (direction) => (direction === 'across' ? 'down' : 'across');
 const withLetter = (letters, row, col, value) =>
     letters.map((r, ri) => (ri === row ? r.map((v, ci) => (ci === col ? value : v)) : r));
 
-// Pure state transitions. A reducer (rather than reading state in event handlers)
-// means fast typing never works from a stale cursor.
+// Reducer so fast typing never reads a stale cursor.
 export function crosswordReducer(state, action) {
     const { board, letters, cursor } = state;
     const { row, col } = cursor;
@@ -89,8 +88,7 @@ function init({ puzzle, initialLetters }) {
     };
 }
 
-// Board, typed letters and the cursor (cell + direction) for one puzzle.
-// Remount (change `key`) to load a different puzzle.
+// Board, letters and cursor for one puzzle; change `key` to load another.
 export default function useCrossword(puzzle, initialLetters) {
     const [state, dispatch] = useReducer(crosswordReducer, { puzzle, initialLetters }, init);
     const { board, letters, cursor } = state;

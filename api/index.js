@@ -1,12 +1,9 @@
-// Vercel serverless entry for the Express API. vercel.json rewrites /api/* here, so the
-// site and the API share one origin and the session cookie stays first-party.
+// Vercel entry for the API; /api/* is rewritten here so site and API share one origin.
 const { createApp } = require('../server/app');
 const { checkEnv } = require('../server/lib/env');
 const { connectDb } = require('../server/lib/db');
 
-// Warm invocations reuse the module, so the connection and app are built once per instance.
-// The app is created only after MongoDB connects: the session and rate-limit stores pick
-// MongoDB only when the connection is already open.
+// Built once per warm instance, after MongoDB connects (see docs/architecture.md#serverless-startup).
 let appPromise;
 
 async function buildApp() {

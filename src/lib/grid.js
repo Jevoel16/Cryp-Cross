@@ -2,8 +2,7 @@
 
 const DELTA = { across: [0, 1], down: [1, 0] };
 
-// Cells are null for blocks, otherwise { number, across, down } where across/down
-// are indexes into `entries` (or null).
+// Cells: null for blocks, else { number, across, down } with indexes into `entries`.
 export function buildBoard({ width, height, layout, entries }) {
     const cells = layout.map((row) => [...row].map((ch) => (ch === '#' ? null : { number: null, across: null, down: null })));
     entries.forEach((entry, index) => {

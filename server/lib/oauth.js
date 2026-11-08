@@ -1,5 +1,4 @@
-// GitHub and Google sign-in: the OAuth 2 authorization-code flow with PKCE, using
-// Node's built-in fetch. A provider is enabled only when its client ID and secret are set.
+// GitHub/Google OAuth 2 code flow with PKCE; a provider is on only when its ID and secret are set.
 const crypto = require('crypto');
 
 const PROVIDERS = {
@@ -65,8 +64,7 @@ function callbackUrl(id) {
 
 const base64url = (buf) => buf.toString('base64url');
 
-// One-time values for a sign-in attempt: `state` ties the callback to this browser's
-// session, and the PKCE verifier ties the code exchange to the same attempt.
+// `state` ties the callback to this session; the PKCE verifier ties the code exchange to it.
 function createAttempt() {
   const verifier = base64url(crypto.randomBytes(32));
   return {

@@ -1,7 +1,6 @@
 const User = require('../models/user');
 
-// Returns the signed-in user, or null. A password change invalidates sessions
-// that were created before it.
+// Signed-in user or null; sessions older than the last password change don't count.
 async function loadSessionUser(req) {
   const userId = req.session && req.session.userId;
   if (!userId) return null;

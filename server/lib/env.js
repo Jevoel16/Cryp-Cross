@@ -10,8 +10,7 @@ function originOf(url) {
   }
 }
 
-// Checks the settings both entry points (server.js and the Vercel function) need.
-// Returns fatal problems as a list; warnings are logged here.
+// Returns fatal config problems for both entry points; logs warnings.
 function checkEnv(env = process.env) {
   const errors = [];
   if (!env.DATABASE_URL) {

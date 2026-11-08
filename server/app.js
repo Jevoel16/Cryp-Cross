@@ -18,10 +18,7 @@ function allowedOrigins() {
   return process.env.NODE_ENV === 'production' ? [] : ['http://localhost:3000'];
 }
 
-// Proxy hops to trust for client IP and protocol. Without it, behind a proxy every
-// player shares the proxy's IP (one rate-limit bucket) and https requests look like
-// http, which breaks the same-origin check below. Vercel sets VERCEL=1 and always
-// sits in front of the function, so it defaults to 1 there.
+// Proxy hops to trust for real client IPs and https; 1 on Vercel (see docs/architecture.md#proxies).
 function trustProxyHops() {
   const fromEnv = process.env.TRUST_PROXY;
   if (fromEnv !== undefined && fromEnv !== '') return Number(fromEnv) || 0;
@@ -30,12 +27,7 @@ function trustProxyHops() {
 
 const UNSAFE_METHODS = new Set(['POST', 'PUT', 'PATCH', 'DELETE']);
 
-// CSRF guard for cookie-authenticated writes: the browser always sends Origin on
-// cross-site POSTs, so a foreign Origin is refused. Requiring a JSON body also blocks
-// plain HTML form posts, which can't send application/json without a CORS preflight.
-// Same-origin requests (site and /api on one host) are always allowed: a page on another
-// site can't make the browser send this Host together with this Origin, so it isn't CSRF.
-// This keeps a newly added custom domain working even before CORS_ORIGINS lists it.
+// CSRF guard for cookie-authenticated writes (see docs/architecture.md#csrf).
 function csrfGuard(origins) {
   return (req, res, next) => {
     if (!UNSAFE_METHODS.has(req.method)) return next();
@@ -102,7 +94,7 @@ function createApp() {
     res.status(404).json({ success: false, message: 'Not found' });
   });
 
-  // Central error handler: never leak internal messages or stack traces to clients.
+  // Central error handler: never leak internal messages or stack traces.
   // eslint-disable-next-line no-unused-vars
   app.use((err, req, res, next) => {
     if (err.type === 'entity.parse.failed') {

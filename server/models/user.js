@@ -1,7 +1,6 @@
 const mongoose = require('mongoose');
 
-// Accounts are created only through GitHub or Google sign-in, and no email address is
-// stored. A player can add a password later to also log in with username + password.
+// Created only via GitHub/Google (no email stored); an optional password enables username login.
 const userSchema = new mongoose.Schema(
   {
     // Stored lowercase so "Alice" and "alice" can't both exist.

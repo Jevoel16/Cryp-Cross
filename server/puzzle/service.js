@@ -6,8 +6,7 @@ const { dayKey } = require('./dayKey');
 let words;
 const wordList = () => (words ||= loadWords());
 
-// Generation is deterministic, so a race between two first requests stores the same
-// puzzle; the unique index makes the loser fall back to reading the winner's copy.
+// Deterministic generation: a race stores the same puzzle and the loser reads the winner's copy.
 async function getOrCreatePuzzle(date) {
   const existing = await DailyPuzzle.findOne({ date }).lean();
   if (existing) return existing;
@@ -22,8 +21,7 @@ async function getOrCreatePuzzle(date) {
 
 const getTodayPuzzle = () => getOrCreatePuzzle(dayKey());
 
-// What players see. Answers, plain clues and cipher keys stay on the server
-// unless `reveal` is set (past days only).
+// Player view: answers, plain clues and keys stay hidden unless `reveal` (past days).
 function toPublicPuzzle(puzzle, { reveal = false } = {}) {
   const { cipher } = puzzle;
   const publicCipher = { type: cipher.type };

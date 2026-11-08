@@ -1,5 +1,4 @@
-// Decoders for the in-page cipher tool. Mirrors server/puzzle/ciphers.js:
-// only A-Z letters change (case kept), and the Vigenere key advances on letters only.
+// Decoders mirroring server/puzzle/ciphers.js: only A-Z change; Vigenere advances on letters only.
 
 const mod26 = (n) => ((n % 26) + 26) % 26;
 

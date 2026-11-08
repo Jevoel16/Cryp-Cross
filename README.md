@@ -8,7 +8,7 @@
   <p><strong>A daily cryptographic crossword: decode the encrypted clues, fill the grid, keep your streak.</strong></p>
 
   <p>
-    <img src="https://img.shields.io/badge/version-2.2.1-green?style=flat" alt="Version 2.2.1" />
+    <img src="https://img.shields.io/badge/version-2.2.2-green?style=flat" alt="Version 2.2.2" />
     <a href="LICENSE"><img src="https://img.shields.io/badge/license-Sprucetrap%20Source--Available-orange?style=flat" alt="License: Sprucetrap Source-Available" /></a>
     <a href="https://github.com/Jevoel16/Cryp-Cross/actions/workflows/ci.yml"><img src="https://img.shields.io/github/actions/workflow/status/Jevoel16/Cryp-Cross/ci.yml?branch=main&amp;label=CI&amp;style=flat" alt="CI status" /></a>
     <img src="https://img.shields.io/badge/platform-web-lightgrey?style=flat" alt="Platform: web" />
@@ -122,7 +122,7 @@ Defaults and details: [docs/configuration.md](docs/configuration.md).
 4. **Check** marks each clue right or wrong. **Submit** records your time once the grid is full.
 5. Sign in with GitHub or Google before you start to save progress and get ranked on the **Leaderboard**.
 
-More: [player and account flows](docs/usage.md), [API reference](docs/api.md), [deployment](docs/deployment.md), [troubleshooting](docs/troubleshooting.md).
+More: [player and account flows](docs/usage.md), [API reference](docs/api.md), [architecture notes](docs/architecture.md), [deployment](docs/deployment.md), [troubleshooting](docs/troubleshooting.md).
 
 ## More
 

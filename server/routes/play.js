@@ -9,15 +9,13 @@ const LEADERBOARD_SIZE = 50;
 const HISTORY_SIZE = 30;
 const DEFAULT_MIN_SOLVE_SECONDS = 30;
 
-// Solves faster than this can't come from reading and decoding the clues, only from
-// answers worked out before the timer started, so they are refused.
+// Solves faster than this must have been prepared before the timer started.
 function minSolveMs() {
   const seconds = Number(process.env.MIN_SOLVE_SECONDS);
   return (Number.isFinite(seconds) && seconds >= 0 ? seconds : DEFAULT_MIN_SOLVE_SECONDS) * 1000;
 }
 
-// The grid a player sends must match today's layout exactly: same size, blocks in the
-// same places, and only A-Z or blanks in open cells.
+// The grid must match today's layout: same size, same blocks, only A-Z or blanks.
 function validateGrid(body, puzzle) {
   if (!isObject(body)) return 'Request body must be a JSON object';
   if (body.date !== puzzle.date) return 'This puzzle has ended. Reload to get the new one.';
@@ -52,9 +50,7 @@ const publicAttempt = (a) => ({
   timeMs: a.timeMs ?? null,
 });
 
-// Creates the attempt (and starts the timer) the first time a player opens today's puzzle.
-// Only GET /progress may do this: if saving, checking or submitting could create it too,
-// a pre-solved grid could be submitted as the very first request with a near-zero time.
+// Only GET /progress starts the timer (see docs/architecture.md#solve-timer).
 async function findOrStartAttempt(user, date) {
   return Attempt.findOneAndUpdate(
     { user: user._id, date },
@@ -119,8 +115,7 @@ router.post('/puzzles/today/check', player, async (req, res, next) => {
   }
 });
 
-// Guests can check and finish today's puzzle, but nothing is
-// stored and nothing reaches the leaderboard: only server-timed solves by signed-in players rank.
+// Guests can check and finish, but nothing is stored or ranked.
 router.post('/puzzles/today/guest-check', async (req, res, next) => {
   try {
     const puzzle = await getTodayPuzzle();
@@ -198,8 +193,7 @@ router.get('/leaderboard', async (req, res, next) => {
   }
 });
 
-// Streaks count consecutive puzzle days. Today's missing solve doesn't break the
-// current streak until the day is over.
+// Streaks count consecutive days; today's missing solve breaks it only once the day ends.
 function streaks(solvedDates, today) {
   const set = new Set(solvedDates);
   let current = 0;

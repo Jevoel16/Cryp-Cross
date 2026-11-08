@@ -1,8 +1,6 @@
 const mongoose = require('mongoose');
 
-// Hit counters shared by every API instance. On serverless hosts (Vercel) each instance
-// has its own memory, so the default in-memory store would let attackers spread requests
-// across instances; keeping the counts in MongoDB gives one limit per client.
+// Rate-limit counters in MongoDB so limits hold across serverless instances.
 const rateLimitSchema = new mongoose.Schema(
   {
     _id: String,
@@ -34,8 +32,7 @@ class MongoRateLimitStore {
     return `${this.prefix}:${key}`;
   }
 
-  // One atomic update: count the hit in the current window, or start a new window
-  // when the old one has ended (or none exists yet).
+  // One atomic update: count the hit, or start a new window if the old one ended.
   async increment(key) {
     const now = new Date();
     const live = { $gt: ['$resetAt', now] };
@@ -69,8 +66,7 @@ class MongoRateLimitStore {
   }
 }
 
-// Shared store when MongoDB is connected; otherwise undefined, so express-rate-limit
-// falls back to its memory store (DB-less tests, same rule as the session store).
+// Shared store when MongoDB is connected; otherwise express-rate-limit's memory store.
 function createRateLimitStore(prefix) {
   return mongoose.connection.readyState === 1 ? new MongoRateLimitStore({ prefix }) : undefined;
 }

@@ -184,8 +184,7 @@ function ConnectedAccounts({ user, setUser }) {
     );
 }
 
-// Sets or changes the password used for username login. The API wants the current
-// password, unless the player signed in with GitHub/Google in the last 10 minutes.
+// Password for username login; needs the current one unless signed in via GitHub/Google in the last 10 minutes.
 function PasswordForm({ user, setUser }) {
     const needsCurrent = user.hasPassword && !user.canSetPasswordWithoutCurrent;
     const [form, setForm] = useState({ password: '', currentPassword: '' });
