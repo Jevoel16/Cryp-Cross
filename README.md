@@ -8,7 +8,7 @@
   <p><strong>A daily cryptographic crossword: decode the encrypted clues, fill the grid, keep your streak.</strong></p>
 
   <p>
-    <img src="https://img.shields.io/badge/version-2.2.0-green?style=flat" alt="Version 2.2.0" />
+    <img src="https://img.shields.io/badge/version-2.2.1-green?style=flat" alt="Version 2.2.1" />
     <a href="LICENSE"><img src="https://img.shields.io/badge/license-Sprucetrap%20Source--Available-orange?style=flat" alt="License: Sprucetrap Source-Available" /></a>
     <a href="https://github.com/Jevoel16/Cryp-Cross/actions/workflows/ci.yml"><img src="https://img.shields.io/github/actions/workflow/status/Jevoel16/Cryp-Cross/ci.yml?branch=main&amp;label=CI&amp;style=flat" alt="CI status" /></a>
     <img src="https://img.shields.io/badge/platform-web-lightgrey?style=flat" alt="Platform: web" />
@@ -32,8 +32,8 @@ Cryp-Cross is a free daily crossword where every clue is encrypted. Each day the
 
 <table>
   <tr>
-    <td width="50%" align="center"><b>Home</b><br><a href="docs/images/home.png"><img src="docs/images/home.png" width="100%" alt="Home page with the puzzle-piece logo and the Decode, Fill, Race steps"></a></td>
-    <td width="50%" align="center"><b>Play</b><br><a href="docs/images/play.png"><img src="docs/images/play.png" width="100%" alt="Play page with the crossword grid and the Atbash decoder turning the selected clue into English"></a></td>
+    <td width="50%" align="center"><b>Home</b><br><a href="docs/images/home.png"><img src="docs/images/home.png" width="100%" alt="Home page with the headline, a sample board with a decoded clue, and the Decode, Fill, Race steps"></a></td>
+    <td width="50%" align="center"><b>Play</b><br><a href="docs/images/play.png"><img src="docs/images/play.png" width="100%" alt="Play page with the crossword grid and the Caesar decoder beside it"></a></td>
   </tr>
   <tr>
     <td width="50%" align="center"><b>How it works</b><br><a href="docs/images/how-it-works.png"><img src="docs/images/how-it-works.png" width="100%" alt="How it works page explaining the three ciphers"></a></td>
@@ -44,7 +44,7 @@ Cryp-Cross is a free daily crossword where every clue is encrypted. Each day the
     <td width="50%" align="center"><b>Log in</b><br><a href="docs/images/login.png"><img src="docs/images/login.png" width="100%" alt="Log in page with GitHub and Google buttons and username login"></a></td>
   </tr>
   <tr>
-    <td width="50%" align="center"><b>Team</b><br><a href="docs/images/team.png"><img src="docs/images/team.png" width="100%" alt="Team page with the member carousel"></a></td>
+    <td width="50%" align="center"><b>Team</b><br><a href="docs/images/team.png"><img src="docs/images/team.png" width="100%" alt="Team page with the member carousel and pause button"></a></td>
     <td width="50%" align="center"><b>Light mode</b><br><a href="docs/images/light-mode.png"><img src="docs/images/light-mode.png" width="100%" alt="Home page in the light theme"></a></td>
   </tr>
   <tr>

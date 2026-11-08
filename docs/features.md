@@ -14,11 +14,13 @@ The full feature list of Cryp-Cross, frontend and backend.
 - Info pages: Home, How it works (`/idea`) and a Team carousel
 - **Accounts through GitHub or Google only**: the first sign-in creates the account (no email address is asked for or stored). Buttons appear only for providers configured on the API.
 - **Account page**: change the username, add or change a password for username + password login, connect or disconnect GitHub/Google, and see your stats
-- **Dark cipher-terminal design**: deep ink background with a faint grid, glassy cards, a lime accent taken from the puzzle-piece logo and cyan cipher text; Space Grotesk for the interface and JetBrains Mono for ciphers and the grid. The logo appears in the header, the home hero and the footer.
-- Home page hero with a one-time "decrypt" animation of the tagline, today's cipher at a glance, and a Decode / Fill / Race walkthrough
-- Play page with a glowing cursor and active entry, right/wrong marks, a Ranked or Guest badge with a timer pill, and the decoder styled as a terminal pane that stays in view beside the grid
+- **Plain, consistent design**: one set of spacing, type, radius and colour tokens; a lime accent (from the puzzle-piece logo) only for actions and state, cyan only for cipher text; Space Grotesk for the interface and JetBrains Mono only for cipher text, the grid and numbers. No decorative glows, gradients or animations.
+- Home page with a sample board and a decoded example clue, today's cipher at a glance, and a Decode / Fill / Race walkthrough
+- Play page with a highlighted cursor and active entry, right/wrong marks, a Ranked or Guest badge with a timer, and a decoder panel that stays in view beside the grid
 - Leaderboard with gold, silver and bronze ranks and your own row highlighted; stat tiles on the Account page
-- Sticky header with a mobile menu, a skip link, visible focus rings and `prefers-reduced-motion` support (animations off)
+- Sticky header with a mobile menu, a skip link, visible focus rings and `prefers-reduced-motion` support (animations and team auto-advance off, with a pause button)
+- Loading skeletons that reserve space (no layout shift), plus empty and error states for every async view
+- One SVG icon set (2px strokes, 18px) for the theme toggle, menu, timer and team arrows
 - Dark theme by default with a light theme toggle; the choice is remembered in `localStorage`, and without one the site follows the system setting. `public/theme.js` applies it before the app renders, so there is no flash.
 - Client-side routing with React Router and a 404 page
 - SEO: a unique title, description and canonical URL per page, `noindex` on the error page, JSON-LD, Open Graph tags, `llms.txt`, and a `sitemap.xml` + `robots.txt` generated at build time

@@ -1063,6 +1063,7 @@ input[type='range'] {
 }
 
 .timer.idle {
+    font-family: var(--font-sans);
     font-weight: 400;
     color: var(--text-muted);
 }
