@@ -6,10 +6,7 @@ export default function Footer() {
             <div className="footer-inner">
                 <div className="footer-brand">
                     <img src="/img/logo-72.webp" width="25" height="36" alt="" loading="lazy" />
-                    <div>
-                        <strong>Cryp-Cross</strong>
-                        <p>A daily crossword where every clue is encrypted.</p>
-                    </div>
+                    <strong>Cryp-Cross</strong>
                 </div>
                 <nav className="footer-links" aria-label="Footer">
                     <Link to="/play">Play</Link>

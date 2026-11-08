@@ -25,10 +25,6 @@ export default function CipherTool({ cipher, text }) {
                 </div>
             )}
 
-            <p className="cipher-input">
-                <span className="label">Selected clue</span> <code>{text}</code>
-            </p>
-
             {cipher.type === 'caesar' && (
                 <div className="form-group">
                     <label htmlFor="caesar-shift">Shift back by {shift}</label>

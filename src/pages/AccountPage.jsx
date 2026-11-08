@@ -307,7 +307,7 @@ export default function AccountPage() {
             <PasswordForm user={user} setUser={setUser} />
             <Stats />
             <p className="account-actions">
-                <button type="button" className="primary-btn" onClick={onLogout}>
+                <button type="button" className="secondary-btn" onClick={onLogout}>
                     Log out
                 </button>
             </p>

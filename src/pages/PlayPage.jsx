@@ -211,7 +211,7 @@ function PuzzlePlayer({ puzzle, progress, initialRows }) {
                     </span>}
                 {!solved && (
                     <>
-                        <button type="button" className="primary-btn" onClick={onCheck} disabled={busy}>
+                        <button type="button" className="secondary-btn" onClick={onCheck} disabled={busy}>
                             Check
                         </button>
                         <button
