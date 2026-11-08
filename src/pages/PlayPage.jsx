@@ -8,6 +8,7 @@ import { api } from '../api';
 import { useAuth } from '../auth/authContext';
 import { buildBoard, entryCells, isFilled, lettersToRows, rowsToLetters } from '../lib/grid';
 import { formatDuration } from '../lib/format';
+import { ClockIcon } from '../components/Icons';
 
 const SAVE_DELAY_MS = 1000;
 const NO_STATUS = {};
@@ -61,7 +62,8 @@ function Timer({ startedAt, timeMs }) {
     const elapsed = timeMs ?? Math.max(0, now - new Date(startedAt).getTime());
     return (
         <span className="timer" aria-label={`Time ${formatDuration(elapsed)}`}>
-            ⏱ {formatDuration(elapsed)}
+            <ClockIcon />
+            {formatDuration(elapsed)}
         </span>
     );
 }
@@ -203,7 +205,10 @@ function PuzzlePlayer({ puzzle, progress, initialRows }) {
                 {startedAt && !(solved && result.timeMs === null) && (
                     <Timer startedAt={startedAt} timeMs={result?.timeMs ?? null} />
                 )}
-                {!startedAt && !solved && <span className="timer idle">⏱ starts when you type</span>}
+                {!startedAt && !solved && <span className="timer idle">
+                        <ClockIcon />
+                        Starts when you type
+                    </span>}
                 {!solved && (
                     <>
                         <button type="button" className="primary-btn" onClick={onCheck} disabled={busy}>

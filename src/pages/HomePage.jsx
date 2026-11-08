@@ -1,6 +1,5 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import DecryptText from '../components/DecryptText';
 import usePageMeta from '../usePageMeta';
 import { api } from '../api';
 import { useAuth } from '../auth/authContext';
@@ -8,24 +7,47 @@ import { CIPHER_INFO } from '../lib/ciphers';
 
 const STEPS = [
     {
-        n: '01',
         title: 'Decode',
         text: "Each clue is encrypted with the day's cipher. Use the decoder to find the shift, mirror or keyword.",
-        sample: ['WKUHH OHWWHUV', 'THREE LETTERS'],
     },
     {
-        n: '02',
         title: 'Fill',
         text: 'Type answers straight into the grid. Check marks each clue right or wrong without giving anything away.',
-        sample: ['C _ P H E R', 'C I P H E R'],
     },
     {
-        n: '03',
         title: 'Race',
-        text: 'Sign in and your solve is timed by the server. The fastest times of the day make the leaderboard.',
-        sample: ['#1  04:12', 'STREAK  7'],
+        text: 'Sign in and the server times your solve. The fastest times of the day make the leaderboard.',
     },
 ];
+
+// A real (tiny) board: CODES across, CRYPT and SHIFT down; '#' is a block, '.' an empty cell.
+const SAMPLE = ['CODES', 'R###H', 'Y###I', 'P###.', '.###.'];
+const SAMPLE_NUMBERS = { '0,0': 1, '0,4': 2 };
+
+function SampleBoard() {
+    return (
+        <figure className="hero-sample">
+            <div className="crossword-grid" style={{ '--cols': 5 }} aria-hidden="true">
+                {SAMPLE.flatMap((row, r) =>
+                    [...row].map((ch, c) =>
+                        ch === '#' ? (
+                            <span key={`${r},${c}`} className="cell block" />
+                        ) : (
+                            <span key={`${r},${c}`} className={`cell${r === 0 ? ' in-entry' : ''}`}>
+                                {SAMPLE_NUMBERS[`${r},${c}`] && <span className="cell-number">{SAMPLE_NUMBERS[`${r},${c}`]}</span>}
+                                {ch !== '.' && <span className="cell-letter">{ch}</span>}
+                            </span>
+                        )
+                    )
+                )}
+            </div>
+            <figcaption>
+                <span className="sample-label">1 Across</span> <code className="cipher-text">Vhfuhw phvvdjhv</code>
+                <span className="sample-decoded">Caesar shift 3: Secret messages (5)</span>
+            </figcaption>
+        </figure>
+    );
+}
 
 export default function HomePage() {
     usePageMeta({
@@ -38,7 +60,7 @@ export default function HomePage() {
     const [today, setToday] = useState(null);
 
     useEffect(() => {
-        // Only a teaser; the page works without it.
+        // Only a summary line; the page works without it.
         api('/puzzles/today').then(setToday, () => setToday(null));
     }, []);
 
@@ -46,14 +68,10 @@ export default function HomePage() {
         <div className="home">
             <section className="hero" aria-labelledby="hero-title">
                 <div className="hero-copy">
-                    <p className="eyebrow">Daily cipher crossword</p>
-                    <h1 id="hero-title">Cryp-Cross</h1>
-                    <p className="hero-tagline">
-                        <DecryptText text="Every clue is encrypted." />
-                    </p>
+                    <h1 id="hero-title">A daily crossword with encrypted clues</h1>
                     <p className="lead">
-                        Crack a <strong>Caesar shift</strong>, an <strong>Atbash</strong> mirror or a{' '}
-                        <strong>Vigenère</strong> keyword, then fill the grid. One new puzzle for everyone, every day.
+                        Crack each clue&apos;s Caesar shift, Atbash mirror or Vigenère keyword, then fill the grid. One new
+                        puzzle for everyone, every day.
                     </p>
                     <div className="cta-row">
                         <Link to="/play" className="primary-btn">
@@ -70,56 +88,29 @@ export default function HomePage() {
                             </Link>
                         )}
                     </div>
-                    {today && (
-                        <p className="today-chip">
-                            <span className="pulse" aria-hidden="true" />
-                            Today · {today.date} · {CIPHER_INFO[today.cipher?.type]?.name ?? 'Cipher'} ·{' '}
-                            {today.entries?.length ?? 0} clues
-                        </p>
-                    )}
+                    <p className="today-line">
+                        {today &&
+                            `Today: ${today.date} · ${CIPHER_INFO[today.cipher?.type]?.name ?? 'Cipher'} · ${today.entries?.length ?? 0} clues`}
+                    </p>
                 </div>
-                <div className="hero-art">
-                    <div className="hero-ring" aria-hidden="true" />
-                    <img
-                        src="/img/logo-440.webp"
-                        width="308"
-                        height="440"
-                        alt="The Cryp-Cross logo, a green puzzle piece"
-                        fetchPriority="high"
-                    />
-                </div>
+                <SampleBoard />
             </section>
 
             <section className="steps" aria-labelledby="steps-title">
                 <h2 id="steps-title">How a day goes</h2>
                 <ol className="step-list">
                     {STEPS.map((step) => (
-                        <li key={step.n} className="step-card">
-                            <span className="step-n">{step.n}</span>
+                        <li key={step.title}>
                             <h3>{step.title}</h3>
                             <p>{step.text}</p>
-                            <p className="step-sample" aria-hidden="true">
-                                <code className="from">{step.sample[0]}</code>
-                                <span className="arrow">→</span>
-                                <code className="to">{step.sample[1]}</code>
-                            </p>
                         </li>
                     ))}
                 </ol>
             </section>
 
-            <section className="tab-content home-more" aria-labelledby="more-title">
-                <h2 id="more-title">Play now, sign in to rank</h2>
-                <p>
-                    Anyone can play today&apos;s puzzle as a guest: Check and Submit work, but guest times aren&apos;t ranked.
-                    Create a free account, or continue with GitHub or Google, to save progress across devices, submit a timed
-                    solve, keep a streak going and see your name on the daily leaderboard.
-                </p>
-                <p>
-                    Read <Link to="/idea">how Cryp-Cross works</Link>, browse <Link to="/puzzles">past puzzles</Link> or{' '}
-                    <Link to="/team">meet the team</Link> behind it.
-                </p>
-            </section>
+            <p className="home-links">
+                <Link to="/idea">How it works</Link> · <Link to="/puzzles">Past puzzles</Link> · <Link to="/team">Team</Link>
+            </p>
         </div>
     );
 }
