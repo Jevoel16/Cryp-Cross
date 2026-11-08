@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import SectionWrapper from '../components/SectionWrapper';
+import { RowsSkeleton } from '../components/Skeleton';
 import usePageMeta from '../usePageMeta';
 import { api } from '../api';
 import { useAuth } from '../auth/authContext';
@@ -38,7 +39,7 @@ export default function LeaderboardPage() {
                     {error}
                 </p>
             )}
-            {!loaded && <p>Loading...</p>}
+            {!loaded && <RowsSkeleton label="Loading the leaderboard" />}
             {board && (
                 <>
                     <p>

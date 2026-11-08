@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Link, Navigate, useNavigate, useSearchParams } from 'react-router-dom';
 import SectionWrapper from '../components/SectionWrapper';
+import { RowsSkeleton, TilesSkeleton } from '../components/Skeleton';
 import FormMessage from '../components/FormMessage';
 import { ProviderIcon } from '../components/OAuthButtons';
 import { OAUTH_ERRORS, PROVIDER_LABELS, oauthStartUrl, useOAuthProviders } from '../lib/oauth';
@@ -18,7 +19,7 @@ function Stats() {
     }, []);
 
     if (error) return <p className="form-message error">{error}</p>;
-    if (!stats) return <p>Loading stats...</p>;
+    if (!stats) return <TilesSkeleton />;
     return (
         <>
             <ul className="stat-tiles">
@@ -35,6 +36,11 @@ function Stats() {
                     <span className="stat-value">{formatDuration(stats.bestTimeMs)}</span> best time
                 </li>
             </ul>
+            {stats.history.length === 0 && (
+                <p className="muted">
+                    No solves yet. <Link to="/play">Play today&apos;s puzzle</Link> to start a streak.
+                </p>
+            )}
             {stats.history.length > 0 && (
                 <>
                     <h2>Recent solves</h2>
@@ -284,7 +290,7 @@ export default function AccountPage() {
     if (loading) {
         return (
             <SectionWrapper title="Account">
-                <p>Loading...</p>
+                <RowsSkeleton rows={3} label="Loading your account" />
             </SectionWrapper>
         );
     }

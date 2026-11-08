@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import SectionWrapper from '../components/SectionWrapper';
+import { BoardSkeleton } from '../components/Skeleton';
 import PuzzleBoard from '../components/PuzzleBoard';
 import usePageMeta from '../usePageMeta';
 import useCrossword from '../hooks/useCrossword';
@@ -265,7 +266,7 @@ function TodayPuzzle({ puzzle }) {
         api('/puzzles/today/progress').then(setProgress, (err) => setError(err.message));
     }, [isPlayer]);
 
-    if (loading || (isPlayer && !progress && !error)) return <p>Loading your progress...</p>;
+    if (loading || (isPlayer && !progress && !error)) return <BoardSkeleton label="Loading your progress" />;
 
     // Server copy wins when it has letters; otherwise keep what this browser had.
     const draft = readDraft(puzzle.date);
@@ -319,7 +320,7 @@ export default function PlayPage() {
                     {error}
                 </p>
             )}
-            {!puzzle && !error && <p>Loading today&apos;s puzzle...</p>}
+            {!puzzle && !error && <BoardSkeleton label="Loading today's puzzle" />}
             {puzzle && <TodayPuzzle key={puzzle.date} puzzle={puzzle} />}
             {puzzle && (
                 <p className="archive-link">

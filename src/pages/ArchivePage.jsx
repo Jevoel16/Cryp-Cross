@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Link, Navigate, useParams } from 'react-router-dom';
 import SectionWrapper from '../components/SectionWrapper';
+import { BoardSkeleton } from '../components/Skeleton';
 import PuzzleBoard from '../components/PuzzleBoard';
 import usePageMeta from '../usePageMeta';
 import useCrossword from '../hooks/useCrossword';
@@ -51,7 +52,7 @@ export default function ArchivePage() {
                     {current.error} <Link to="/puzzles">See past puzzles</Link>.
                 </p>
             )}
-            {!current.puzzle && !current.error && <p>Loading...</p>}
+            {!current.puzzle && !current.error && <BoardSkeleton />}
             {current.puzzle && <SolvedBoard key={date} puzzle={current.puzzle} />}
         </SectionWrapper>
     );

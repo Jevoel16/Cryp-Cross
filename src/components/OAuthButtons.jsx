@@ -1,4 +1,5 @@
-import { PROVIDER_LABELS, oauthStartUrl, useOAuthProviders } from '../lib/oauth';
+import { PROVIDER_LABELS, oauthStartUrl, useOAuthProviderState } from '../lib/oauth';
+import { Skeleton, SkeletonBlock } from './Skeleton';
 
 export function ProviderIcon({ provider }) {
     if (provider === 'github') {
@@ -23,7 +24,22 @@ export function ProviderIcon({ provider }) {
 
 // "Continue with GitHub / Google" links. Plain navigations: the API redirects to the provider.
 export default function OAuthButtons({ from, verb = 'Continue', divider }) {
-    const providers = useOAuthProviders();
+    const { providers, status } = useOAuthProviderState();
+    if (status === 'loading') {
+        return (
+            <div className="oauth">
+                <Skeleton label="Loading sign-in options" className="oauth-buttons">
+                    <SkeletonBlock className="skeleton-pill" />
+                    <SkeletonBlock className="skeleton-pill" />
+                </Skeleton>
+                {divider && (
+                    <p className="oauth-divider">
+                        <span>{divider}</span>
+                    </p>
+                )}
+            </div>
+        );
+    }
     if (!providers.length) return null;
     return (
         <div className="oauth">

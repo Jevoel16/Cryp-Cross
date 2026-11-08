@@ -1579,6 +1579,76 @@ input[type='range'] {
     }
 }
 
+/* --- Loading skeletons --------------------------------------------------- */
+.skeleton {
+    display: block;
+    border-radius: var(--radius-sm);
+    background: var(--surface-raised);
+    animation: skeleton-pulse 1.4s ease-in-out infinite;
+}
+
+@keyframes skeleton-pulse {
+    50% {
+        opacity: 0.55;
+    }
+}
+
+.skeleton-board {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(280px, 360px);
+    gap: var(--space-5);
+}
+
+.skeleton-board-main {
+    display: grid;
+    gap: var(--space-3);
+    align-content: start;
+}
+
+.skeleton-line {
+    height: 44px;
+}
+
+.skeleton-grid {
+    width: min(100%, 520px);
+    aspect-ratio: 1;
+    border-radius: var(--radius-grid);
+}
+
+.skeleton-panel {
+    height: 320px;
+    border-radius: var(--radius);
+}
+
+.skeleton-rows {
+    display: grid;
+    gap: var(--space-2);
+    margin-top: var(--space-2);
+}
+
+.skeleton-row {
+    height: 50px;
+}
+
+.skeleton-tiles .skeleton-tile {
+    height: 92px;
+}
+
+.skeleton-pill {
+    height: 46px;
+    border-radius: var(--radius-pill);
+}
+
+@media (max-width: 900px) {
+    .skeleton-board {
+        grid-template-columns: minmax(0, 1fr);
+    }
+
+    .skeleton-panel {
+        height: 200px;
+    }
+}
+
 /* --- Motion preferences -------------------------------------------------- */
 @media (prefers-reduced-motion: reduce) {
     *,
