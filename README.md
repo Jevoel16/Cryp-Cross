@@ -159,7 +159,7 @@ Cryp-Cross/
 
 ## Contributing
 
-Branches: `feat/short-description` or `fix/short-description`. Commits follow [Conventional Commits](https://www.conventionalcommits.org/) with the bumped SemVer version at the end of the subject, e.g. `feat: add CSV export (v2.1.0)`. Update this README with every change. SEO ideas: [docs/backlinks.md](docs/backlinks.md).
+Branches: `feat/short-description` or `fix/short-description`. Commits follow [Conventional Commits](https://www.conventionalcommits.org/) e.g. `feat: add CSV export`. The SemVer version is bumped once per release (`chore: release vX.Y.Z` plus a tag), not per commit. Update this README with every change. SEO ideas: [docs/backlinks.md](docs/backlinks.md).
 
 ## License
 
