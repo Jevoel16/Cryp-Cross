@@ -5,7 +5,7 @@ import reactRefresh from 'eslint-plugin-react-refresh';
 import { defineConfig, globalIgnores } from 'eslint/config';
 
 export default defineConfig([
-  globalIgnores(['build', 'server', 'node_modules', 'coverage']),
+  globalIgnores(['build', 'server', 'node_modules', 'coverage', 'test-results', 'playwright-report']),
   {
     files: ['src/**/*.{js,jsx}'],
     extends: [js.configs.recommended, reactHooks.configs.flat.recommended, reactRefresh.configs.vite],
@@ -19,7 +19,7 @@ export default defineConfig([
     },
   },
   {
-    files: ['*.config.js', 'scripts/**/*.js'],
+    files: ['*.config.js', 'scripts/**/*.js', 'e2e/**/*.js'],
     extends: [js.configs.recommended],
     languageOptions: { ecmaVersion: 'latest', globals: globals.node },
   },
