@@ -11,7 +11,8 @@ The full feature list of Cryp-Cross, frontend and backend.
 - **Leaderboard** (`/leaderboard`): today's fastest solves, or any past day with `?date=YYYY-MM-DD`
 - **Archive** (`/puzzles`, `/puzzles/:date`): past days with the solution, decoded clues and the cipher key
 - **Account stats**: puzzles solved, current and best streak, best time and recent solves
-- Info pages: Home, How it works (`/idea`) and a Team carousel
+- Info pages: Home, How it works (`/idea`) and Team
+- **Demo account** on the Log in page: one click signs in a shared account that saves progress and is timed, but is never ranked and cannot change its own settings
 - **Accounts through GitHub or Google only**: the first sign-in creates the account (no email address is asked for or stored). Buttons appear only for providers configured on the API.
 - **Account page**: change the username, add or change a password for username + password login, connect or disconnect GitHub/Google, and see your stats
 - **Plain, consistent design**: one set of spacing, type, radius and colour tokens; a lime accent (from the puzzle-piece logo) only for actions and state, cyan only for cipher text; Space Grotesk for the interface and JetBrains Mono only for cipher text, the grid and numbers. No decorative glows, gradients or animations.

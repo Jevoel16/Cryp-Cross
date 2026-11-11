@@ -10,6 +10,12 @@ Step-by-step flows for each kind of user. For running the app locally, see the R
 4. Type the answer. Tab or Enter jumps to the next clue. Your letters stay after a refresh, and the guest timer starts with your first letter.
 5. **Check** marks each clue green or red; **Submit** (once every cell is filled) shows "Solved in 4:12 · not ranked". Guest solves never appear on the leaderboard.
 
+## Demo account
+
+1. Open **Log In** (`/login`) and press **Try the demo account** (or type the username and password shown there).
+2. Play as usual: letters save to the account and the server times the solve.
+3. The demo account is never ranked, and its username, password and connected accounts can't be changed. Each demo login starts today's grid empty.
+
 ## Player flow (account)
 
 1. **Log In** (`/login`) → **Continue with GitHub** or **Continue with Google**. The first time, this creates your account with a username from your GitHub login or Google name. No email address is asked for or stored.
@@ -24,7 +30,7 @@ Step-by-step flows for each kind of user. For running the app locally, see the R
 
 1. **Home** (`/`): introduction to Cryp-Cross.
 2. **How it works** (`/idea`): the three ciphers and the features.
-3. **Team** (`/team`): team member carousel.
+3. **Team** (`/team`): who built it.
 4. Use the sun/moon button in the header to switch between the dark and light themes. On a phone, the menu button opens the page links.
 
 [Back to README](../README.md)

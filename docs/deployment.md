@@ -17,7 +17,7 @@ The site and the API run in one Vercel project on one origin: `vercel.json` buil
    | `APP_URL`, `CORS_ORIGINS`, `VITE_SITE_URL` | `<site>` |
    | `TRUST_PROXY` | `1` |
    | `GITHUB_CLIENT_ID/SECRET`, `GOOGLE_CLIENT_ID/SECRET` | at least one pair, from the production OAuth apps |
-   | `PUZZLE_TZ`, `MIN_SOLVE_SECONDS`, `AUTH_RATE_LIMIT`, `OAUTH_RATE_LIMIT` | optional |
+   | `PUZZLE_TZ`, `MIN_SOLVE_SECONDS`, `AUTH_RATE_LIMIT`, `OAUTH_RATE_LIMIT`, `DEMO_ACCOUNT` | optional |
 
 5. **Deploy**, then register `<site>/api/auth/oauth/github/callback` and `<site>/api/auth/oauth/google/callback` with the OAuth apps.
 6. From then on every push to `main` deploys to production, and other branches get preview URLs. Previews have a different origin, so logins there are refused unless you set Preview variables to match.

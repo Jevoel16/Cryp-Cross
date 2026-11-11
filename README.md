@@ -23,7 +23,7 @@
 
 ## About
 
-Cryp-Cross is a free daily crossword where every clue is encrypted. Each day the server generates one grid for everyone and hides its clues behind a classical cipher (Caesar, Atbash or Vigenère). Players crack the cipher with a built-in decoder, fill the grid, and check and submit their answers. Guests play unranked; with a free account, solves are timed by the server and climb the leaderboard. It is a MERN app (MongoDB, Express, React, Node.js). Play it at [cryp-cross.jevoelorbilla.dev](https://cryp-cross.jevoelorbilla.dev).
+Cryp-Cross is a free daily crossword where every clue is encrypted. Each day the server generates one grid for everyone and hides its clues behind a classical cipher (Caesar, Atbash or Vigenère). Players crack the cipher with a built-in decoder, fill the grid, and check and submit their answers. Guests play unranked; with a free account, solves are timed by the server and climb the leaderboard. It is a MERN app (MongoDB, Express, React, Node.js). Play it at [cryp-cross.jevoelorbilla.dev](https://cryp-cross.jevoelorbilla.dev) (the Log in page has a demo account), and read [why it is built this way](docs/decisions.md).
 
 ## Screenshots
 
@@ -33,7 +33,7 @@ Cryp-Cross is a free daily crossword where every clue is encrypted. Each day the
 <table>
   <tr>
     <td width="50%" align="center"><b>Home</b><br><a href="docs/images/home.png"><img src="docs/images/home.png" width="100%" alt="Home page with the headline, a sample board with a decoded clue, and the Decode, Fill, Race steps"></a></td>
-    <td width="50%" align="center"><b>Play</b><br><a href="docs/images/play.png"><img src="docs/images/play.png" width="100%" alt="Play page with the crossword grid and the Caesar decoder beside it"></a></td>
+    <td width="50%" align="center"><b>Play</b><br><a href="docs/images/play.png"><img src="docs/images/play.png" width="100%" alt="Play page with the crossword grid and the decoder beside it"></a></td>
   </tr>
   <tr>
     <td width="50%" align="center"><b>How it works</b><br><a href="docs/images/how-it-works.png"><img src="docs/images/how-it-works.png" width="100%" alt="How it works page explaining the three ciphers"></a></td>
@@ -41,15 +41,15 @@ Cryp-Cross is a free daily crossword where every clue is encrypted. Each day the
   </tr>
   <tr>
     <td width="50%" align="center"><b>Past puzzles</b><br><a href="docs/images/past-puzzles.png"><img src="docs/images/past-puzzles.png" width="100%" alt="Archive of past puzzles and their leaderboards"></a></td>
-    <td width="50%" align="center"><b>Log in</b><br><a href="docs/images/login.png"><img src="docs/images/login.png" width="100%" alt="Log in page with GitHub and Google buttons and username login"></a></td>
+    <td width="50%" align="center"><b>Log in</b><br><a href="docs/images/login.png"><img src="docs/images/login.png" width="100%" alt="Log in page with GitHub and Google buttons, username login and the demo account"></a></td>
   </tr>
   <tr>
-    <td width="50%" align="center"><b>Team</b><br><a href="docs/images/team.png"><img src="docs/images/team.png" width="100%" alt="Team page with the member carousel and pause button"></a></td>
+    <td width="50%" align="center"><b>Team</b><br><a href="docs/images/team.png"><img src="docs/images/team.png" width="100%" alt="Team page with one card per person"></a></td>
     <td width="50%" align="center"><b>Light mode</b><br><a href="docs/images/light-mode.png"><img src="docs/images/light-mode.png" width="100%" alt="Home page in the light theme"></a></td>
   </tr>
   <tr>
     <td width="50%" align="center"><b>Phone (light and dark)</b><br><a href="docs/images/phone.png"><img src="docs/images/phone.png" width="100%" alt="Play page on a phone in the light and dark themes, side by side"></a></td>
-    <td width="50%"></td>
+    <td width="50%" align="center"><b>Account (demo)</b><br><a href="docs/images/account.png"><img src="docs/images/account.png" width="100%" alt="Account page of the demo account with its stats"></a></td>
   </tr>
 </table>
 
@@ -59,7 +59,7 @@ Cryp-Cross is a free daily crossword where every clue is encrypted. Each day the
 
 - One new encrypted crossword for everyone, every day
 - A built-in decoder for Caesar, Atbash and Vigenère clues
-- Play as a guest, or sign in with GitHub or Google (no email stored)
+- Play as a guest, try the demo account, or sign in with GitHub or Google (no email stored)
 - Progress saved as you type, with Check to mark right and wrong clues
 - Server-timed solves on a daily leaderboard, plus streaks and stats
 - An archive of past puzzles with their solutions and leaderboards
@@ -71,7 +71,8 @@ Full list: [docs/features.md](docs/features.md).
 
 | Layer | Tools |
 |-------|-------|
-| Frontend | React 19.2.0, React Router 7.18.5, Vite 8.3.5, Vitest 5.1.0, ESLint 10.14.0 |
+| Frontend | React 19.2.0, React Router 7.18.5, Vite 8.3.5 |
+| Tooling | Vitest 5.1.0, Playwright 1.65.0, ESLint 10.14.0, Prettier 3.9.10 |
 | Backend | Node.js 22.14.0, Express 4.22.3, Mongoose 7.8.13, express-session 1.19.0, connect-mongo 6.0.0, bcryptjs 3.0.3, helmet 8.3.0, express-rate-limit 7.5.1 |
 | Database | MongoDB (Atlas in production, mongodb-memory-server for tests and local dev) |
 | Hosting | Vercel (static site and serverless API on one origin), Vercel Analytics 2.0.1, GitHub Actions CI |
@@ -107,6 +108,7 @@ The API reads `server/.env` (template: [`server/.env.example`](server/.env.examp
 | `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET` | API | Enables Google sign-in |
 | `API_URL`, `PORT`, `TRUST_PROXY`, `NODE_ENV` | API | Hosting options |
 | `PUZZLE_TZ`, `MIN_SOLVE_SECONDS`, `AUTH_RATE_LIMIT`, `OAUTH_RATE_LIMIT` | API | Puzzle day, minimum solve time and rate limits |
+| `DEMO_ACCOUNT` | API | Shared demo account on the Log in page (`on` by default, `off` to disable) |
 | `VITE_API_URL` | Frontend | API base URL when it is on another origin (empty means same origin) |
 | `VITE_SITE_URL` | Frontend | Public site URL for canonical links and `sitemap.xml` |
 
@@ -122,7 +124,7 @@ Defaults and details: [docs/configuration.md](docs/configuration.md).
 4. **Check** marks each clue right or wrong. **Submit** records your time once the grid is full.
 5. Sign in with GitHub or Google before you start to save progress and get ranked on the **Leaderboard**.
 
-More: [player and account flows](docs/usage.md), [API reference](docs/api.md), [architecture notes](docs/architecture.md), [state machines](docs/state-machines.md), [deployment](docs/deployment.md), [troubleshooting](docs/troubleshooting.md).
+More: [player and account flows](docs/usage.md), [API reference](docs/api.md), [architecture notes](docs/architecture.md), [state machines](docs/state-machines.md), [security](docs/security.md), [performance](docs/performance.md), [deployment](docs/deployment.md), [troubleshooting](docs/troubleshooting.md).
 
 ## More
 
@@ -134,6 +136,7 @@ Cryp-Cross/
 ├── .github/workflows/   # CI
 ├── api/                 # Vercel serverless entry for the Express app
 ├── docs/                # Guides and README screenshots
+├── e2e/                 # Playwright smoke test
 ├── public/              # Static files: icons, theme script, robots.txt, llms.txt
 ├── scripts/             # Post-build sitemap and robots.txt generator
 ├── server/              # Express API, puzzle generator, models, tests
@@ -150,7 +153,8 @@ Cryp-Cross/
 | `npm start` | Vite dev server on port 3000 (proxies `/api` to port 5000) |
 | `npm run build` | Production build into `build/`, plus `sitemap.xml` and `robots.txt` |
 | `npm run serve` | Serve `build/` with the `serve.json` headers |
-| `npm run lint` / `npm test` | ESLint / Vitest |
+| `npm run lint` / `npm run format` | ESLint / Prettier |
+| `npm test` / `npm run test:e2e` | Vitest unit tests / Playwright smoke test (starts the app itself) |
 | `npm start --prefix server` | Start the API |
 | `npm run dev:memory --prefix server` | Start the API on a throwaway in-memory MongoDB |
 | `npm test --prefix server` | Backend tests |

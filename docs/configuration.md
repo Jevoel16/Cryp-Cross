@@ -20,6 +20,7 @@ Environment variables for the API and the frontend, and how to set up GitHub and
 | `MIN_SOLVE_SECONDS` | no | Correct submissions sooner than this after opening the puzzle are refused (default `30`) |
 | `PUZZLE_TZ` | no | IANA time zone that decides when the daily puzzle changes (default `UTC`) |
 | `TRUST_PROXY` | behind a proxy | Proxy hops to trust, so rate limiting sees real client IPs and https is detected. Default `1` on Vercel (detected from `VERCEL`), otherwise `0`; set `1` on Render or Railway. |
+| `DEMO_ACCOUNT` | no | Shared demo account shown on the Log in page. On by default; set to `off` to hide it and stop seeding it |
 | `NODE_ENV` | no | Set to `production` in production |
 
 **Frontend:** optional. `.env.example` has the same three blocks; copy the one you need into a root `.env` or your host.
