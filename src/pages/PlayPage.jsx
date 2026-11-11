@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useReducer, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import SectionWrapper from '../components/SectionWrapper';
 import { BoardSkeleton } from '../components/Skeleton';
@@ -10,6 +10,7 @@ import { useAuth } from '../auth/authContext';
 import { buildBoard, entryCells, isFilled, lettersToRows, rowsToLetters } from '../lib/grid';
 import { formatDuration } from '../lib/format';
 import { ClockIcon } from '../components/Icons';
+import { PLAY_STATUS, PROGRESS_EVENT, initialProgress, playStatus, progressReducer } from '../lib/playStatus';
 
 const SAVE_DELAY_MS = 1000;
 const NO_STATUS = {};
@@ -259,46 +260,54 @@ function PuzzlePlayer({ puzzle, progress, initialRows }) {
 
 function TodayPuzzle({ puzzle }) {
   const { user, loading } = useAuth();
-  // Every account comes from a GitHub/Google sign-in, so any signed-in player is ranked.
+  const [request, dispatch] = useReducer(progressReducer, initialProgress);
+  const status = playStatus({ authLoading: loading, user, request });
   const isPlayer = Boolean(user);
-  const [progress, setProgress] = useState(null);
-  const [error, setError] = useState('');
 
   useEffect(() => {
     if (!isPlayer) return;
-    api('/puzzles/today/progress').then(setProgress, (err) => setError(err.message));
-  }, [isPlayer]);
+    api('/puzzles/today/progress').then(
+      (progress) => dispatch({ type: PROGRESS_EVENT.LOADED, progress }),
+      (err) => dispatch({ type: PROGRESS_EVENT.FAILED, error: err.message }),
+    );
+  }, [isPlayer, request.tries]);
 
-  if (loading || (isPlayer && !progress && !error)) return <BoardSkeleton label="Loading your progress" />;
-
-  // Server copy wins when it has letters; otherwise keep what this browser had.
-  const draft = readDraft(puzzle.date);
-  const initialRows = progress && hasLetters(progress.grid) ? progress.grid : draft;
-
-  return (
-    <>
-      {error && (
-        <p className="form-message error" role="alert">
-          {error}
-        </p>
-      )}
-      {!user && (
-        <p className="play-hint">
-          You&apos;re playing as a guest: Check and Submit work, but your time isn&apos;t ranked.{' '}
-          <Link to="/login" state={{ from: '/play' }}>
-            Sign in
-          </Link>{' '}
-          with GitHub or Google to save progress across devices and join the <Link to="/leaderboard">leaderboard</Link>.
-        </p>
-      )}
-      <PuzzlePlayer
-        key={progress ? 'player' : 'guest'}
-        puzzle={puzzle}
-        progress={isPlayer ? progress : null}
-        initialRows={initialRows}
-      />
-    </>
-  );
+  switch (status) {
+    case PLAY_STATUS.AUTH_LOADING:
+    case PLAY_STATUS.LOADING:
+      return <BoardSkeleton label="Loading your progress" />;
+    case PLAY_STATUS.ERROR:
+      return (
+        <div className="form-message error" role="alert">
+          <p>Your saved progress didn&apos;t load, so the ranked puzzle can&apos;t start yet. {request.error}</p>
+          <button type="button" className="secondary-btn" onClick={() => dispatch({ type: PROGRESS_EVENT.RETRY })}>
+            Try again
+          </button>
+        </div>
+      );
+    case PLAY_STATUS.GUEST:
+      return (
+        <>
+          <p className="play-hint">
+            You&apos;re playing as a guest: Check and Submit work, but your time isn&apos;t ranked.{' '}
+            <Link to="/login" state={{ from: '/play' }}>
+              Sign in
+            </Link>{' '}
+            with GitHub or Google to save progress across devices and join the{' '}
+            <Link to="/leaderboard">leaderboard</Link>.
+          </p>
+          <PuzzlePlayer key="guest" puzzle={puzzle} progress={null} initialRows={readDraft(puzzle.date)} />
+        </>
+      );
+    case PLAY_STATUS.READY: {
+      // Server copy wins when it has letters; otherwise keep what this browser had.
+      const { progress } = request;
+      const initialRows = hasLetters(progress.grid) ? progress.grid : readDraft(puzzle.date);
+      return <PuzzlePlayer key="player" puzzle={puzzle} progress={progress} initialRows={initialRows} />;
+    }
+    default:
+      throw new Error(`Unknown play status: ${status}`);
+  }
 }
 
 export default function PlayPage() {
