@@ -3,7 +3,7 @@ import { Link, useSearchParams } from 'react-router-dom';
 import SectionWrapper from '../components/SectionWrapper';
 import { RowsSkeleton } from '../components/Skeleton';
 import usePageMeta from '../usePageMeta';
-import { api } from '../api';
+import { api, isAbort } from '../api';
 import { useAuth } from '../auth/authContext';
 import { formatDuration } from '../lib/format';
 
@@ -23,10 +23,13 @@ export default function LeaderboardPage() {
   const [result, setResult] = useState({ key: null, board: null, error: '' });
 
   useEffect(() => {
-    api(`/leaderboard${date ? `?date=${date}` : ''}`).then(
+    // Cancel the request for a date the player has already left.
+    const controller = new AbortController();
+    api(`/leaderboard${date ? `?date=${date}` : ''}`, { signal: controller.signal }).then(
       (board) => setResult({ key: date, board, error: '' }),
-      (err) => setResult({ key: date, board: null, error: err.message }),
+      (err) => isAbort(err) || setResult({ key: date, board: null, error: err.message }),
     );
+    return () => controller.abort();
   }, [date]);
 
   const loaded = result.key === date;

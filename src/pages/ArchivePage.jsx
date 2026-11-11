@@ -5,7 +5,7 @@ import { BoardSkeleton } from '../components/Skeleton';
 import PuzzleBoard from '../components/PuzzleBoard';
 import usePageMeta from '../usePageMeta';
 import useCrossword from '../hooks/useCrossword';
-import { api } from '../api';
+import { api, isAbort } from '../api';
 import { CIPHER_INFO } from '../lib/ciphers';
 
 // A past day, read-only, with the solution, decoded clues and the cipher key shown.
@@ -39,11 +39,14 @@ export default function ArchivePage() {
   const [result, setResult] = useState({ date: null, puzzle: null, error: '' });
 
   useEffect(() => {
-    api(`/puzzles/${encodeURIComponent(date)}`).then(
+    const controller = new AbortController();
+    api(`/puzzles/${encodeURIComponent(date)}`, { signal: controller.signal }).then(
       (puzzle) => setResult({ date, puzzle, error: '' }),
       (err) =>
+        isAbort(err) ||
         setResult({ date, puzzle: null, error: err.status === 404 ? 'There is no puzzle for that day.' : err.message }),
     );
+    return () => controller.abort();
   }, [date]);
 
   const current = result.date === date ? result : { puzzle: null, error: '' };
