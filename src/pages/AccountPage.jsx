@@ -8,6 +8,7 @@ import { OAUTH_ERRORS, PROVIDER_LABELS, oauthStartUrl, useOAuthProviders } from 
 import usePageMeta from '../usePageMeta';
 import { api } from '../api';
 import { useAuth } from '../auth/authContext';
+import { AUTH_STATUS } from '../auth/authMachine';
 import { formatDuration } from '../lib/format';
 
 function Stats() {
@@ -207,7 +208,7 @@ function PasswordForm({ user, setUser, refresh }) {
     } catch (error) {
       setMessage({ type: 'error', text: error.message });
       // A 403 means the sign-in window closed: reload the session so the right fields show.
-      if (error.status === 403) await refresh();
+      if (error.status === 403) await refresh().catch(() => {});
     } finally {
       setBusy(false);
     }
@@ -286,41 +287,72 @@ function PasswordForm({ user, setUser, refresh }) {
 
 export default function AccountPage() {
   usePageMeta({ title: 'Account', description: 'Your Cryp-Cross account, streaks and solve history.', noindex: true });
-  const { user, loading, logout, refresh, setUser: replaceUser } = useAuth();
+  const { status, user, error, logout, refresh, setUser: replaceUser } = useAuth();
   // API answers carry the public profile only; keep session-only flags from /me.
   const setUser = (next) => replaceUser((current) => ({ ...current, ...next }));
   const navigate = useNavigate();
-
-  if (loading) {
-    return (
-      <SectionWrapper title="Account">
-        <RowsSkeleton rows={3} label="Loading your account" />
-      </SectionWrapper>
-    );
-  }
-  if (!user) return <Navigate to="/login" replace state={{ from: '/account' }} />;
+  const [logoutError, setLogoutError] = useState('');
+  const [retryError, setRetryError] = useState('');
 
   const onLogout = async () => {
-    await logout();
-    navigate('/');
+    setLogoutError('');
+    try {
+      await logout();
+      navigate('/');
+    } catch (err) {
+      setLogoutError(`You are still signed in: ${err.message}`);
+    }
   };
 
-  return (
-    <SectionWrapper title="Account">
-      <dl className="account-details">
-        <dt>Username</dt>
-        <dd>
-          <UsernameForm user={user} setUser={setUser} />
-        </dd>
-      </dl>
-      <ConnectedAccounts user={user} setUser={setUser} />
-      <PasswordForm user={user} setUser={setUser} refresh={refresh} />
-      <Stats />
-      <p className="account-actions">
-        <button type="button" className="secondary-btn" onClick={onLogout}>
-          Log out
-        </button>
-      </p>
-    </SectionWrapper>
-  );
+  switch (status) {
+    case AUTH_STATUS.LOADING:
+      return (
+        <SectionWrapper title="Account">
+          <RowsSkeleton rows={3} label="Loading your account" />
+        </SectionWrapper>
+      );
+    case AUTH_STATUS.ERROR:
+      return (
+        <SectionWrapper title="Account">
+          <div className="form-message error" role="alert">
+            <p>Your account didn&apos;t load. {retryError || error}</p>
+            <button
+              type="button"
+              className="secondary-btn"
+              onClick={() => refresh().catch((err) => setRetryError(err.message))}
+            >
+              Try again
+            </button>
+          </div>
+        </SectionWrapper>
+      );
+    case AUTH_STATUS.SIGNED_OUT:
+      return <Navigate to="/login" replace state={{ from: '/account' }} />;
+    case AUTH_STATUS.SIGNED_IN:
+      return (
+        <SectionWrapper title="Account">
+          <dl className="account-details">
+            <dt>Username</dt>
+            <dd>
+              <UsernameForm user={user} setUser={setUser} />
+            </dd>
+          </dl>
+          <ConnectedAccounts user={user} setUser={setUser} />
+          <PasswordForm user={user} setUser={setUser} refresh={refresh} />
+          <Stats />
+          <p className="account-actions">
+            <button type="button" className="secondary-btn" onClick={onLogout}>
+              Log out
+            </button>
+          </p>
+          {logoutError && (
+            <p className="form-message error" role="alert">
+              {logoutError}
+            </p>
+          )}
+        </SectionWrapper>
+      );
+    default:
+      throw new Error(`Unknown auth status: ${status}`);
+  }
 }
