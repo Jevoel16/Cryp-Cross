@@ -14,6 +14,7 @@ import LeaderboardPage from './pages/LeaderboardPage';
 import ArchiveListPage from './pages/ArchiveListPage';
 import ArchivePage from './pages/ArchivePage';
 import AuthProvider from './auth/AuthProvider';
+import ErrorBoundary from './components/ErrorBoundary';
 import { themeColor } from './lib/theme';
 
 // public/theme.js sets data-theme before React loads (saved choice, else the system setting).
@@ -46,20 +47,22 @@ export default function App() {
         </a>
         <NavBar isDark={theme === 'dark'} onToggleTheme={handleToggleTheme} />
         <main id="content">
-          <Routes>
-            <Route path="/" element={<HomePage />} />
-            <Route path="/play" element={<PlayPage />} />
-            <Route path="/leaderboard" element={<LeaderboardPage />} />
-            <Route path="/puzzles" element={<ArchiveListPage />} />
-            <Route path="/puzzles/:date" element={<ArchivePage />} />
-            <Route path="/idea" element={<IdeaPage />} />
-            <Route path="/team" element={<TeamPage />} />
-            <Route path="/login" element={<LoginPage />} />
-            {/* Accounts are created by GitHub/Google sign-in on the login page; old links land there. */}
-            <Route path="/signup" element={<Navigate to="/login" replace />} />
-            <Route path="/account" element={<AccountPage />} />
-            <Route path="*" element={<NotFoundPage />} />
-          </Routes>
+          <ErrorBoundary>
+            <Routes>
+              <Route path="/" element={<HomePage />} />
+              <Route path="/play" element={<PlayPage />} />
+              <Route path="/leaderboard" element={<LeaderboardPage />} />
+              <Route path="/puzzles" element={<ArchiveListPage />} />
+              <Route path="/puzzles/:date" element={<ArchivePage />} />
+              <Route path="/idea" element={<IdeaPage />} />
+              <Route path="/team" element={<TeamPage />} />
+              <Route path="/login" element={<LoginPage />} />
+              {/* Accounts are created by GitHub/Google sign-in on the login page; old links land there. */}
+              <Route path="/signup" element={<Navigate to="/login" replace />} />
+              <Route path="/account" element={<AccountPage />} />
+              <Route path="*" element={<NotFoundPage />} />
+            </Routes>
+          </ErrorBoundary>
         </main>
         <Footer />
       </AuthProvider>
