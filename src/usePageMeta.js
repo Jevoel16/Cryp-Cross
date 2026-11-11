@@ -22,6 +22,8 @@ export default function usePageMeta({ title, description, path, noindex = false 
     upsertHeadTag('meta', 'name', 'description', { content: description });
     upsertHeadTag('meta', 'property', 'og:title', { content: fullTitle });
     upsertHeadTag('meta', 'property', 'og:description', { content: description });
+    upsertHeadTag('meta', 'name', 'twitter:title', { content: fullTitle });
+    upsertHeadTag('meta', 'name', 'twitter:description', { content: description });
     upsertHeadTag('meta', 'name', 'robots', { content: noindex ? 'noindex, follow' : 'index, follow' });
     if (path) {
       upsertHeadTag('link', 'rel', 'canonical', { href: `${SITE_URL}${path}` });
