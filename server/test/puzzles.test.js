@@ -64,6 +64,9 @@ describe('puzzle API', () => {
     assert.equal(await DailyPuzzle.countDocuments(), 1, 'archive requests never create puzzles');
 
     const list = await get('/api/puzzles');
-    assert.deepEqual(list.body.data.map((p) => p.date), [yesterday]);
+    assert.deepEqual(
+      list.body.data.map((p) => p.date),
+      [yesterday],
+    );
   });
 });

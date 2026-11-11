@@ -4,7 +4,7 @@ export const AuthContext = createContext(null);
 
 // { user, loading, setUser, refresh, logout }; user is null when signed out.
 export function useAuth() {
-    const value = useContext(AuthContext);
-    if (!value) throw new Error('useAuth must be used inside <AuthProvider>');
-    return value;
+  const value = useContext(AuthContext);
+  if (!value) throw new Error('useAuth must be used inside <AuthProvider>');
+  return value;
 }

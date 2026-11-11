@@ -16,7 +16,11 @@ function sessionSecret() {
 function createSessionMiddleware() {
   const store =
     mongoose.connection.readyState === 1
-      ? MongoStore.create({ client: mongoose.connection.getClient(), collectionName: 'sessions', ttl: TWO_WEEKS_MS / 1000 })
+      ? MongoStore.create({
+          client: mongoose.connection.getClient(),
+          collectionName: 'sessions',
+          ttl: TWO_WEEKS_MS / 1000,
+        })
       : undefined;
 
   return session({

@@ -59,7 +59,10 @@ test('a year of puzzles is consistent', () => {
 
     // Numbers run 1..n in reading order.
     const numbers = [...new Set(p.entries.map((e) => e.number))].sort((a, b) => a - b);
-    assert.deepEqual(numbers, numbers.map((_, i) => i + 1));
+    assert.deepEqual(
+      numbers,
+      numbers.map((_, i) => i + 1),
+    );
   }
 });
 

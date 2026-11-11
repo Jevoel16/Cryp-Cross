@@ -30,7 +30,10 @@ describe('MongoRateLimitStore', () => {
   test('concurrent first hits are all counted', async () => {
     const store = makeStore('t');
     const results = await Promise.all(Array.from({ length: 10 }, () => store.increment('race')));
-    assert.deepEqual(results.map((r) => r.totalHits).sort((a, b) => a - b), [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]);
+    assert.deepEqual(
+      results.map((r) => r.totalHits).sort((a, b) => a - b),
+      [1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
+    );
   });
 
   test('starts a new window once the old one has ended', async () => {

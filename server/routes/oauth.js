@@ -141,7 +141,10 @@ function createOAuthRouter({ oauthLimiter, startSession }) {
 
       if (linkUser) {
         await new Promise((resolve, reject) => req.session.save((err) => (err ? reject(err) : resolve())));
-        return res.redirect(302, `${appUrl()}${pending.from}${pending.from.includes('?') ? '&' : '?'}linked=${provider}`);
+        return res.redirect(
+          302,
+          `${appUrl()}${pending.from}${pending.from.includes('?') ? '&' : '?'}linked=${provider}`,
+        );
       }
       await startSession(req, user, 'oauth');
       res.redirect(302, `${appUrl()}${pending.from}`);

@@ -35,7 +35,8 @@ const createOAuthLimiter = () =>
     standardHeaders: 'draft-7',
     legacyHeaders: false,
     handler: (req, res) => {
-      const linking = req.query.link === '1' || Boolean(req.session && req.session.oauth && req.session.oauth.linkUserId);
+      const linking =
+        req.query.link === '1' || Boolean(req.session && req.session.oauth && req.session.oauth.linkUserId);
       const appUrl = (process.env.APP_URL || 'http://localhost:3000').replace(/\/$/, '');
       res.redirect(302, `${appUrl}${linking ? '/account' : '/login'}?oauth=busy`);
     },
@@ -54,8 +55,7 @@ function startSession(req, user, via) {
   });
 }
 
-const recentOAuthSignIn = (session) =>
-  session.authVia === 'oauth' && Date.now() - session.authAt <= RECENT_OAUTH_MS;
+const recentOAuthSignIn = (session) => session.authVia === 'oauth' && Date.now() - session.authAt <= RECENT_OAUTH_MS;
 
 function createAuthRouter() {
   const router = express.Router();

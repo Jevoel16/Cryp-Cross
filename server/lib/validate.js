@@ -10,7 +10,8 @@ const isObject = (body) => body && typeof body === 'object' && !Array.isArray(bo
 function checkPassword(value, errors, field = 'password') {
   if (typeof value !== 'string') return errors.push(`${field} is required`);
   if (value.length < PASSWORD_MIN) return errors.push(`${field} must be at least ${PASSWORD_MIN} characters`);
-  if (Buffer.byteLength(value, 'utf8') > PASSWORD_MAX_BYTES) return errors.push(`${field} must be at most ${PASSWORD_MAX_BYTES} bytes`);
+  if (Buffer.byteLength(value, 'utf8') > PASSWORD_MAX_BYTES)
+    return errors.push(`${field} must be at most ${PASSWORD_MAX_BYTES} bytes`);
   return value;
 }
 

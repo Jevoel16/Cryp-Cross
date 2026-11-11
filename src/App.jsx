@@ -20,49 +20,49 @@ import { themeColor } from './lib/theme';
 const readTheme = () => (document.documentElement.getAttribute('data-theme') === 'light' ? 'light' : 'dark');
 
 export default function App() {
-    const [theme, setTheme] = useState(readTheme);
+  const [theme, setTheme] = useState(readTheme);
 
-    useEffect(() => {
-        document.documentElement.setAttribute('data-theme', theme);
-        document.querySelector('meta[name="theme-color"]')?.setAttribute('content', themeColor(theme));
-    }, [theme]);
+  useEffect(() => {
+    document.documentElement.setAttribute('data-theme', theme);
+    document.querySelector('meta[name="theme-color"]')?.setAttribute('content', themeColor(theme));
+  }, [theme]);
 
-    // Theme choice is a per-browser convenience, so localStorage is fine; guarded for blocked storage.
-    const handleToggleTheme = () => {
-        const next = theme === 'dark' ? 'light' : 'dark';
-        setTheme(next);
-        try {
-            localStorage.setItem('theme', next);
-        } catch {
-            // Storage blocked: the choice just won't persist.
-        }
-    };
+  // Theme choice is a per-browser convenience, so localStorage is fine; guarded for blocked storage.
+  const handleToggleTheme = () => {
+    const next = theme === 'dark' ? 'light' : 'dark';
+    setTheme(next);
+    try {
+      localStorage.setItem('theme', next);
+    } catch {
+      // Storage blocked: the choice just won't persist.
+    }
+  };
 
-    return (
-        <BrowserRouter>
-            <AuthProvider>
-                <a className="skip-link" href="#content">
-                    Skip to content
-                </a>
-                <NavBar isDark={theme === 'dark'} onToggleTheme={handleToggleTheme} />
-                <main id="content">
-                    <Routes>
-                        <Route path="/" element={<HomePage />} />
-                        <Route path="/play" element={<PlayPage />} />
-                        <Route path="/leaderboard" element={<LeaderboardPage />} />
-                        <Route path="/puzzles" element={<ArchiveListPage />} />
-                        <Route path="/puzzles/:date" element={<ArchivePage />} />
-                        <Route path="/idea" element={<IdeaPage />} />
-                        <Route path="/team" element={<TeamPage />} />
-                        <Route path="/login" element={<LoginPage />} />
-                        {/* Accounts are created by GitHub/Google sign-in on the login page; old links land there. */}
-                        <Route path="/signup" element={<Navigate to="/login" replace />} />
-                        <Route path="/account" element={<AccountPage />} />
-                        <Route path="*" element={<NotFoundPage />} />
-                    </Routes>
-                </main>
-                <Footer />
-            </AuthProvider>
-        </BrowserRouter>
-    );
+  return (
+    <BrowserRouter>
+      <AuthProvider>
+        <a className="skip-link" href="#content">
+          Skip to content
+        </a>
+        <NavBar isDark={theme === 'dark'} onToggleTheme={handleToggleTheme} />
+        <main id="content">
+          <Routes>
+            <Route path="/" element={<HomePage />} />
+            <Route path="/play" element={<PlayPage />} />
+            <Route path="/leaderboard" element={<LeaderboardPage />} />
+            <Route path="/puzzles" element={<ArchiveListPage />} />
+            <Route path="/puzzles/:date" element={<ArchivePage />} />
+            <Route path="/idea" element={<IdeaPage />} />
+            <Route path="/team" element={<TeamPage />} />
+            <Route path="/login" element={<LoginPage />} />
+            {/* Accounts are created by GitHub/Google sign-in on the login page; old links land there. */}
+            <Route path="/signup" element={<Navigate to="/login" replace />} />
+            <Route path="/account" element={<AccountPage />} />
+            <Route path="*" element={<NotFoundPage />} />
+          </Routes>
+        </main>
+        <Footer />
+      </AuthProvider>
+    </BrowserRouter>
+  );
 }

@@ -55,7 +55,7 @@ async function findOrStartAttempt(user, date) {
   return Attempt.findOneAndUpdate(
     { user: user._id, date },
     { $setOnInsert: { user: user._id, date, startedAt: new Date(), grid: [] } },
-    { upsert: true, new: true }
+    { upsert: true, new: true },
   );
 }
 
@@ -136,7 +136,7 @@ router.post('/puzzles/today/submit', player, async (req, res, next) => {
     const attempt = await Attempt.findOne({ user: req.user._id, date: puzzle.date });
     if (!attempt) return notStarted(res);
     if (attempt.solvedAt) {
-      return res.status(409).json({ success: false, message: 'You already solved today\'s puzzle' });
+      return res.status(409).json({ success: false, message: "You already solved today's puzzle" });
     }
 
     const status = entryStatus(puzzle, req.body.grid);
@@ -145,7 +145,11 @@ router.post('/puzzles/today/submit', player, async (req, res, next) => {
       await attempt.save();
       return res.json({
         success: true,
-        data: { solved: false, wrong: status.filter((s) => s === 'wrong').length, incomplete: status.filter((s) => s === 'incomplete').length },
+        data: {
+          solved: false,
+          wrong: status.filter((s) => s === 'wrong').length,
+          incomplete: status.filter((s) => s === 'incomplete').length,
+        },
       });
     }
 
@@ -171,11 +175,7 @@ router.get('/leaderboard', async (req, res, next) => {
   try {
     const filter = { date, solvedAt: { $exists: true } };
     const [rows, solvers] = await Promise.all([
-      Attempt.find(filter)
-        .sort({ timeMs: 1, solvedAt: 1 })
-        .limit(LEADERBOARD_SIZE)
-        .populate('user', 'username')
-        .lean(),
+      Attempt.find(filter).sort({ timeMs: 1, solvedAt: 1 }).limit(LEADERBOARD_SIZE).populate('user', 'username').lean(),
       Attempt.countDocuments(filter),
     ]);
     res.json({
@@ -221,7 +221,7 @@ router.get('/me/stats', requireAuth, async (req, res, next) => {
       .lean();
     const { current, best } = streaks(
       solved.map((s) => s.date),
-      dayKey()
+      dayKey(),
     );
     res.json({
       success: true,

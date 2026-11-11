@@ -223,8 +223,9 @@ describe('sign in with GitHub and Google', () => {
     assert.equal(res.status, 200);
     assert.deepEqual(res.body.data.providers, []);
     assert.equal(
-      (await createClient(api.base).post('/api/auth/login', { username: 'octo', password: 'a long enough password' })).status,
-      200
+      (await createClient(api.base).post('/api/auth/login', { username: 'octo', password: 'a long enough password' }))
+        .status,
+      200,
     );
   });
 });
@@ -264,7 +265,10 @@ describe('GitHub/Google sign-in rate limit', () => {
     assert.equal(linking.headers.get('location'), `${APP_URL}/account?oauth=busy`);
 
     // Password login keeps its own budget, untouched by the OAuth requests above.
-    const login = await createClient(api.base).post('/api/auth/login', { username: 'nobody', password: 'wrong password' });
+    const login = await createClient(api.base).post('/api/auth/login', {
+      username: 'nobody',
+      password: 'wrong password',
+    });
     assert.notEqual(login.status, 429);
   });
 });

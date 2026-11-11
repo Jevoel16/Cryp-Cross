@@ -110,12 +110,15 @@ function finalize(grid, placed) {
       bottom = Math.max(bottom, r);
       left = Math.min(left, c);
       right = Math.max(right, c);
-    })
+    }),
   );
 
-  const solution = grid
-    .slice(top, bottom + 1)
-    .map((row) => row.slice(left, right + 1).map((cell) => cell || '#').join(''));
+  const solution = grid.slice(top, bottom + 1).map((row) =>
+    row
+      .slice(left, right + 1)
+      .map((cell) => cell || '#')
+      .join(''),
+  );
 
   // Words sharing a start cell (one across, one down) share a number.
   const numbers = new Map();

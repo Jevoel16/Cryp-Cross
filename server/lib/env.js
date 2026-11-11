@@ -24,14 +24,16 @@ function checkEnv(env = process.env) {
     if (env.API_URL && env.APP_URL && originOf(env.API_URL) !== originOf(env.APP_URL)) {
       console.warn(
         `API_URL (${originOf(env.API_URL)}) differs from APP_URL: OAuth sign-in starts and finishes on API_URL's host, ` +
-          'so leave API_URL empty for a same-origin deploy.'
+          'so leave API_URL empty for a same-origin deploy.',
       );
     }
   }
 
   const halfConfigured = halfConfiguredProviders();
   if (halfConfigured.length) {
-    console.warn(`OAuth sign-in disabled for ${halfConfigured.join(', ')}: set both the client ID and the client secret.`);
+    console.warn(
+      `OAuth sign-in disabled for ${halfConfigured.join(', ')}: set both the client ID and the client secret.`,
+    );
   }
   // Accounts are created only through GitHub/Google, so with neither set nobody can sign up.
   if (!enabledProviders().length) {

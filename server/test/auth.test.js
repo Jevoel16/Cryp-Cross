@@ -42,7 +42,12 @@ describe('accounts', () => {
 
   test('the old email routes are gone', async () => {
     const tab = createClient(api.base);
-    for (const path of ['/api/auth/signup', '/api/auth/verify-email', '/api/auth/forgot-password', '/api/auth/reset-password']) {
+    for (const path of [
+      '/api/auth/signup',
+      '/api/auth/verify-email',
+      '/api/auth/forgot-password',
+      '/api/auth/reset-password',
+    ]) {
       assert.equal((await tab.post(path, {})).status, 404, path);
     }
   });
@@ -100,7 +105,10 @@ describe('accounts', () => {
 
     // Signed in by password: the current password is required.
     assert.equal((await tab.put('/api/auth/password', { password: 'a brand new password' })).status, 403);
-    const wrong = await tab.put('/api/auth/password', { password: 'a brand new password', currentPassword: 'nope nope nope' });
+    const wrong = await tab.put('/api/auth/password', {
+      password: 'a brand new password',
+      currentPassword: 'nope nope nope',
+    });
     assert.equal(wrong.status, 403);
     assert.equal((await tab.put('/api/auth/password', { password: 'short', currentPassword: PASSWORD })).status, 400);
     const ok = await tab.put('/api/auth/password', { password: 'a brand new password', currentPassword: PASSWORD });
@@ -108,10 +116,14 @@ describe('accounts', () => {
 
     assert.equal((await tab.get('/api/auth/me')).body.data.username, 'alice', 'this session stays');
     assert.equal((await first.get('/api/auth/me')).body.data, null, 'other sessions end');
-    assert.equal((await createClient(api.base).post('/api/auth/login', { username: 'alice', password: PASSWORD })).status, 401);
     assert.equal(
-      (await createClient(api.base).post('/api/auth/login', { username: 'alice', password: 'a brand new password' })).status,
-      200
+      (await createClient(api.base).post('/api/auth/login', { username: 'alice', password: PASSWORD })).status,
+      401,
+    );
+    assert.equal(
+      (await createClient(api.base).post('/api/auth/login', { username: 'alice', password: 'a brand new password' }))
+        .status,
+      200,
     );
   });
 
@@ -148,7 +160,10 @@ describe('accounts', () => {
     const ok = await alice.put('/api/auth/username', { username: 'Alice_2' });
     assert.equal(ok.status, 200);
     assert.equal(ok.body.data.username, 'alice_2');
-    assert.equal((await createClient(api.base).post('/api/auth/login', { username: 'alice_2', password: PASSWORD })).status, 200);
+    assert.equal(
+      (await createClient(api.base).post('/api/auth/login', { username: 'alice_2', password: PASSWORD })).status,
+      200,
+    );
   });
 
   test('writes from foreign origins or without JSON are refused', async () => {

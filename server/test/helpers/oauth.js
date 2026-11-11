@@ -56,7 +56,11 @@ async function setUpProviders() {
   const fake = await startFakeProvider();
   oauth.setEndpointOverrides({
     github: { authorizeUrl: `${fake.base}/authorize`, tokenUrl: `${fake.base}/token`, apiBase: fake.base },
-    google: { authorizeUrl: `${fake.base}/authorize`, tokenUrl: `${fake.base}/token`, userinfoUrl: `${fake.base}/userinfo` },
+    google: {
+      authorizeUrl: `${fake.base}/authorize`,
+      tokenUrl: `${fake.base}/token`,
+      userinfoUrl: `${fake.base}/userinfo`,
+    },
   });
   const tearDown = async () => {
     await fake.close();
@@ -75,7 +79,9 @@ async function signIn(tab, provider, code, { from, link } = {}) {
   assert.equal(start.status, 302);
   const authorize = new URL(start.headers.get('location'));
   const state = authorize.searchParams.get('state');
-  const callback = await tab.get(`/api/auth/oauth/${provider}/callback?code=${encodeURIComponent(code)}&state=${state}`);
+  const callback = await tab.get(
+    `/api/auth/oauth/${provider}/callback?code=${encodeURIComponent(code)}&state=${state}`,
+  );
   return { start, authorize, callback, location: callback.headers.get('location') };
 }
 

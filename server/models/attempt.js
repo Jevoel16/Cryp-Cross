@@ -12,7 +12,7 @@ const attemptSchema = new mongoose.Schema(
     solvedAt: Date,
     timeMs: Number,
   },
-  { timestamps: true }
+  { timestamps: true },
 );
 
 attemptSchema.index({ user: 1, date: 1 }, { unique: true });

@@ -27,7 +27,11 @@ const atbash = {
 };
 
 function keyShifts(key) {
-  const shifts = String(key).toUpperCase().replace(/[^A-Z]/g, '').split('').map((c) => c.charCodeAt(0) - A);
+  const shifts = String(key)
+    .toUpperCase()
+    .replace(/[^A-Z]/g, '')
+    .split('')
+    .map((c) => c.charCodeAt(0) - A);
   if (!shifts.length) throw new Error('Vigenere key must contain letters');
   return shifts;
 }

@@ -11,7 +11,7 @@ const entrySchema = new mongoose.Schema(
     clue: { type: String, required: true },
     cipherClue: { type: String, required: true },
   },
-  { _id: false }
+  { _id: false },
 );
 
 // Stored on first request for a day so the puzzle stays fixed even if the word list changes.
@@ -29,7 +29,7 @@ const dailyPuzzleSchema = new mongoose.Schema(
     solution: { type: [String], required: true },
     entries: { type: [entrySchema], required: true },
   },
-  { timestamps: true }
+  { timestamps: true },
 );
 
 module.exports = mongoose.model('DailyPuzzle', dailyPuzzleSchema);

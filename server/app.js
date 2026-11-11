@@ -58,7 +58,7 @@ function createApp() {
       origin: (origin, cb) => cb(null, !origin || origins.includes(origin)),
       methods: ['GET', 'POST', 'PUT', 'DELETE'],
       credentials: true,
-    })
+    }),
   );
 
   app.use('/api', csrfGuard(origins));

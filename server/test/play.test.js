@@ -151,7 +151,7 @@ describe('playing the daily puzzle', () => {
     assert.equal(
       (await alice.get('/api/puzzles/today/progress')).body.data.startedAt,
       started.body.data.startedAt,
-      'the timer starts once'
+      'the timer starts once',
     );
 
     // Another player's progress is separate.
@@ -226,7 +226,7 @@ describe('playing the daily puzzle', () => {
       [
         [1, 'alice'],
         [2, 'bob'],
-      ]
+      ],
     );
     assert.deepEqual(Object.keys(board.body.data.entries[0]).sort(), ['rank', 'timeMs', 'username']);
     assert.equal((await createClient(api.base).get('/api/leaderboard?date=bad')).status, 400);
@@ -246,7 +246,7 @@ describe('playing the daily puzzle', () => {
     const carolStats = await carol.get('/api/me/stats');
     assert.deepEqual(
       { solves: carolStats.body.data.solves, current: carolStats.body.data.currentStreak },
-      { solves: 0, current: 0 }
+      { solves: 0, current: 0 },
     );
     assert.equal((await createClient(api.base).get('/api/me/stats')).status, 401);
   });

@@ -11,9 +11,9 @@ import './index.css';
 import App from './App';
 
 ReactDOM.createRoot(document.getElementById('root')).render(
-    <React.StrictMode>
-        <App />
-        {/* Cookieless page views; served from /_vercel/insights on the same origin, so CSP 'self' still holds. */}
-        <Analytics />
-    </React.StrictMode>
+  <React.StrictMode>
+    <App />
+    {/* Cookieless page views; served from /_vercel/insights on the same origin, so CSP 'self' still holds. */}
+    <Analytics />
+  </React.StrictMode>,
 );

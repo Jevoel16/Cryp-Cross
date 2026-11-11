@@ -7,7 +7,7 @@ const rateLimitSchema = new mongoose.Schema(
     hits: { type: Number, default: 0 },
     resetAt: { type: Date, required: true },
   },
-  { versionKey: false }
+  { versionKey: false },
 );
 
 // MongoDB drops expired windows by itself.
