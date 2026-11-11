@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../auth/authContext';
 import { MenuIcon, MoonIcon, SunIcon } from './Icons';
@@ -16,6 +16,18 @@ export default function NavBar({ isDark, onToggleTheme }) {
   const { user, loading } = useAuth();
   const [open, setOpen] = useState(false);
   const close = () => setOpen(false);
+  const menuButton = useRef(null);
+
+  useEffect(() => {
+    if (!open) return undefined;
+    const onKeyDown = (e) => {
+      if (e.key !== 'Escape') return;
+      setOpen(false);
+      menuButton.current?.focus();
+    };
+    document.addEventListener('keydown', onKeyDown);
+    return () => document.removeEventListener('keydown', onKeyDown);
+  }, [open]);
 
   // Sub-routes (e.g. /puzzles/2026-11-01) keep their tab active.
   const isActive = (path) => location.pathname === path || location.pathname.startsWith(`${path}/`);
@@ -72,6 +84,7 @@ export default function NavBar({ isDark, onToggleTheme }) {
           </button>
           <button
             type="button"
+            ref={menuButton}
             className="icon-btn menu-btn"
             onClick={() => setOpen((o) => !o)}
             aria-expanded={open}

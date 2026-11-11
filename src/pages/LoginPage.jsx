@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useLocation, useNavigate, useSearchParams } from 'react-router-dom';
 import SectionWrapper from '../components/SectionWrapper';
 import FormMessage from '../components/FormMessage';
+import { describedBy } from '../lib/forms';
 import OAuthButtons from '../components/OAuthButtons';
 import { OAUTH_ERRORS, useOAuthProviderState } from '../lib/oauth';
 import usePageMeta from '../usePageMeta';
@@ -63,6 +64,7 @@ export default function LoginPage() {
             id="username"
             name="username"
             autoComplete="username"
+            {...describedBy(message, 'login-message')}
             required
             value={form.username}
             onChange={onChange}
@@ -76,6 +78,7 @@ export default function LoginPage() {
             name="password"
             type="password"
             autoComplete="current-password"
+            {...describedBy(message, 'login-message')}
             required
             value={form.password}
             onChange={onChange}
@@ -85,7 +88,7 @@ export default function LoginPage() {
         <button type="submit" className="secondary-btn" disabled={busy}>
           {busy ? 'Logging in...' : 'Log in'}
         </button>
-        <FormMessage message={message} />
+        <FormMessage message={message} id="login-message" />
       </form>
       <div className="demo-box">
         {demo && (

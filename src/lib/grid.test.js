@@ -3,6 +3,7 @@ import {
   buildBoard,
   emptyLetters,
   entryAt,
+  entryLabel,
   isFilled,
   lettersToRows,
   moveArrow,
@@ -67,5 +68,23 @@ describe('grid logic', () => {
     expect(rows).toEqual(['CAT', '##O', '##P']);
     expect(rowsToLetters(board, rows)).toEqual(letters);
     expect(rowsToLetters(board, ['C T', '##x'])[0]).toEqual(['C', '', 'T']);
+  });
+});
+
+describe('entryLabel', () => {
+  const entry = { ...puzzle.entries[0], clue: 'Xzg' };
+
+  test('reads the clue and says when nothing is typed', () => {
+    expect(entryLabel(entry, emptyLetters(board))).toBe('1 across, 3 letters. Encrypted clue: Xzg. Nothing entered.');
+  });
+
+  test('spells the typed letters, blanks included, and the check result', () => {
+    const letters = emptyLetters(board);
+    letters[0][0] = 'C';
+    letters[0][2] = 'T';
+    expect(entryLabel(entry, letters, 'wrong')).toBe(
+      '1 across, 3 letters. Encrypted clue: Xzg. Entered: C blank T. Marked wrong.',
+    );
+    expect(entryLabel(entry, letters, 'incomplete')).not.toMatch(/Marked/);
   });
 });

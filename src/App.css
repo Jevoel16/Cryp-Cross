@@ -84,6 +84,7 @@
   --text-lg: 1.3rem;
   --text-xl: 1.9rem;
   --header-h: 64px;
+  --target: 44px; /* smallest touch target */
 }
 
 html {
@@ -193,6 +194,9 @@ ol {
 }
 
 .skip-link {
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--target);
   position: absolute;
   left: 12px;
   top: -60px;
@@ -243,6 +247,7 @@ ol {
 .brand {
   display: flex;
   align-items: center;
+  min-height: var(--target);
   gap: var(--space-2);
   color: var(--text);
   text-decoration: none;
@@ -278,7 +283,9 @@ ol {
 }
 
 .tab-item a {
-  display: block;
+  display: flex;
+  align-items: center;
+  min-height: var(--target);
   padding: var(--space-2) var(--space-3);
   border-radius: var(--radius-pill);
   color: var(--text-muted);
@@ -308,6 +315,9 @@ ol {
 }
 
 .nav-login {
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--target);
   padding: var(--space-2) var(--space-4);
   border-radius: var(--radius-pill);
   border: 1px solid var(--border-strong);
@@ -325,6 +335,7 @@ ol {
 .user-chip {
   display: flex;
   align-items: center;
+  min-height: var(--target);
   gap: var(--space-2);
   padding: var(--space-1) var(--space-3) var(--space-1) var(--space-1);
   border-radius: var(--radius-pill);
@@ -364,8 +375,9 @@ ol {
 .icon-btn {
   display: grid;
   place-items: center;
-  width: 38px;
-  height: 38px;
+  width: var(--target);
+  height: var(--target);
+  flex: none;
   border-radius: 50%;
   border: 1px solid var(--border);
   background: transparent;
@@ -537,6 +549,10 @@ article + article {
 }
 
 .link-btn {
+  display: inline-flex;
+  align-items: center;
+  min-width: var(--target);
+  min-height: var(--target);
   background: none;
   border: none;
   padding: 0;
@@ -816,7 +832,7 @@ input[type='range'] {
 }
 
 .inline-form .submit-btn {
-  min-height: 40px;
+  min-height: var(--target);
   padding: var(--space-2) var(--space-4);
 }
 
@@ -1019,6 +1035,31 @@ input[type='range'] {
   box-shadow: inset 0 -3px 0 var(--danger);
 }
 
+/* A mark as well as a colour, so right and wrong differ without colour vision. */
+.cell.wrong::after,
+.cell.right::after {
+  position: absolute;
+  top: 1px;
+  right: 3px;
+  font-size: calc(var(--cell) * 0.26);
+  font-weight: 700;
+  line-height: 1;
+}
+
+.cell.wrong::after {
+  content: '\00d7';
+  color: var(--danger);
+}
+
+.cell.right::after {
+  content: '\2713';
+  color: var(--success);
+}
+
+.cell.cursor::after {
+  color: var(--accent-ink);
+}
+
 .cell.right {
   box-shadow: inset 0 -3px 0 var(--success);
 }
@@ -1050,7 +1091,7 @@ input[type='range'] {
 
 .play-actions .secondary-btn,
 .play-actions .submit-btn {
-  min-height: 40px;
+  min-height: var(--target);
   padding: var(--space-2) var(--space-4);
 }
 
@@ -1193,6 +1234,7 @@ input[type='range'] {
 
 .clue {
   display: flex;
+  min-height: var(--target);
   gap: var(--space-3);
   width: 100%;
   padding: var(--space-2) var(--space-3);
@@ -1221,6 +1263,19 @@ input[type='range'] {
 
 .clue.right {
   border-left-color: var(--success);
+}
+
+.clue-status {
+  margin-left: auto;
+  font-weight: 700;
+}
+
+.clue.right .clue-status {
+  color: var(--success);
+}
+
+.clue.wrong .clue-status {
+  color: var(--danger);
 }
 
 .clue.wrong {
@@ -1577,6 +1632,16 @@ input[type='range'] {
   flex-wrap: wrap;
   gap: var(--space-1) var(--space-4);
   margin-left: auto;
+}
+
+.footer-links a,
+.archive-link a,
+.home-links a {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: var(--target);
+  min-height: var(--target);
 }
 
 .footer-links a {

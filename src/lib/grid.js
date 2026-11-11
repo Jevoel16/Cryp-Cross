@@ -21,6 +21,19 @@ export function entryCells(entry) {
   return Array.from({ length: entry.length }, (_, i) => [entry.row + dr * i, entry.col + dc * i]);
 }
 
+// What a screen reader hears for the active entry: clue, typed letters and its check result.
+export function entryLabel(entry, letters, status) {
+  const typed = entryCells(entry).map(([r, c]) => letters[r]?.[c] || 'blank');
+  const filled = typed.some((ch) => ch !== 'blank');
+  const parts = [
+    `${entry.number} ${entry.direction}, ${entry.length} letters`,
+    `Encrypted clue: ${entry.clue}`,
+    filled ? `Entered: ${typed.join(' ')}` : 'Nothing entered',
+  ];
+  if (status === 'right' || status === 'wrong') parts.push(`Marked ${status}`);
+  return `${parts.join('. ')}.`;
+}
+
 export const emptyLetters = (board) => board.cells.map((row) => row.map(() => ''));
 
 const isOpen = (board, r, c) => r >= 0 && c >= 0 && r < board.height && c < board.width && board.cells[r][c] !== null;

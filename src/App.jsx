@@ -46,7 +46,7 @@ export default function App() {
           Skip to content
         </a>
         <NavBar isDark={theme === 'dark'} onToggleTheme={handleToggleTheme} />
-        <main id="content">
+        <main id="content" tabIndex={-1}>
           <ErrorBoundary>
             <Routes>
               <Route path="/" element={<HomePage />} />

@@ -1,6 +1,7 @@
 import CrosswordGrid from './CrosswordGrid';
 import ClueList from './ClueList';
 import CipherTool from './CipherTool';
+import { entryLabel } from '../lib/grid';
 
 const focusGrid = () => document.querySelector('.crossword-input')?.focus({ preventScroll: true });
 
@@ -8,7 +9,8 @@ const focusGrid = () => document.querySelector('.crossword-input')?.focus({ prev
 export default function PuzzleBoard({ puzzle, crossword, marks, clueStatus, locked, solution, children }) {
   const { activeIndex, selectEntry } = crossword;
   const activeEntry = activeIndex === null ? puzzle.entries[0] : puzzle.entries[activeIndex];
-  const label = `${activeEntry.number} ${activeEntry.direction}, ${activeEntry.length} letters. Encrypted clue: ${activeEntry.clue}`;
+  const shown = solution ? solution.map((row) => [...row]) : crossword.letters;
+  const label = entryLabel(activeEntry, shown, clueStatus?.[activeIndex ?? 0]);
 
   return (
     <div className="puzzle-layout">

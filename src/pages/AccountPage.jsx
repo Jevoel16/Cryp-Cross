@@ -3,6 +3,7 @@ import { Link, Navigate, useSearchParams } from 'react-router-dom';
 import SectionWrapper from '../components/SectionWrapper';
 import { RowsSkeleton, TilesSkeleton } from '../components/Skeleton';
 import FormMessage from '../components/FormMessage';
+import { describedBy } from '../lib/forms';
 import { ProviderIcon } from '../components/OAuthButtons';
 import { OAUTH_ERRORS, PROVIDER_LABELS, oauthStartUrl, useOAuthProviders } from '../lib/oauth';
 import usePageMeta from '../usePageMeta';
@@ -21,7 +22,12 @@ function Stats() {
     api('/me/stats').then(setStats, (err) => setError(err.message));
   }, []);
 
-  if (error) return <p className="form-message error">{error}</p>;
+  if (error)
+    return (
+      <p className="form-message error" role="alert">
+        {error}
+      </p>
+    );
   if (!stats) return <TilesSkeleton />;
   return (
     <>
@@ -99,7 +105,7 @@ function UsernameForm({ user, setUser }) {
         <button type="button" className="link-btn" onClick={() => setEditing(true)}>
           Change
         </button>
-        <FormMessage message={message} />
+        <FormMessage message={message} id="username-message" />
       </>
     );
   }
@@ -110,6 +116,7 @@ function UsernameForm({ user, setUser }) {
       </label>
       <input
         id="new-username"
+        {...describedBy(message, 'username-message')}
         value={value}
         onChange={(e) => setValue(e.target.value)}
         required
@@ -123,7 +130,7 @@ function UsernameForm({ user, setUser }) {
       <button type="button" className="link-btn" onClick={onCancel} disabled={busy}>
         Cancel
       </button>
-      <FormMessage message={message} />
+      <FormMessage message={message} id="username-message" />
     </form>
   );
 }
@@ -228,6 +235,7 @@ function PasswordForm({ user, setUser, refresh }) {
             <label htmlFor="current-password">Current password</label>
             <input
               id="current-password"
+              {...describedBy(message, 'password-message')}
               name="currentPassword"
               type="password"
               autoComplete="current-password"
@@ -242,6 +250,7 @@ function PasswordForm({ user, setUser, refresh }) {
           <label htmlFor="new-password">New password</label>
           <input
             id="new-password"
+            {...describedBy(message, 'password-message')}
             name="password"
             type="password"
             autoComplete="new-password"
@@ -255,7 +264,7 @@ function PasswordForm({ user, setUser, refresh }) {
         <button type="submit" className="submit-btn" disabled={busy}>
           {busy ? 'Saving...' : 'Save password'}
         </button>
-        <FormMessage message={message} />
+        <FormMessage message={message} id="password-message" />
       </form>
       {needsCurrent && user.providers.length > 0 && (
         <p className="hint">
