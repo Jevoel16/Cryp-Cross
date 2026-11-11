@@ -231,6 +231,48 @@ describe('playing the daily puzzle', () => {
     assert.deepEqual(stored.grid, puzzle.solution);
   });
 
+  test('health is ok once the database is connected', async () => {
+    const res = await createClient(api.base).get('/api/health');
+    assert.equal(res.status, 200);
+    assert.deepEqual(res.body, { success: true, data: { status: 'ok', db: true } });
+  });
+
+  test('every ranked route answers 401 when signed out', async () => {
+    const guest = createClient(api.base);
+    assert.equal((await guest.get('/api/puzzles/today/progress')).status, 401);
+    assert.equal((await guest.put('/api/puzzles/today/progress', body(blank()))).status, 401);
+    assert.equal((await guest.post('/api/puzzles/today/check', body(blank()))).status, 401);
+    assert.equal((await guest.post('/api/puzzles/today/submit', body(blank()))).status, 401);
+    assert.equal((await guest.get('/api/me/stats')).status, 401);
+    assert.equal(await Attempt.countDocuments({}), 0);
+  });
+
+  test("one player's saves, checks and solves never touch another player's attempt", async () => {
+    const alice = await player('alice');
+    const bob = await player('bob');
+    await alice.get('/api/puzzles/today/progress');
+    await bob.get('/api/puzzles/today/progress');
+    const aliceId = (await User.findOne({ username: 'alice' }))._id;
+    const before = await Attempt.findOne({ user: aliceId }).lean();
+
+    const wrongGrid = puzzle.solution.map((row) => row.replace(/[A-Z]/g, 'Q'));
+    await bob.put('/api/puzzles/today/progress', body(wrongGrid));
+    await bob.post('/api/puzzles/today/check', body(wrongGrid));
+    await bob.post('/api/puzzles/today/submit', body(puzzle.solution));
+
+    const after = await Attempt.findOne({ user: aliceId }).lean();
+    assert.deepEqual(after.grid, before.grid);
+    assert.equal(after.checks, 0);
+    assert.equal(after.solvedAt, undefined);
+    assert.deepEqual((await alice.get('/api/puzzles/today/progress')).body.data.grid, []);
+
+    const aliceStats = (await alice.get('/api/me/stats')).body.data;
+    const bobStats = (await bob.get('/api/me/stats')).body.data;
+    assert.equal(aliceStats.solves, 0);
+    assert.deepEqual(aliceStats.history, []);
+    assert.equal(bobStats.solves, 1);
+  });
+
   test('leaderboard ranks by time and stats count streaks', async () => {
     const alice = await player('alice');
     const bob = await player('bob');
