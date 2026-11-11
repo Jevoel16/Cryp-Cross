@@ -1,18 +1,18 @@
 const express = require('express');
-const bcrypt = require('bcryptjs');
 const { rateLimit } = require('express-rate-limit');
-const User = require('../models/user');
+const accounts = require('../services/accounts');
 const { validateLogin, validateUsername, validatePasswordChange } = require('../lib/validate');
 const { createRateLimitStore } = require('../lib/rateLimitStore');
 const { requireAuth, loadSessionUser } = require('../middleware/auth');
 const { createOAuthRouter } = require('./oauth');
 const { AUTH_VIA, canSetPasswordWithoutCurrent, signIn } = require('../lib/sessionAuth');
+const { badRequest, handle, ok } = require('../lib/httpError');
 
-const BCRYPT_ROUNDS = 12;
-// Compared against when the username is unknown so login takes the same time either way.
-const DUMMY_HASH = bcrypt.hashSync('not-a-real-password', BCRYPT_ROUNDS);
-
-const badRequest = (res, errors) => res.status(400).json({ success: false, message: errors.join('; '), errors });
+// Returns the cleaned data, or throws a 400 listing every problem.
+function valid({ errors, data }) {
+  if (errors.length) throw badRequest(errors.join('; '), { errors });
+  return data;
+}
 
 // Brute-force guard for credential endpoints (counts shared via MongoDB).
 const createAuthLimiter = () =>
@@ -56,22 +56,15 @@ function createAuthRouter() {
   const router = express.Router();
   const authLimiter = createAuthLimiter();
 
-  // Only accounts with a password can log in here; accounts come from GitHub/Google.
-  router.post('/login', authLimiter, async (req, res, next) => {
-    const { errors, data } = validateLogin(req.body);
-    if (errors.length) return badRequest(res, errors);
-    try {
-      const user = await User.findOne({ username: data.username });
-      const ok = await bcrypt.compare(data.password, user?.passwordHash || DUMMY_HASH);
-      if (!user || !user.passwordHash || !ok) {
-        return res.status(401).json({ success: false, message: 'Wrong username or password' });
-      }
+  router.post(
+    '/login',
+    authLimiter,
+    handle(async (req, res) => {
+      const user = await accounts.verifyLogin(valid(validateLogin(req.body)));
       await startSession(req, user, AUTH_VIA.PASSWORD);
-      res.json({ success: true, data: user.toPublic() });
-    } catch (error) {
-      next(error);
-    }
-  });
+      ok(res, user.toPublic());
+    }),
+  );
 
   router.post('/logout', (req, res, next) => {
     if (!req.session) return res.json({ success: true });
@@ -83,65 +76,40 @@ function createAuthRouter() {
   });
 
   // 200 with data: null when signed out, so the frontend can call it on every load.
-  router.get('/me', async (req, res, next) => {
-    try {
+  router.get(
+    '/me',
+    handle(async (req, res) => {
       const user = await loadSessionUser(req);
-      res.json({
-        success: true,
-        data: user
-          ? { ...user.toPublic(), canSetPasswordWithoutCurrent: canSetPasswordWithoutCurrent(req.session) }
-          : null,
-      });
-    } catch (error) {
-      next(error);
-    }
-  });
+      ok(
+        res,
+        user ? { ...user.toPublic(), canSetPasswordWithoutCurrent: canSetPasswordWithoutCurrent(req.session) } : null,
+      );
+    }),
+  );
 
-  router.put('/username', requireAuth, async (req, res, next) => {
-    const { errors, data } = validateUsername(req.body);
-    if (errors.length) return badRequest(res, errors);
-    try {
-      if (data.username !== req.user.username) {
-        if (await User.exists({ username: data.username })) {
-          return res.status(409).json({ success: false, message: 'That username is taken' });
-        }
-        req.user.username = data.username;
-        await req.user.save();
-      }
-      res.json({ success: true, data: req.user.toPublic() });
-    } catch (error) {
-      if (error.code === 11000) return res.status(409).json({ success: false, message: 'That username is taken' });
-      next(error);
-    }
-  });
+  router.put(
+    '/username',
+    requireAuth,
+    handle(async (req, res) => {
+      const { username } = valid(validateUsername(req.body));
+      ok(res, (await accounts.changeUsername(req.user, username)).toPublic());
+    }),
+  );
 
   // Needs the current password or a sign-in within 10 minutes, so a stolen session can't take over.
-  router.put('/password', authLimiter, requireAuth, async (req, res, next) => {
-    const { errors, data } = validatePasswordChange(req.body);
-    if (errors.length) return badRequest(res, errors);
-    try {
-      const user = req.user;
-      let proven = canSetPasswordWithoutCurrent(req.session);
-      if (!proven && user.passwordHash && data.currentPassword) {
-        proven = await bcrypt.compare(data.currentPassword, user.passwordHash);
-      }
-      if (!proven) {
-        const message = user.passwordHash
-          ? 'Current password is wrong. Forgot it? Sign in with GitHub or Google, then set a new one.'
-          : 'Sign in with GitHub or Google again, then set your password within 10 minutes.';
-        return res.status(403).json({ success: false, message });
-      }
-
-      user.passwordHash = await bcrypt.hash(data.password, BCRYPT_ROUNDS);
-      user.passwordChangedAt = new Date();
-      await user.save();
+  router.put(
+    '/password',
+    authLimiter,
+    requireAuth,
+    handle(async (req, res) => {
+      const data = valid(validatePasswordChange(req.body));
+      const recentSignIn = canSetPasswordWithoutCurrent(req.session);
+      const user = await accounts.changePassword(req.user, data, { recentSignIn });
       // Ends every other session and closes the OAuth grace window.
       signIn(req.session, user._id, AUTH_VIA.PASSWORD, user.passwordChangedAt.getTime());
-      res.json({ success: true, message: 'Password saved', data: user.toPublic() });
-    } catch (error) {
-      next(error);
-    }
-  });
+      ok(res, user.toPublic(), 'Password saved');
+    }),
+  );
 
   router.use(createOAuthRouter({ oauthLimiter: createOAuthLimiter(), startSession }));
 

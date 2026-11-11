@@ -5,7 +5,7 @@ const { startDb, clearDb, stopDb, listen, createClient } = require('./helpers/db
 const { APP_URL, setUpProviders, signIn } = require('./helpers/oauth');
 const { createApp } = require('../app');
 const User = require('../models/user');
-const { usernameBase } = require('../routes/oauth');
+const { usernameBase } = require('../services/accounts');
 
 describe('usernameBase', () => {
   test('turns provider names into valid usernames', () => {

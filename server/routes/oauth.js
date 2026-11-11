@@ -1,9 +1,9 @@
 // Sign in with GitHub or Google (mounted inside the auth router at /api/auth).
 const express = require('express');
-const crypto = require('crypto');
-const User = require('../models/user');
+const accounts = require('../services/accounts');
 const oauth = require('../lib/oauth');
-const { USERNAME, safeRedirectPath } = require('../lib/validate');
+const { safeRedirectPath } = require('../lib/validate');
+const { HttpError, handle, ok } = require('../lib/httpError');
 const { AUTH_VIA } = require('../lib/sessionAuth');
 const { requireAuth, loadSessionUser } = require('../middleware/auth');
 
@@ -13,53 +13,6 @@ const ATTEMPT_TTL_MS = 10 * 60 * 1000;
 const ERROR_CODES = new Set(['denied', 'state', 'failed', 'linked']);
 
 const appUrl = () => (process.env.APP_URL || 'http://localhost:3000').replace(/\/$/, '');
-
-const providerField = (id) => `${id}Id`;
-
-// "Octo Cat!" -> "octo_cat"; padded or replaced when too short to be a valid username.
-function usernameBase(hint) {
-  const cleaned = String(hint || '')
-    .normalize('NFKD')
-    .toLowerCase()
-    .replace(/[\s-]+/g, '_')
-    .replace(/[^a-z0-9_]/g, '')
-    .slice(0, 20);
-  return cleaned.length >= 3 ? cleaned : 'player';
-}
-
-async function uniqueUsername(hint) {
-  const base = usernameBase(hint);
-  if (!(await User.exists({ username: base }))) return base;
-  for (let i = 0; i < 8; i++) {
-    const candidate = `${base.slice(0, 15)}_${crypto.randomInt(1000, 10000)}`;
-    if (USERNAME.test(candidate) && !(await User.exists({ username: candidate }))) return candidate;
-  }
-  return `player_${crypto.randomBytes(4).toString('hex')}`;
-}
-
-// Finds or creates the account for a provider profile. Returns { user } or { error }.
-async function resolveAccount(provider, profile, linkUser) {
-  const field = providerField(provider);
-  const owner = await User.findOne({ [field]: profile.providerId });
-
-  // Connecting from the Account page.
-  if (linkUser) {
-    if (owner && !owner._id.equals(linkUser._id)) return { error: 'linked' };
-    linkUser[field] = profile.providerId;
-    await linkUser.save();
-    return { user: linkUser };
-  }
-
-  if (owner) return { user: owner };
-
-  // Matched by provider ID only (no email); players link providers from the Account page.
-  const user = new User({
-    username: await uniqueUsername(profile.usernameHint),
-    [field]: profile.providerId,
-  });
-  await user.save();
-  return { user };
-}
 
 function createOAuthRouter({ oauthLimiter, startSession }) {
   const router = express.Router();
@@ -137,7 +90,7 @@ function createOAuthRouter({ oauthLimiter, startSession }) {
         if (!linkUser || String(linkUser._id) !== pending.linkUserId) return fail('failed');
       }
 
-      const { user, error } = await resolveAccount(provider, profile, linkUser);
+      const { user, error } = await accounts.resolveOAuthAccount(provider, profile, linkUser);
       if (error) return fail(error);
 
       if (linkUser) {
@@ -156,30 +109,17 @@ function createOAuthRouter({ oauthLimiter, startSession }) {
     }
   });
 
-  // Disconnects a provider, unless it is the account's only way to sign in.
-  router.post('/oauth/:provider/unlink', requireAuth, async (req, res, next) => {
-    const { provider } = req.params;
-    if (!oauth.isKnownProvider(provider)) return res.status(404).json({ success: false, message: 'Not found' });
-    try {
-      const user = req.user;
-      const field = providerField(provider);
-      if (user[field]) {
-        if (!User.canRemoveSignInMethod(user, provider)) {
-          return res.status(400).json({
-            success: false,
-            message: 'This is your only way to sign in. Set a password or connect another account first.',
-          });
-        }
-        user[field] = undefined;
-        await user.save();
-      }
-      res.json({ success: true, data: user.toPublic() });
-    } catch (error) {
-      next(error);
-    }
-  });
+  router.post(
+    '/oauth/:provider/unlink',
+    requireAuth,
+    handle(async (req, res) => {
+      const { provider } = req.params;
+      if (!oauth.isKnownProvider(provider)) throw new HttpError(404, 'Not found');
+      ok(res, (await accounts.unlinkProvider(req.user, provider)).toPublic());
+    }),
+  );
 
   return router;
 }
 
-module.exports = { createOAuthRouter, usernameBase };
+module.exports = { createOAuthRouter };
