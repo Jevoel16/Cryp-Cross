@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useReducer, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useReducer, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import SectionWrapper from '../components/SectionWrapper';
 import { BoardSkeleton } from '../components/Skeleton';
@@ -10,6 +10,7 @@ import { useAuth } from '../auth/authContext';
 import { buildBoard, entryCells, isFilled, lettersToRows, rowsToLetters } from '../lib/grid';
 import { formatDuration } from '../lib/format';
 import { ClockIcon } from '../components/Icons';
+import { PHASE, PLAYER_EVENT, initialPlayerState, playerReducer } from '../lib/playerMachine';
 import { PLAY_STATUS, PROGRESS_EVENT, initialProgress, playStatus, progressReducer } from '../lib/playStatus';
 
 const SAVE_DELAY_MS = 1000;
@@ -94,33 +95,35 @@ function PuzzlePlayer({ puzzle, progress, initialRows }) {
       },
     };
   }, [grid, handleKey, isGuest, guestClock, puzzle.date]);
-  const [result, setResult] = useState(() => {
-    if (progress?.solvedAt) return { solved: true, timeMs: progress.timeMs };
-    if (guestClock && 'timeMs' in guestClock) return { solved: true, timeMs: guestClock.timeMs, guest: true };
-    return null;
-  });
-  // Check results belong to the grid they were made for; any edit hides them.
-  const [checked, setChecked] = useState({ rowsKey: null, status: {} });
-  const [busy, setBusy] = useState(false);
-  const [message, setMessage] = useState(null);
-  const solved = Boolean(result?.solved);
+  const [state, dispatch] = useReducer(playerReducer, { progress, guestClock }, initialPlayerState);
+  const { phase, result, feedback, checked, saveError } = state;
+  const solved = phase === PHASE.SOLVED;
+  const busy = phase === PHASE.REQUESTING;
   const rows = lettersToRows(board, letters);
   const filled = isFilled(board, letters);
   const rowsKey = rows.join('|');
   const lastSaved = useRef(rowsKey);
 
+  // Marked as saved only once the server accepted it, so a failed save is retried.
+  const save = useCallback(
+    (key) =>
+      api('/puzzles/today/progress', { method: 'PUT', body: { date: puzzle.date, grid: key.split('|') } }).then(
+        () => {
+          lastSaved.current = key;
+          dispatch({ type: PLAYER_EVENT.SAVED });
+        },
+        (error) => dispatch({ type: PLAYER_EVENT.SAVE_FAILED, error: error.message }),
+      ),
+    [puzzle.date],
+  );
+
   // Local draft always; server save (debounced) for players.
   useEffect(() => {
     writeDraft(puzzle.date, rowsKey.split('|'));
     if (!progress || solved || rowsKey === lastSaved.current) return undefined;
-    const id = setTimeout(() => {
-      lastSaved.current = rowsKey;
-      api('/puzzles/today/progress', { method: 'PUT', body: { date: puzzle.date, grid: rowsKey.split('|') } }).catch(
-        (error) => setMessage({ type: 'error', text: `Not saved: ${error.message}` }),
-      );
-    }, SAVE_DELAY_MS);
+    const id = setTimeout(() => save(rowsKey), SAVE_DELAY_MS);
     return () => clearTimeout(id);
-  }, [rowsKey, puzzle.date, progress, solved]);
+  }, [rowsKey, puzzle.date, progress, solved, save]);
 
   const startedAt = isGuest ? guestClock?.startedAt : progress.startedAt;
 
@@ -139,56 +142,39 @@ function PuzzlePlayer({ puzzle, progress, initialRows }) {
     return out;
   }, [clueStatus, puzzle.entries]);
 
-  const run = async (path) => {
-    setBusy(true);
-    setMessage(null);
+  // Returns the response data, or null after reporting the failure.
+  const request = async (path) => {
+    dispatch({ type: PLAYER_EVENT.REQUEST });
     try {
       return await api(path, { method: 'POST', body: { date: puzzle.date, grid: rows } });
     } catch (error) {
-      setMessage({ type: 'error', text: error.message });
+      dispatch({ type: PLAYER_EVENT.FAILED, error: error.message });
       return null;
-    } finally {
-      setBusy(false);
     }
   };
 
   const onCheck = async () => {
-    const data = await run(isGuest ? '/puzzles/today/guest-check' : '/puzzles/today/check');
-    if (!data) return;
-    setChecked({ rowsKey, status: Object.fromEntries(data.entries.map((s, i) => [i, s])) });
-    const wrong = data.entries.filter((s) => s === 'wrong').length;
-    const right = data.entries.filter((s) => s === 'right').length;
-    setMessage({
-      type: wrong ? 'error' : 'success',
-      text: `${right} right, ${wrong} wrong, ${data.entries.length - right - wrong} unfinished.`,
-    });
+    const data = await request(isGuest ? '/puzzles/today/guest-check' : '/puzzles/today/check');
+    if (data) dispatch({ type: PLAYER_EVENT.CHECKED, rowsKey, entries: data.entries });
   };
 
   const onSubmit = async () => {
     if (isGuest) return onGuestSubmit();
-    const data = await run('/puzzles/today/submit');
+    const data = await request('/puzzles/today/submit');
     if (!data) return;
     if (data.solved) {
-      setResult(data);
-      setMessage(null);
+      dispatch({ type: PLAYER_EVENT.SOLVED, result: { timeMs: data.timeMs, rank: data.rank, guest: false } });
     } else {
-      setMessage({
-        type: 'error',
-        text: `Not quite: ${data.wrong} wrong and ${data.incomplete} unfinished. Use Check to find them.`,
-      });
+      dispatch({ type: PLAYER_EVENT.NOT_SOLVED, wrong: data.wrong, incomplete: data.incomplete });
     }
   };
 
   const onGuestSubmit = async () => {
-    const data = await run('/puzzles/today/guest-check');
+    const data = await request('/puzzles/today/guest-check');
     if (!data) return;
     if (!data.solved) {
-      const wrong = data.entries.filter((s) => s === 'wrong').length;
-      const incomplete = data.entries.filter((s) => s === 'incomplete').length;
-      setMessage({
-        type: 'error',
-        text: `Not quite: ${wrong} wrong and ${incomplete} unfinished. Use Check to find them.`,
-      });
+      const count = (status) => data.entries.filter((s) => s === status).length;
+      dispatch({ type: PLAYER_EVENT.NOT_SOLVED, wrong: count('wrong'), incomplete: count('incomplete') });
       return;
     }
     // A draft restored from before the clock existed has no start time, so no time to show.
@@ -196,7 +182,7 @@ function PuzzlePlayer({ puzzle, progress, initialRows }) {
     const clock = { startedAt: start ?? Date.now(), timeMs: start ? Math.max(0, Date.now() - start) : null };
     writeGuestClock(puzzle.date, clock);
     setGuestClock(clock);
-    setResult({ solved: true, timeMs: clock.timeMs, guest: true });
+    dispatch({ type: PLAYER_EVENT.SOLVED, result: { timeMs: clock.timeMs, guest: true } });
   };
 
   return (
@@ -249,9 +235,17 @@ function PuzzlePlayer({ puzzle, progress, initialRows }) {
           to join the leaderboard tomorrow.
         </p>
       )}
-      {message && (
-        <p className={`form-message ${message.type}`} role={message.type === 'error' ? 'alert' : 'status'}>
-          {message.text}
+      {feedback && (
+        <p className={`form-message ${feedback.type}`} role={feedback.type === 'error' ? 'alert' : 'status'}>
+          {feedback.text}
+        </p>
+      )}
+      {saveError && (
+        <p className="form-message error" role="alert">
+          Not saved: {saveError}{' '}
+          <button type="button" className="link-btn" onClick={() => save(rowsKey)}>
+            Save again
+          </button>
         </p>
       )}
     </PuzzleBoard>
