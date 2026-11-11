@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import usePageMeta from '../usePageMeta';
-import { api } from '../api';
+import { fetchTodayPuzzle } from '../lib/todayPuzzle';
 import { useAuth } from '../auth/authContext';
 import { CIPHER_INFO } from '../lib/ciphers';
 
@@ -61,7 +61,7 @@ export default function HomePage() {
 
   useEffect(() => {
     // Only a summary line; the page works without it.
-    api('/puzzles/today').then(setToday, () => setToday(null));
+    fetchTodayPuzzle().then(setToday, () => setToday(null));
   }, []);
 
   return (

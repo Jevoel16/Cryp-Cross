@@ -1,7 +1,7 @@
 <a id="top"></a>
 
 <div align="center">
-  <img src="public/logomain.png" alt="Cryp-Cross logo" width="120" />
+  <img src="docs/images/logo.png" alt="Cryp-Cross logo" width="120" />
 
   <h1>Cryp-Cross</h1>
 

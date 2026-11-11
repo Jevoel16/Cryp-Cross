@@ -10,6 +10,7 @@ import { useAuth } from '../auth/authContext';
 import { buildBoard, entryCells, isFilled, lettersToRows, rowsToLetters } from '../lib/grid';
 import { formatDuration } from '../lib/format';
 import { ClockIcon } from '../components/Icons';
+import { fetchTodayPuzzle } from '../lib/todayPuzzle';
 import { PHASE, PLAYER_EVENT, initialPlayerState, playerReducer } from '../lib/playerMachine';
 import { PLAY_STATUS, PROGRESS_EVENT, initialProgress, playStatus, progressReducer } from '../lib/playStatus';
 
@@ -321,7 +322,7 @@ export default function PlayPage() {
   const [error, setError] = useState('');
 
   useEffect(() => {
-    api('/puzzles/today').then(setPuzzle, (err) => setError(err.message));
+    fetchTodayPuzzle().then(setPuzzle, (err) => setError(err.message));
   }, []);
 
   return (

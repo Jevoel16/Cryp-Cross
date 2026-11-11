@@ -15,6 +15,19 @@ export const OAUTH_ERRORS = {
 };
 
 let cached = null;
+let inFlight = null;
+
+// Shares one /auth/providers request between every component that asks while it is running.
+export function loadProviders() {
+  inFlight ||= api('/auth/providers').then(
+    (list) => (cached = parseProviders(list)),
+    (error) => {
+      inFlight = null;
+      throw error;
+    },
+  );
+  return inFlight;
+}
 
 // Keeps only providers this frontend knows how to show.
 export function parseProviders(list) {
@@ -28,11 +41,8 @@ export function useOAuthProviderState() {
   );
   useEffect(() => {
     if (cached) return;
-    api('/auth/providers').then(
-      (list) => {
-        cached = parseProviders(list);
-        setState({ providers: cached, status: 'ready' });
-      },
+    loadProviders().then(
+      (providers) => setState({ providers, status: 'ready' }),
       () => setState({ providers: [], status: 'error' }),
     );
   }, []);
