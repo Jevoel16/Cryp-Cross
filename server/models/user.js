@@ -16,12 +16,32 @@ const userSchema = new mongoose.Schema(
   { timestamps: true },
 );
 
+const PROVIDERS = Object.freeze(['github', 'google']);
+const SIGN_IN_METHOD = Object.freeze({ PASSWORD: 'password', GITHUB: 'github', GOOGLE: 'google' });
+
+// Every way this account can sign in; the list must never be empty.
+function signInMethods(user) {
+  const methods = PROVIDERS.filter((p) => user[`${p}Id`]);
+  return user.passwordHash ? [SIGN_IN_METHOD.PASSWORD, ...methods] : methods;
+}
+
+// Removing a method is allowed only while another one remains.
+const canRemoveSignInMethod = (user, method) => signInMethods(user).some((m) => m !== method);
+
+userSchema.pre('validate', function requireSignInMethod(next) {
+  next(signInMethods(this).length ? undefined : new Error('An account needs at least one way to sign in'));
+});
+
 userSchema.methods.toPublic = function toPublic() {
   return {
     username: this.username,
     hasPassword: Boolean(this.passwordHash),
-    providers: ['github', 'google'].filter((p) => this[`${p}Id`]),
+    providers: PROVIDERS.filter((p) => this[`${p}Id`]),
   };
 };
+
+userSchema.statics.signInMethods = signInMethods;
+userSchema.statics.canRemoveSignInMethod = canRemoveSignInMethod;
+userSchema.statics.SIGN_IN_METHOD = SIGN_IN_METHOD;
 
 module.exports = mongoose.model('User', userSchema);

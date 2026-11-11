@@ -164,8 +164,7 @@ function createOAuthRouter({ oauthLimiter, startSession }) {
       const user = req.user;
       const field = providerField(provider);
       if (user[field]) {
-        const others = Object.keys(oauth.PROVIDERS).filter((p) => p !== provider && user[providerField(p)]);
-        if (!user.passwordHash && !others.length) {
+        if (!User.canRemoveSignInMethod(user, provider)) {
           return res.status(400).json({
             success: false,
             message: 'This is your only way to sign in. Set a password or connect another account first.',
