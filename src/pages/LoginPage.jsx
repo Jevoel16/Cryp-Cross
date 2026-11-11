@@ -7,6 +7,8 @@ import { OAUTH_ERRORS, useOAuthProviderState } from '../lib/oauth';
 import usePageMeta from '../usePageMeta';
 import { api } from '../api';
 import { useAuth } from '../auth/authContext';
+import useSubmitState from '../hooks/useSubmitState';
+import { SUBMIT, idleSubmit } from '../lib/submitMachine';
 
 export default function LoginPage() {
   usePageMeta({
@@ -19,27 +21,23 @@ export default function LoginPage() {
   const location = useLocation();
   const { providers, status } = useOAuthProviderState();
   const [form, setForm] = useState({ username: '', password: '' });
-  const [busy, setBusy] = useState(false);
   const [params] = useSearchParams();
   const oauthError = OAUTH_ERRORS[params.get('oauth')];
-  const [message, setMessage] = useState(() => (oauthError ? { type: 'error', text: oauthError } : null));
+  const { busy, message, run } = useSubmitState(
+    oauthError ? { status: SUBMIT.ERROR, message: oauthError } : idleSubmit,
+  );
   const from = location.state?.from;
   const safeFrom = typeof from === 'string' && from.startsWith('/') && !from.startsWith('//') ? from : '/play';
 
   const onChange = (e) => setForm((f) => ({ ...f, [e.target.name]: e.target.value }));
 
-  const onSubmit = async (e) => {
+  const onSubmit = (e) => {
     e.preventDefault();
-    setBusy(true);
-    setMessage(null);
-    try {
+    run(async () => {
       setUser(await api('/auth/login', { method: 'POST', body: form }));
       // Back to where the player came from (e.g. /play), never an external URL.
       navigate(safeFrom, { replace: true });
-    } catch (error) {
-      setMessage({ type: 'error', text: error.message });
-      setBusy(false);
-    }
+    });
   };
 
   return (

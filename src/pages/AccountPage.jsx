@@ -9,6 +9,8 @@ import usePageMeta from '../usePageMeta';
 import { api } from '../api';
 import { useAuth } from '../auth/authContext';
 import { AUTH_STATUS } from '../auth/authMachine';
+import useSubmitState from '../hooks/useSubmitState';
+import { SUBMIT, idleSubmit } from '../lib/submitMachine';
 import { formatDuration } from '../lib/format';
 
 function Stats() {
@@ -72,22 +74,22 @@ function Stats() {
 function UsernameForm({ user, setUser }) {
   const [editing, setEditing] = useState(false);
   const [value, setValue] = useState(user.username);
-  const [busy, setBusy] = useState(false);
-  const [message, setMessage] = useState(null);
+  const { busy, message, run, reset } = useSubmitState();
 
-  const onSubmit = async (e) => {
+  const onSubmit = (e) => {
     e.preventDefault();
-    setBusy(true);
-    setMessage(null);
-    try {
+    run(async () => {
       setUser(await api('/auth/username', { method: 'PUT', body: { username: value } }));
       setEditing(false);
-      setMessage({ type: 'success', text: 'Username updated.' });
-    } catch (error) {
-      setMessage({ type: 'error', text: error.message });
-    } finally {
-      setBusy(false);
-    }
+      return 'Username updated.';
+    });
+  };
+
+  // Cancel drops the typed name and any error with it.
+  const onCancel = () => {
+    setValue(user.username);
+    reset();
+    setEditing(false);
   };
 
   if (!editing) {
@@ -116,9 +118,9 @@ function UsernameForm({ user, setUser }) {
         disabled={busy}
       />
       <button type="submit" className="submit-btn" disabled={busy}>
-        Save
+        {busy ? 'Saving...' : 'Save'}
       </button>
-      <button type="button" className="link-btn" onClick={() => setEditing(false)} disabled={busy}>
+      <button type="button" className="link-btn" onClick={onCancel} disabled={busy}>
         Cancel
       </button>
       <FormMessage message={message} />
@@ -131,29 +133,24 @@ function ConnectedAccounts({ user, setUser }) {
   const [params] = useSearchParams();
   const linked = PROVIDER_LABELS[params.get('linked')];
   const oauthError = OAUTH_ERRORS[params.get('oauth')];
-  const [message, setMessage] = useState(() => {
-    if (oauthError) return { type: 'error', text: oauthError };
-    if (linked) return { type: 'success', text: `${linked} connected. You can now sign in with it.` };
-    return null;
-  });
-  const [busy, setBusy] = useState(false);
+  // The result of a connect attempt comes back in the URL, so it starts as a finished submit.
+  const { busy, message, run } = useSubmitState(
+    oauthError
+      ? { status: SUBMIT.ERROR, message: oauthError }
+      : linked
+        ? { status: SUBMIT.SUCCESS, message: `${linked} connected. You can now sign in with it.` }
+        : idleSubmit,
+  );
 
   // Show connected providers even if their server config was later removed.
   const shown = [...new Set([...providers, ...user.providers])];
   if (!shown.length) return null;
 
-  const unlink = async (provider) => {
-    setBusy(true);
-    setMessage(null);
-    try {
+  const unlink = (provider) =>
+    run(async () => {
       setUser(await api(`/auth/oauth/${provider}/unlink`, { method: 'POST' }));
-      setMessage({ type: 'success', text: `${PROVIDER_LABELS[provider]} disconnected.` });
-    } catch (error) {
-      setMessage({ type: 'error', text: error.message });
-    } finally {
-      setBusy(false);
-    }
-  };
+      return `${PROVIDER_LABELS[provider]} disconnected.`;
+    });
 
   return (
     <>
@@ -189,29 +186,22 @@ function ConnectedAccounts({ user, setUser }) {
 function PasswordForm({ user, setUser, refresh }) {
   const needsCurrent = user.hasPassword && !user.canSetPasswordWithoutCurrent;
   const [form, setForm] = useState({ password: '', currentPassword: '' });
-  const [busy, setBusy] = useState(false);
-  const [message, setMessage] = useState(null);
+  const { busy, message, run } = useSubmitState();
 
   const onChange = (e) => setForm((f) => ({ ...f, [e.target.name]: e.target.value }));
 
   const onSubmit = async (e) => {
     e.preventDefault();
-    setBusy(true);
-    setMessage(null);
-    try {
+    const error = await run(async () => {
       const body = { password: form.password };
       if (needsCurrent) body.currentPassword = form.currentPassword;
       const updated = await api('/auth/password', { method: 'PUT', body });
       setUser({ ...updated, canSetPasswordWithoutCurrent: false });
       setForm({ password: '', currentPassword: '' });
-      setMessage({ type: 'success', text: `Password saved. You can now log in as ${updated.username}.` });
-    } catch (error) {
-      setMessage({ type: 'error', text: error.message });
-      // A 403 means the sign-in window closed: reload the session so the right fields show.
-      if (error.status === 403) await refresh().catch(() => {});
-    } finally {
-      setBusy(false);
-    }
+      return `Password saved. You can now log in as ${updated.username}.`;
+    });
+    // A 403 means the sign-in window closed: reload the session so the right fields show.
+    if (error?.status === 403) await refresh().catch(() => {});
   };
 
   return (
