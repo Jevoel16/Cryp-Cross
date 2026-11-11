@@ -1,4 +1,5 @@
 const express = require('express');
+const mongoose = require('mongoose');
 const cors = require('cors');
 const helmet = require('helmet');
 const { rateLimit } = require('express-rate-limit');
@@ -50,7 +51,27 @@ function createApp() {
   app.set('trust proxy', trustProxyHops());
   app.disable('x-powered-by');
 
-  app.use(helmet());
+  // The API only returns JSON, so nothing may load or frame it.
+  app.use(
+    helmet({
+      contentSecurityPolicy: { directives: { defaultSrc: ["'none'"], frameAncestors: ["'none'"] } },
+    }),
+  );
+  app.use((req, res, next) => {
+    res.set('Permissions-Policy', 'camera=(), microphone=(), geolocation=()');
+    next();
+  });
+  // Answers depend on the session, so caches must never keep them.
+  app.use('/api', (req, res, next) => {
+    res.set('Cache-Control', 'no-store');
+    next();
+  });
+
+  // Before sessions and limiters so uptime checks stay cheap and never get throttled.
+  app.get('/api/health', (req, res) => {
+    const db = mongoose.connection.readyState === 1;
+    res.status(db ? 200 : 503).json({ success: db, data: { status: db ? 'ok' : 'degraded', db } });
+  });
 
   const origins = allowedOrigins();
   app.use(

@@ -112,6 +112,19 @@ describe('HTTP API (no database)', () => {
     assert.equal(res.headers.get('x-content-type-options'), 'nosniff');
     assert.equal(res.headers.get('x-powered-by'), null);
     assert.ok(res.headers.get('ratelimit-policy'));
+    assert.match(res.headers.get('content-security-policy'), /frame-ancestors 'none'/);
+    assert.match(res.headers.get('permissions-policy'), /camera=\(\)/);
+    assert.equal(res.headers.get('referrer-policy'), 'no-referrer');
+    assert.equal(res.headers.get('cache-control'), 'no-store');
+  });
+
+  test('health reports the database state without a session or rate limit', async () => {
+    const res = await fetch(`${base}/api/health`);
+    // These tests run without MongoDB, so the API is up but degraded.
+    assert.equal(res.status, 503);
+    assert.deepEqual(await res.json(), { success: false, data: { status: 'degraded', db: false } });
+    assert.equal(res.headers.get('set-cookie'), null);
+    assert.equal(res.headers.get('ratelimit-policy'), null);
   });
 
   test('unknown routes return JSON 404', async () => {
