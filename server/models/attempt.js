@@ -16,6 +16,7 @@ const attemptSchema = new mongoose.Schema(
 );
 
 attemptSchema.index({ user: 1, date: 1 }, { unique: true });
-attemptSchema.index({ date: 1, timeMs: 1 });
+// Matches the leaderboard sort, ties broken by who finished first.
+attemptSchema.index({ date: 1, timeMs: 1, solvedAt: 1 });
 
 module.exports = mongoose.model('Attempt', attemptSchema);

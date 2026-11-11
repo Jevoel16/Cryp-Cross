@@ -13,6 +13,8 @@ const {
 
 const LEADERBOARD_SIZE = 50;
 const HISTORY_SIZE = 30;
+// About three years of daily solves; enough for any streak and keeps the query bounded.
+const STREAK_DAYS = 1100;
 const DEFAULT_MIN_SOLVE_SECONDS = 30;
 
 // Solves faster than this must have been prepared before the timer started.
@@ -176,20 +178,22 @@ function streaks(solvedDates, today) {
 }
 
 async function stats(user) {
-  const solved = await Attempt.find({ user: user._id, solvedAt: { $exists: true } })
-    .sort({ date: -1 })
-    .select('date timeMs -_id')
-    .lean();
+  const filter = { user: user._id, solvedAt: { $exists: true } };
+  const [solves, fastest, recent] = await Promise.all([
+    Attempt.countDocuments(filter),
+    Attempt.findOne(filter).sort({ timeMs: 1 }).select('timeMs -_id').lean(),
+    Attempt.find(filter).sort({ date: -1 }).limit(STREAK_DAYS).select('date timeMs -_id').lean(),
+  ]);
   const { current, best } = streaks(
-    solved.map((s) => s.date),
+    recent.map((s) => s.date),
     dayKey(),
   );
   return {
-    solves: solved.length,
+    solves,
     currentStreak: current,
     bestStreak: best,
-    bestTimeMs: solved.length ? Math.min(...solved.map((s) => s.timeMs)) : null,
-    history: solved.slice(0, HISTORY_SIZE),
+    bestTimeMs: fastest ? fastest.timeMs : null,
+    history: recent.slice(0, HISTORY_SIZE),
   };
 }
 
