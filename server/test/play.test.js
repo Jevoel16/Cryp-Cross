@@ -6,7 +6,7 @@ const DailyPuzzle = require('../models/dailyPuzzle');
 const Attempt = require('../models/attempt');
 const User = require('../models/user');
 const bcrypt = require('bcryptjs');
-const { streaks } = require('../routes/play');
+const { streaks } = require('../services/attempts');
 const { dayKey, previousDayKey } = require('../puzzle/dayKey');
 
 describe('streaks', () => {

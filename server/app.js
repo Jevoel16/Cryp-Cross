@@ -7,6 +7,7 @@ const { createAuthRouter } = require('./routes/auth');
 const { router: playRoutes } = require('./routes/play');
 const { createSessionMiddleware } = require('./lib/session');
 const { createRateLimitStore } = require('./lib/rateLimitStore');
+const { HttpError } = require('./lib/httpError');
 
 // Comma-separated allow-list; dev falls back to the Vite dev server only.
 function allowedOrigins() {
@@ -102,6 +103,9 @@ function createApp() {
     }
     if (err.type === 'entity.too.large') {
       return res.status(413).json({ success: false, message: 'Request body too large' });
+    }
+    if (err instanceof HttpError) {
+      return res.status(err.status).json({ success: false, message: err.message, ...err.extra });
     }
     if (err.name === 'ValidationError') {
       return res.status(400).json({ success: false, message: 'Invalid data' });
