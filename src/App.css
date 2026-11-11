@@ -1483,6 +1483,10 @@ input[type='range'] {
   font-size: var(--text-sm);
 }
 
+.stat-tiles + p {
+  margin-top: var(--space-4);
+}
+
 .stat-value {
   font-family: var(--font-mono);
   font-size: var(--text-xl);

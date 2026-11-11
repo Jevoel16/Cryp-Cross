@@ -8,21 +8,20 @@ const absoluteSiteUrls = {
   transformIndexHtml: (html) => html.replaceAll('%SITE_URL%', siteUrl),
 };
 
-// The heading font decides when the largest text paints, so fetch it with the HTML.
+// The heading and body fonts decide when the largest text paints, so fetch them with the HTML.
 const preloadHeadingFont = {
-  name: 'preload-heading-font',
+  name: 'preload-text-fonts',
   transformIndexHtml: {
     order: 'post',
     handler(html, { bundle }) {
-      const font = Object.keys(bundle || {}).find((file) => /space-grotesk-latin-700-normal.*\.woff2$/.test(file));
-      if (!font) return html;
-      return [
-        {
-          tag: 'link',
-          attrs: { rel: 'preload', href: `/${font}`, as: 'font', type: 'font/woff2', crossorigin: '' },
-          injectTo: 'head',
-        },
-      ];
+      const fonts = Object.keys(bundle || {}).filter((file) =>
+        /space-grotesk-latin-(400|700)-normal.*\.woff2$/.test(file),
+      );
+      return fonts.map((font) => ({
+        tag: 'link',
+        attrs: { rel: 'preload', href: `/${font}`, as: 'font', type: 'font/woff2', crossorigin: '' },
+        injectTo: 'head',
+      }));
     },
   },
 };
