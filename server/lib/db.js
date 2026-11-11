@@ -1,5 +1,6 @@
 const mongoose = require('mongoose');
 const User = require('../models/user');
+const { seedDemoUser } = require('../seed/demo');
 
 // In server/ so mongoose resolves from server/node_modules for every entry point.
 // No query may hold a request longer than this.
@@ -10,6 +11,7 @@ async function connectDb(url = process.env.DATABASE_URL) {
   await mongoose.connect(url, { serverSelectionTimeoutMS: 10_000, socketTimeoutMS: 20_000 });
   // Syncs indexes so pre-2.0 databases drop the old unique email index.
   await User.syncIndexes();
+  await seedDemoUser();
 }
 
 module.exports = { connectDb };

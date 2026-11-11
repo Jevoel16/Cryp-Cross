@@ -1,4 +1,5 @@
 const Attempt = require('../models/attempt');
+const User = require('../models/user');
 const { getTodayPuzzle } = require('../puzzle/service');
 const { dayKey, isValidDayKey, previousDayKey } = require('../puzzle/dayKey');
 const { isObject } = require('../lib/validate');
@@ -71,6 +72,15 @@ async function todayGrid(body) {
   return { puzzle, grid: body.grid };
 }
 
+// Demo solves are left out of every ranking so the shared account can't crowd real players.
+const demoUserIds = () => User.find({ isDemo: true }).distinct('_id');
+const rankedSolves = async (date) => ({ date, solvedAt: { $exists: true }, user: { $nin: await demoUserIds() } });
+
+// Clears the demo account's attempt so the next visitor starts from an empty grid.
+async function resetToday(user) {
+  await Attempt.deleteOne({ user: user._id, date: dayKey() });
+}
+
 // Only this starts the timer (see docs/architecture.md#solve-timer).
 async function openAttempt(user) {
   const puzzle = await getTodayPuzzle();
@@ -137,7 +147,8 @@ async function submitGrid(user, body) {
     { new: true },
   );
   if (!solved) throw alreadySolved();
-  const faster = await Attempt.countDocuments({ date: puzzle.date, timeMs: { $lt: timeMs } });
+  if (user.isDemo) return { solved: true, timeMs, rank: null };
+  const faster = await Attempt.countDocuments({ ...(await rankedSolves(puzzle.date)), timeMs: { $lt: timeMs } });
   return { solved: true, timeMs, rank: faster + 1 };
 }
 
@@ -145,7 +156,7 @@ async function submitGrid(user, body) {
 async function leaderboard(requestedDate) {
   const date = requestedDate === undefined ? dayKey() : requestedDate;
   if (!isValidDayKey(date)) throw badRequest('date must be YYYY-MM-DD');
-  const filter = { date, solvedAt: { $exists: true } };
+  const filter = await rankedSolves(date);
   const [rows, solvers] = await Promise.all([
     Attempt.find(filter).sort({ timeMs: 1, solvedAt: 1 }).limit(LEADERBOARD_SIZE).populate('user', 'username').lean(),
     Attempt.countDocuments(filter),
@@ -199,6 +210,7 @@ async function stats(user) {
 
 module.exports = {
   openAttempt,
+  resetToday,
   saveProgress,
   checkGrid,
   guestCheck,

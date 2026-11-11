@@ -11,6 +11,13 @@ const DUMMY_HASH = bcrypt.hashSync('not-a-real-password', BCRYPT_ROUNDS);
 const providerField = (id) => `${id}Id`;
 const usernameTaken = () => new HttpError(409, 'That username is taken');
 
+// The demo account is shared by everyone, so nobody may change how it signs in.
+function assertEditable(user) {
+  if (user.isDemo) {
+    throw new HttpError(403, "The demo account can't be changed. Sign in with GitHub or Google for your own.");
+  }
+}
+
 // Only accounts with a password can log in this way; the answer never says which part was wrong.
 async function verifyLogin({ username, password }) {
   const user = await User.findOne({ username });
@@ -20,6 +27,7 @@ async function verifyLogin({ username, password }) {
 }
 
 async function changeUsername(user, username) {
+  assertEditable(user);
   if (username === user.username) return user;
   if (await User.exists({ username })) throw usernameTaken();
   user.username = username;
@@ -35,6 +43,7 @@ async function changeUsername(user, username) {
 
 // `recentSignIn` is true inside the 10 minute GitHub/Google window; otherwise the current password is the proof.
 async function changePassword(user, { password, currentPassword }, { recentSignIn }) {
+  assertEditable(user);
   let proven = recentSignIn;
   if (!proven && user.passwordHash && currentPassword) {
     proven = await bcrypt.compare(currentPassword, user.passwordHash);
@@ -74,13 +83,14 @@ async function uniqueUsername(hint) {
   return `player_${crypto.randomBytes(4).toString('hex')}`;
 }
 
-// Finds or creates the account for a provider profile. Returns { user } or { error: 'linked' }.
+// Finds or creates the account for a provider profile. Returns { user } or { error: 'linked' | 'demo' }.
 async function resolveOAuthAccount(provider, profile, linkUser) {
   const field = providerField(provider);
   const owner = await User.findOne({ [field]: profile.providerId });
 
   // Connecting from the Account page.
   if (linkUser) {
+    if (linkUser.isDemo) return { error: 'demo' };
     if (owner && !owner._id.equals(linkUser._id)) return { error: 'linked' };
     linkUser[field] = profile.providerId;
     await linkUser.save();
@@ -96,6 +106,7 @@ async function resolveOAuthAccount(provider, profile, linkUser) {
 
 // Disconnects a provider, unless it is the account's only way to sign in.
 async function unlinkProvider(user, provider) {
+  assertEditable(user);
   const field = providerField(provider);
   if (!user[field]) return user;
   if (!User.canRemoveSignInMethod(user, provider)) {

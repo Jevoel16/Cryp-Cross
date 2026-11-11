@@ -725,6 +725,32 @@ input[type='range'] {
   margin-top: var(--space-1);
 }
 
+.demo-box {
+  max-width: 420px;
+  min-height: 168px;
+  margin: var(--space-5) auto 0;
+}
+
+.demo-box h2 {
+  margin: 0 0 var(--space-2);
+  font-size: var(--text-md);
+}
+
+.demo-box p {
+  margin-bottom: var(--space-3);
+  color: var(--text-muted);
+  font-size: var(--text-sm);
+}
+
+.demo-box code {
+  color: var(--text);
+  font-weight: 700;
+}
+
+.demo-box .secondary-btn {
+  width: 100%;
+}
+
 .auth-links {
   margin-top: var(--space-4);
   text-align: center;

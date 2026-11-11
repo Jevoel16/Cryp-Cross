@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Link, Navigate, useNavigate, useSearchParams } from 'react-router-dom';
+import { Link, Navigate, useSearchParams } from 'react-router-dom';
 import SectionWrapper from '../components/SectionWrapper';
 import { RowsSkeleton, TilesSkeleton } from '../components/Skeleton';
 import FormMessage from '../components/FormMessage';
@@ -280,16 +280,18 @@ export default function AccountPage() {
   const { status, user, error, logout, refresh, setUser: replaceUser } = useAuth();
   // API answers carry the public profile only; keep session-only flags from /me.
   const setUser = (next) => replaceUser((current) => ({ ...current, ...next }));
-  const navigate = useNavigate();
   const [logoutError, setLogoutError] = useState('');
+  // Logging out from here goes Home; arriving signed out goes to the login page.
+  const [leaving, setLeaving] = useState(false);
   const [retryError, setRetryError] = useState('');
 
   const onLogout = async () => {
     setLogoutError('');
+    setLeaving(true);
     try {
       await logout();
-      navigate('/');
     } catch (err) {
+      setLeaving(false);
       setLogoutError(`You are still signed in: ${err.message}`);
     }
   };
@@ -317,18 +319,25 @@ export default function AccountPage() {
         </SectionWrapper>
       );
     case AUTH_STATUS.SIGNED_OUT:
-      return <Navigate to="/login" replace state={{ from: '/account' }} />;
+      return leaving ? <Navigate to="/" replace /> : <Navigate to="/login" replace state={{ from: '/account' }} />;
     case AUTH_STATUS.SIGNED_IN:
       return (
         <SectionWrapper title="Account">
           <dl className="account-details">
             <dt>Username</dt>
-            <dd>
-              <UsernameForm user={user} setUser={setUser} />
-            </dd>
+            <dd>{user.demo ? user.username : <UsernameForm user={user} setUser={setUser} />}</dd>
           </dl>
-          <ConnectedAccounts user={user} setUser={setUser} />
-          <PasswordForm user={user} setUser={setUser} refresh={refresh} />
+          {user.demo ? (
+            <p className="hint">
+              This is the shared demo account, so its username, password and connected accounts can&apos;t be changed,
+              and its solves aren&apos;t ranked. <Link to="/login">Sign in with GitHub or Google</Link> for your own.
+            </p>
+          ) : (
+            <>
+              <ConnectedAccounts user={user} setUser={setUser} />
+              <PasswordForm user={user} setUser={setUser} refresh={refresh} />
+            </>
+          )}
           <Stats />
           <p className="account-actions">
             <button type="button" className="secondary-btn" onClick={onLogout}>

@@ -1,6 +1,8 @@
 const express = require('express');
 const { rateLimit } = require('express-rate-limit');
 const accounts = require('../services/accounts');
+const attempts = require('../services/attempts');
+const { demoCredentials } = require('../seed/demo');
 const { validateLogin, validateUsername, validatePasswordChange } = require('../lib/validate');
 const { createRateLimitStore } = require('../lib/rateLimitStore');
 const { requireAuth, loadSessionUser } = require('../middleware/auth');
@@ -61,9 +63,17 @@ function createAuthRouter() {
     authLimiter,
     handle(async (req, res) => {
       const user = await accounts.verifyLogin(valid(validateLogin(req.body)));
+      // Each demo visitor starts today's puzzle fresh.
+      if (user.isDemo) await attempts.resetToday(user);
       await startSession(req, user, AUTH_VIA.PASSWORD);
       ok(res, user.toPublic());
     }),
+  );
+
+  // Credentials of the shared demo account, or null when it is switched off.
+  router.get(
+    '/demo',
+    handle(async (req, res) => ok(res, await demoCredentials())),
   );
 
   router.post('/logout', (req, res, next) => {

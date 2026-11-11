@@ -72,7 +72,7 @@ function Timer({ startedAt, timeMs }) {
 }
 
 // Players rank via a server attempt in `progress`; guests get the same Check and Submit, never stored.
-function PuzzlePlayer({ puzzle, progress, initialRows }) {
+function PuzzlePlayer({ puzzle, progress, initialRows, ranked = true }) {
   const isGuest = !progress;
   const board = useMemo(() => buildBoard(puzzle), [puzzle]);
   const grid = useCrossword(puzzle, rowsToLetters(board, initialRows));
@@ -188,7 +188,9 @@ function PuzzlePlayer({ puzzle, progress, initialRows }) {
   return (
     <PuzzleBoard puzzle={puzzle} crossword={crossword} marks={marks} clueStatus={clueStatus} locked={solved}>
       <div className="play-actions">
-        <span className={`mode-badge ${isGuest ? 'guest' : 'ranked'}`}>{isGuest ? 'Guest · unranked' : 'Ranked'}</span>
+        <span className={`mode-badge ${isGuest || !ranked ? 'guest' : 'ranked'}`}>
+          {isGuest ? 'Guest · unranked' : ranked ? 'Ranked' : 'Demo · unranked'}
+        </span>
         {startedAt && !(solved && result.timeMs === null) && (
           <Timer startedAt={startedAt} timeMs={result?.timeMs ?? null} />
         )}
@@ -223,7 +225,9 @@ function PuzzlePlayer({ puzzle, progress, initialRows }) {
       {solved && !result.guest && (
         <p className="form-message success" role="status">
           Solved in {formatDuration(result.timeMs)}
-          {result.rank ? ` · #${result.rank} today` : ''}. <Link to="/leaderboard">See the leaderboard</Link>.
+          {result.rank ? ` · #${result.rank} today` : ''}
+          {ranked ? '. ' : ' · the demo account is not ranked. '}
+          <Link to="/leaderboard">See the leaderboard</Link>.
         </p>
       )}
       {solved && result.guest && (
@@ -297,7 +301,9 @@ function TodayPuzzle({ puzzle }) {
       // Server copy wins when it has letters; otherwise keep what this browser had.
       const { progress } = request;
       const initialRows = hasLetters(progress.grid) ? progress.grid : readDraft(puzzle.date);
-      return <PuzzlePlayer key="player" puzzle={puzzle} progress={progress} initialRows={initialRows} />;
+      return (
+        <PuzzlePlayer key="player" puzzle={puzzle} progress={progress} initialRows={initialRows} ranked={!user.demo} />
+      );
     }
     default:
       throw new Error(`Unknown play status: ${status}`);

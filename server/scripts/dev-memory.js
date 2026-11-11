@@ -3,6 +3,7 @@ require('dotenv').config();
 const mongoose = require('mongoose');
 const { MongoMemoryServer } = require('mongodb-memory-server');
 const { createApp } = require('../app');
+const { seedDemoUser } = require('../seed/demo');
 
 const PORT = Number(process.env.PORT) || 5000;
 
@@ -13,6 +14,7 @@ async function main() {
   }
   const mongo = await MongoMemoryServer.create();
   await mongoose.connect(mongo.getUri());
+  await seedDemoUser({ rounds: 4 });
   console.log('In-memory MongoDB started (data is discarded on exit)');
 
   const server = createApp().listen(PORT, () => {

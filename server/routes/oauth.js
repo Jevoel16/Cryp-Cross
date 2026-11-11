@@ -10,7 +10,7 @@ const { requireAuth, loadSessionUser } = require('../middleware/auth');
 const ATTEMPT_TTL_MS = 10 * 60 * 1000;
 
 // Errors go back to the login page as a fixed code; nothing from the provider is echoed.
-const ERROR_CODES = new Set(['denied', 'state', 'failed', 'linked']);
+const ERROR_CODES = new Set(['denied', 'state', 'failed', 'linked', 'demo']);
 
 const appUrl = () => (process.env.APP_URL || 'http://localhost:3000').replace(/\/$/, '');
 

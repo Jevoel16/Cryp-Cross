@@ -12,6 +12,8 @@ const userSchema = new mongoose.Schema(
     // Linked OAuth accounts (provider user IDs).
     githubId: { type: String, unique: true, sparse: true },
     googleId: { type: String, unique: true, sparse: true },
+    // The shared demo account: it can play but not change itself, and it is never ranked.
+    isDemo: { type: Boolean, default: false },
   },
   { timestamps: true },
 );
@@ -37,6 +39,7 @@ userSchema.methods.toPublic = function toPublic() {
     username: this.username,
     hasPassword: Boolean(this.passwordHash),
     providers: PROVIDERS.filter((p) => this[`${p}Id`]),
+    ...(this.isDemo ? { demo: true } : {}),
   };
 };
 

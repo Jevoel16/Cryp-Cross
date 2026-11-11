@@ -1,0 +1,7 @@
+# The demo account's credentials are public by design (shown on the Log in page).
+[extend]
+useDefault = true
+
+[allowlist]
+description = "Public demo credentials and test fixtures"
+paths = ['''server/seed/demo\.js''', '''server/test/.*''', '''src/.*\.test\.js''']
