@@ -6,10 +6,9 @@ const { validateLogin, validateUsername, validatePasswordChange } = require('../
 const { createRateLimitStore } = require('../lib/rateLimitStore');
 const { requireAuth, loadSessionUser } = require('../middleware/auth');
 const { createOAuthRouter } = require('./oauth');
+const { AUTH_VIA, canSetPasswordWithoutCurrent, signIn } = require('../lib/sessionAuth');
 
 const BCRYPT_ROUNDS = 12;
-// A GitHub/Google sign-in this recent can set a new password without the current one.
-const RECENT_OAUTH_MS = 10 * 60 * 1000;
 // Compared against when the username is unknown so login takes the same time either way.
 const DUMMY_HASH = bcrypt.hashSync('not-a-real-password', BCRYPT_ROUNDS);
 
@@ -42,20 +41,16 @@ const createOAuthLimiter = () =>
     },
   });
 
-// New session id on login (no fixation); `via` records 'password' or 'oauth'.
+// New session id on login (no fixation); `via` is an AUTH_VIA value.
 function startSession(req, user, via) {
   return new Promise((resolve, reject) => {
     req.session.regenerate((err) => {
       if (err) return reject(err);
-      req.session.userId = String(user._id);
-      req.session.authAt = Date.now();
-      req.session.authVia = via;
+      signIn(req.session, user._id, via);
       req.session.save((saveErr) => (saveErr ? reject(saveErr) : resolve()));
     });
   });
 }
-
-const recentOAuthSignIn = (session) => session.authVia === 'oauth' && Date.now() - session.authAt <= RECENT_OAUTH_MS;
 
 function createAuthRouter() {
   const router = express.Router();
@@ -71,7 +66,7 @@ function createAuthRouter() {
       if (!user || !user.passwordHash || !ok) {
         return res.status(401).json({ success: false, message: 'Wrong username or password' });
       }
-      await startSession(req, user, 'password');
+      await startSession(req, user, AUTH_VIA.PASSWORD);
       res.json({ success: true, data: user.toPublic() });
     } catch (error) {
       next(error);
@@ -93,7 +88,9 @@ function createAuthRouter() {
       const user = await loadSessionUser(req);
       res.json({
         success: true,
-        data: user ? { ...user.toPublic(), canSetPasswordWithoutCurrent: recentOAuthSignIn(req.session) } : null,
+        data: user
+          ? { ...user.toPublic(), canSetPasswordWithoutCurrent: canSetPasswordWithoutCurrent(req.session) }
+          : null,
       });
     } catch (error) {
       next(error);
@@ -124,7 +121,7 @@ function createAuthRouter() {
     if (errors.length) return badRequest(res, errors);
     try {
       const user = req.user;
-      let proven = recentOAuthSignIn(req.session);
+      let proven = canSetPasswordWithoutCurrent(req.session);
       if (!proven && user.passwordHash && data.currentPassword) {
         proven = await bcrypt.compare(data.currentPassword, user.passwordHash);
       }
@@ -139,8 +136,7 @@ function createAuthRouter() {
       user.passwordChangedAt = new Date();
       await user.save();
       // Ends every other session and closes the OAuth grace window.
-      req.session.authAt = user.passwordChangedAt.getTime();
-      req.session.authVia = 'password';
+      signIn(req.session, user._id, AUTH_VIA.PASSWORD, user.passwordChangedAt.getTime());
       res.json({ success: true, message: 'Password saved', data: user.toPublic() });
     } catch (error) {
       next(error);

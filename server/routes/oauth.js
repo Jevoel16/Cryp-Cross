@@ -4,6 +4,7 @@ const crypto = require('crypto');
 const User = require('../models/user');
 const oauth = require('../lib/oauth');
 const { USERNAME, safeRedirectPath } = require('../lib/validate');
+const { AUTH_VIA } = require('../lib/sessionAuth');
 const { requireAuth, loadSessionUser } = require('../middleware/auth');
 
 const ATTEMPT_TTL_MS = 10 * 60 * 1000;
@@ -146,7 +147,7 @@ function createOAuthRouter({ oauthLimiter, startSession }) {
           `${appUrl()}${pending.from}${pending.from.includes('?') ? '&' : '?'}linked=${provider}`,
         );
       }
-      await startSession(req, user, 'oauth');
+      await startSession(req, user, AUTH_VIA.OAUTH);
       res.redirect(302, `${appUrl()}${pending.from}`);
     } catch (error) {
       // Only the message: tokens and profile data never reach the logs.

@@ -1,4 +1,5 @@
 const User = require('../models/user');
+const { signOut } = require('../lib/sessionAuth');
 
 // Signed-in user or null; sessions older than the last password change don't count.
 async function loadSessionUser(req) {
@@ -7,7 +8,7 @@ async function loadSessionUser(req) {
   const user = await User.findById(userId);
   const stale = user && user.passwordChangedAt && !(req.session.authAt >= user.passwordChangedAt.getTime());
   if (!user || stale) {
-    req.session.userId = undefined;
+    signOut(req.session);
     return null;
   }
   return user;

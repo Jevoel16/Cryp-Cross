@@ -185,7 +185,7 @@ function ConnectedAccounts({ user, setUser }) {
 }
 
 // Password for username login; needs the current one unless signed in via GitHub/Google in the last 10 minutes.
-function PasswordForm({ user, setUser }) {
+function PasswordForm({ user, setUser, refresh }) {
   const needsCurrent = user.hasPassword && !user.canSetPasswordWithoutCurrent;
   const [form, setForm] = useState({ password: '', currentPassword: '' });
   const [busy, setBusy] = useState(false);
@@ -206,6 +206,8 @@ function PasswordForm({ user, setUser }) {
       setMessage({ type: 'success', text: `Password saved. You can now log in as ${updated.username}.` });
     } catch (error) {
       setMessage({ type: 'error', text: error.message });
+      // A 403 means the sign-in window closed: reload the session so the right fields show.
+      if (error.status === 403) await refresh();
     } finally {
       setBusy(false);
     }
@@ -284,7 +286,7 @@ function PasswordForm({ user, setUser }) {
 
 export default function AccountPage() {
   usePageMeta({ title: 'Account', description: 'Your Cryp-Cross account, streaks and solve history.', noindex: true });
-  const { user, loading, logout, setUser: replaceUser } = useAuth();
+  const { user, loading, logout, refresh, setUser: replaceUser } = useAuth();
   // API answers carry the public profile only; keep session-only flags from /me.
   const setUser = (next) => replaceUser((current) => ({ ...current, ...next }));
   const navigate = useNavigate();
@@ -312,7 +314,7 @@ export default function AccountPage() {
         </dd>
       </dl>
       <ConnectedAccounts user={user} setUser={setUser} />
-      <PasswordForm user={user} setUser={setUser} />
+      <PasswordForm user={user} setUser={setUser} refresh={refresh} />
       <Stats />
       <p className="account-actions">
         <button type="button" className="secondary-btn" onClick={onLogout}>
