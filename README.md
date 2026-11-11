@@ -122,7 +122,7 @@ Defaults and details: [docs/configuration.md](docs/configuration.md).
 4. **Check** marks each clue right or wrong. **Submit** records your time once the grid is full.
 5. Sign in with GitHub or Google before you start to save progress and get ranked on the **Leaderboard**.
 
-More: [player and account flows](docs/usage.md), [API reference](docs/api.md), [architecture notes](docs/architecture.md), [deployment](docs/deployment.md), [troubleshooting](docs/troubleshooting.md).
+More: [player and account flows](docs/usage.md), [API reference](docs/api.md), [architecture notes](docs/architecture.md), [state machines](docs/state-machines.md), [deployment](docs/deployment.md), [troubleshooting](docs/troubleshooting.md).
 
 ## More
 
