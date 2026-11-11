@@ -204,6 +204,33 @@ describe('playing the daily puzzle', () => {
     assert.deepEqual((await alice.get('/api/puzzles/today/progress')).body.data.grid, puzzle.solution);
   });
 
+  test('two submits at once record exactly one solve', async () => {
+    const alice = await player('alice');
+    await alice.get('/api/puzzles/today/progress');
+    const results = await Promise.all(
+      Array.from({ length: 6 }, () => alice.post('/api/puzzles/today/submit', body(puzzle.solution))),
+    );
+    const statuses = results.map((r) => r.status).sort();
+    assert.deepEqual(statuses, [200, 409, 409, 409, 409, 409]);
+    const winner = results.find((r) => r.status === 200).body.data;
+    const stored = await Attempt.findOne({ date: puzzle.date }).lean();
+    assert.equal(stored.timeMs, winner.timeMs);
+    assert.equal(await Attempt.countDocuments({ date: puzzle.date }), 1);
+  });
+
+  test('checks are counted atomically and stop once solved', async () => {
+    const alice = await player('alice');
+    await alice.get('/api/puzzles/today/progress');
+    await Promise.all(Array.from({ length: 5 }, () => alice.post('/api/puzzles/today/check', body(blank()))));
+    assert.equal((await Attempt.findOne({ date: puzzle.date }).lean()).checks, 5);
+    await alice.post('/api/puzzles/today/submit', body(puzzle.solution));
+    const after = await alice.post('/api/puzzles/today/check', body(blank()));
+    assert.equal(after.status, 200);
+    const stored = await Attempt.findOne({ date: puzzle.date }).lean();
+    assert.equal(stored.checks, 5);
+    assert.deepEqual(stored.grid, puzzle.solution);
+  });
+
   test('leaderboard ranks by time and stats count streaks', async () => {
     const alice = await player('alice');
     const bob = await player('bob');

@@ -4,6 +4,13 @@ const { getTodayPuzzle } = require('../puzzle/service');
 const { dayKey, isValidDayKey, previousDayKey } = require('../puzzle/dayKey');
 const { requireAuth } = require('../middleware/auth');
 const { isObject } = require('../lib/validate');
+const {
+  ATTEMPT_STATUS,
+  ATTEMPT_EVENT,
+  attemptStatus,
+  nextAttemptStatus,
+  whileStarted,
+} = require('../lib/attemptStatus');
 
 const LEADERBOARD_SIZE = 50;
 const HISTORY_SIZE = 30;
@@ -64,6 +71,15 @@ const badRequest = (res, message) => res.status(400).json({ success: false, mess
 const notStarted = (res) =>
   res.status(409).json({ success: false, message: "Open today's puzzle first to start your timer" });
 
+const alreadySolved = (res) => res.status(409).json({ success: false, message: "You already solved today's puzzle" });
+
+// Applies a save or check atomically; a solved grid is final, so the update only matches unsolved attempts.
+async function writeWhileStarted(userId, date, update) {
+  const filter = { user: userId, date };
+  const updated = await Attempt.findOneAndUpdate(whileStarted(filter), update, { new: true });
+  return updated || Attempt.findOne(filter);
+}
+
 const router = express.Router();
 // Every account comes from a GitHub/Google sign-in, so any signed-in player can play ranked.
 const player = [requireAuth];
@@ -83,13 +99,8 @@ router.put('/puzzles/today/progress', player, async (req, res, next) => {
     const puzzle = await getTodayPuzzle();
     const problem = validateGrid(req.body, puzzle);
     if (problem) return badRequest(res, problem);
-    const attempt = await Attempt.findOne({ user: req.user._id, date: puzzle.date });
-    if (!attempt) return notStarted(res);
-    // A solved grid is final.
-    if (!attempt.solvedAt) {
-      attempt.grid = req.body.grid;
-      await attempt.save();
-    }
+    const attempt = await writeWhileStarted(req.user._id, puzzle.date, { $set: { grid: req.body.grid } });
+    if (!nextAttemptStatus(attemptStatus(attempt), ATTEMPT_EVENT.SAVE)) return notStarted(res);
     res.json({ success: true, data: publicAttempt(attempt) });
   } catch (error) {
     next(error);
@@ -102,13 +113,11 @@ router.post('/puzzles/today/check', player, async (req, res, next) => {
     const puzzle = await getTodayPuzzle();
     const problem = validateGrid(req.body, puzzle);
     if (problem) return badRequest(res, problem);
-    const attempt = await Attempt.findOne({ user: req.user._id, date: puzzle.date });
-    if (!attempt) return notStarted(res);
-    if (!attempt.solvedAt) {
-      attempt.grid = req.body.grid;
-      attempt.checks += 1;
-      await attempt.save();
-    }
+    const attempt = await writeWhileStarted(req.user._id, puzzle.date, {
+      $set: { grid: req.body.grid },
+      $inc: { checks: 1 },
+    });
+    if (!nextAttemptStatus(attemptStatus(attempt), ATTEMPT_EVENT.CHECK)) return notStarted(res);
     res.json({ success: true, data: { entries: entryStatus(puzzle, req.body.grid) } });
   } catch (error) {
     next(error);
@@ -133,36 +142,41 @@ router.post('/puzzles/today/submit', player, async (req, res, next) => {
     const puzzle = await getTodayPuzzle();
     const problem = validateGrid(req.body, puzzle);
     if (problem) return badRequest(res, problem);
-    const attempt = await Attempt.findOne({ user: req.user._id, date: puzzle.date });
-    if (!attempt) return notStarted(res);
-    if (attempt.solvedAt) {
-      return res.status(409).json({ success: false, message: "You already solved today's puzzle" });
-    }
+    const filter = { user: req.user._id, date: puzzle.date };
+    const attempt = await Attempt.findOne(filter);
+    const status = attemptStatus(attempt);
+    if (status === ATTEMPT_STATUS.NOT_STARTED) return notStarted(res);
+    if (!nextAttemptStatus(status, ATTEMPT_EVENT.SOLVE)) return alreadySolved(res);
 
-    const status = entryStatus(puzzle, req.body.grid);
-    attempt.grid = req.body.grid;
-    if (status.some((s) => s !== 'right')) {
-      await attempt.save();
+    const entries = entryStatus(puzzle, req.body.grid);
+    const { grid } = req.body;
+    if (entries.some((s) => s !== 'right')) {
+      await Attempt.updateOne(whileStarted(filter), { $set: { grid } });
       return res.json({
         success: true,
         data: {
           solved: false,
-          wrong: status.filter((s) => s === 'wrong').length,
-          incomplete: status.filter((s) => s === 'incomplete').length,
+          wrong: entries.filter((s) => s === 'wrong').length,
+          incomplete: entries.filter((s) => s === 'incomplete').length,
         },
       });
     }
 
     const solvedAt = new Date();
-    if (solvedAt - attempt.startedAt < minSolveMs()) {
-      await attempt.save();
+    const timeMs = solvedAt - attempt.startedAt;
+    if (timeMs < minSolveMs()) {
+      await Attempt.updateOne(whileStarted(filter), { $set: { grid } });
       return badRequest(res, 'That solve was too fast to record. Submit again in a few seconds.');
     }
-    attempt.solvedAt = solvedAt;
-    attempt.timeMs = solvedAt - attempt.startedAt;
-    await attempt.save();
-    const faster = await Attempt.countDocuments({ date: puzzle.date, timeMs: { $lt: attempt.timeMs } });
-    res.json({ success: true, data: { solved: true, timeMs: attempt.timeMs, rank: faster + 1 } });
+    // Only the first of two simultaneous submits matches; the other gets 409.
+    const solved = await Attempt.findOneAndUpdate(
+      whileStarted(filter),
+      { $set: { grid, solvedAt, timeMs } },
+      { new: true },
+    );
+    if (!solved) return alreadySolved(res);
+    const faster = await Attempt.countDocuments({ date: puzzle.date, timeMs: { $lt: timeMs } });
+    res.json({ success: true, data: { solved: true, timeMs, rank: faster + 1 } });
   } catch (error) {
     next(error);
   }
