@@ -295,21 +295,17 @@ export default function AccountPage() {
   const { status, user, error, logout, refresh, setUser: replaceUser } = useAuth();
   // API answers carry the public profile only; keep session-only flags from /me.
   const setUser = (next) => replaceUser((current) => ({ ...current, ...next }));
-  const [logoutError, setLogoutError] = useState('');
+  const leave = useSubmitState();
   // Logging out from here goes Home; arriving signed out goes to the login page.
-  const [leaving, setLeaving] = useState(false);
+  const leaving = leave.busy || leave.status === SUBMIT.SUCCESS;
   const [retryError, setRetryError] = useState('');
 
-  const onLogout = async () => {
-    setLogoutError('');
-    setLeaving(true);
-    try {
-      await logout();
-    } catch (err) {
-      setLeaving(false);
-      setLogoutError(`You are still signed in: ${err.message}`);
-    }
-  };
+  const onLogout = () =>
+    leave.run(() =>
+      logout().catch((err) => {
+        throw new Error(`You are still signed in: ${err.message}`);
+      }),
+    );
 
   switch (status) {
     case AUTH_STATUS.LOADING:
@@ -355,15 +351,11 @@ export default function AccountPage() {
           )}
           <Stats />
           <p className="account-actions">
-            <button type="button" className="secondary-btn" onClick={onLogout}>
+            <button type="button" className="secondary-btn" onClick={onLogout} disabled={leave.busy}>
               Log out
             </button>
           </p>
-          {logoutError && (
-            <p className="form-message error" role="alert">
-              {logoutError}
-            </p>
-          )}
+          <FormMessage message={leave.message} />
         </SectionWrapper>
       );
     default:
