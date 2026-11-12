@@ -1,12 +1,18 @@
-import { useEffect, useState } from 'react';
 import { Link, Navigate, useParams } from 'react-router-dom';
 import SectionWrapper from '../components/SectionWrapper';
 import { BoardSkeleton } from '../components/Skeleton';
 import PuzzleBoard from '../components/PuzzleBoard';
 import usePageMeta from '../usePageMeta';
 import useCrossword from '../hooks/useCrossword';
-import { api, isAbort } from '../api';
+import useLoad from '../hooks/useLoad';
+import { api } from '../api';
 import { CIPHER_INFO } from '../lib/ciphers';
+import { LOAD } from '../lib/loadMachine';
+
+const loadPuzzle = (date, signal) =>
+  api(`/puzzles/${encodeURIComponent(date)}`, { signal }).catch((err) => {
+    throw err.status === 404 ? new Error('There is no puzzle for that day.') : err;
+  });
 
 // A past day, read-only, with the solution, decoded clues and the cipher key shown.
 function SolvedBoard({ puzzle }) {
@@ -36,32 +42,32 @@ export default function ArchivePage() {
     description: `The Cryp-Cross cipher crossword for ${date}, with answers and decoded clues.`,
     noindex: true,
   });
-  const [result, setResult] = useState({ date: null, puzzle: null, error: '' });
+  const load = useLoad(loadPuzzle, date);
 
-  useEffect(() => {
-    const controller = new AbortController();
-    api(`/puzzles/${encodeURIComponent(date)}`, { signal: controller.signal }).then(
-      (puzzle) => setResult({ date, puzzle, error: '' }),
-      (err) =>
-        isAbort(err) ||
-        setResult({ date, puzzle: null, error: err.status === 404 ? 'There is no puzzle for that day.' : err.message }),
-    );
-    return () => controller.abort();
-  }, [date]);
-
-  const current = result.date === date ? result : { puzzle: null, error: '' };
-  // Today's puzzle is still being played: no spoilers here.
-  if (current.puzzle?.isToday) return <Navigate to="/play" replace />;
-
-  return (
-    <SectionWrapper title={`Puzzle · ${date}`} className="play-section">
-      {current.error && (
-        <p className="form-message error" role="alert">
-          {current.error} <Link to="/puzzles">See past puzzles</Link>.
-        </p>
-      )}
-      {!current.puzzle && !current.error && <BoardSkeleton />}
-      {current.puzzle && <SolvedBoard key={date} puzzle={current.puzzle} />}
-    </SectionWrapper>
-  );
+  switch (load.status) {
+    case LOAD.PENDING:
+      return (
+        <SectionWrapper title={`Puzzle · ${date}`} className="play-section">
+          <BoardSkeleton />
+        </SectionWrapper>
+      );
+    case LOAD.FAILED:
+      return (
+        <SectionWrapper title={`Puzzle · ${date}`} className="play-section">
+          <p className="form-message error" role="alert">
+            {load.error} <Link to="/puzzles">See past puzzles</Link>.
+          </p>
+        </SectionWrapper>
+      );
+    case LOAD.LOADED:
+      // Today's puzzle is still being played: no spoilers here.
+      if (load.data.isToday) return <Navigate to="/play" replace />;
+      return (
+        <SectionWrapper title={`Puzzle · ${date}`} className="play-section">
+          <SolvedBoard key={date} puzzle={load.data} />
+        </SectionWrapper>
+      );
+    default:
+      throw new Error(`Unknown load status: ${load.status}`);
+  }
 }

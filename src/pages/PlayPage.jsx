@@ -5,6 +5,7 @@ import { BoardSkeleton } from '../components/Skeleton';
 import PuzzleBoard from '../components/PuzzleBoard';
 import usePageMeta from '../usePageMeta';
 import useCrossword from '../hooks/useCrossword';
+import useLoad from '../hooks/useLoad';
 import { api } from '../api';
 import { useAuth } from '../auth/authContext';
 import { buildBoard, entryCells, isFilled, lettersToRows, rowsToLetters } from '../lib/grid';
@@ -13,6 +14,9 @@ import { ClockIcon } from '../components/Icons';
 import { fetchTodayPuzzle } from '../lib/todayPuzzle';
 import { PHASE, PLAYER_EVENT, initialPlayerState, playerReducer } from '../lib/playerMachine';
 import { PLAY_STATUS, PROGRESS_EVENT, initialProgress, playStatus, progressReducer } from '../lib/playStatus';
+import { LOAD } from '../lib/loadMachine';
+
+const loadToday = () => fetchTodayPuzzle();
 
 const SAVE_DELAY_MS = 1000;
 const NO_STATUS = {};
@@ -311,6 +315,30 @@ function TodayPuzzle({ puzzle }) {
   }
 }
 
+function Today({ load }) {
+  switch (load.status) {
+    case LOAD.PENDING:
+      return <BoardSkeleton label="Loading today's puzzle" />;
+    case LOAD.FAILED:
+      return (
+        <p className="form-message error" role="alert">
+          {load.error}
+        </p>
+      );
+    case LOAD.LOADED:
+      return (
+        <>
+          <TodayPuzzle key={load.data.date} puzzle={load.data} />
+          <p className="archive-link">
+            <Link to="/puzzles">Past puzzles</Link> · <Link to="/leaderboard">Today&apos;s leaderboard</Link>
+          </p>
+        </>
+      );
+    default:
+      throw new Error(`Unknown load status: ${load.status}`);
+  }
+}
+
 export default function PlayPage() {
   usePageMeta({
     title: "Today's Puzzle",
@@ -318,27 +346,12 @@ export default function PlayPage() {
       "Play today's Cryp-Cross: a free daily crossword whose clues are encrypted with a classical cipher. Decode the clues, fill the grid and race the leaderboard.",
     path: '/play',
   });
-  const [puzzle, setPuzzle] = useState(null);
-  const [error, setError] = useState('');
-
-  useEffect(() => {
-    fetchTodayPuzzle().then(setPuzzle, (err) => setError(err.message));
-  }, []);
+  const load = useLoad(loadToday);
+  const title = load.status === LOAD.LOADED ? `Today's Puzzle · ${load.data.date}` : "Today's Puzzle";
 
   return (
-    <SectionWrapper title={puzzle ? `Today's Puzzle · ${puzzle.date}` : "Today's Puzzle"} className="play-section">
-      {error && (
-        <p className="form-message error" role="alert">
-          {error}
-        </p>
-      )}
-      {!puzzle && !error && <BoardSkeleton label="Loading today's puzzle" />}
-      {puzzle && <TodayPuzzle key={puzzle.date} puzzle={puzzle} />}
-      {puzzle && (
-        <p className="archive-link">
-          <Link to="/puzzles">Past puzzles</Link> · <Link to="/leaderboard">Today&apos;s leaderboard</Link>
-        </p>
-      )}
+    <SectionWrapper title={title} className="play-section">
+      <Today load={load} />
     </SectionWrapper>
   );
 }

@@ -1,40 +1,35 @@
-import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import SectionWrapper from '../components/SectionWrapper';
 import { RowsSkeleton } from '../components/Skeleton';
 import usePageMeta from '../usePageMeta';
+import useLoad from '../hooks/useLoad';
 import { api } from '../api';
 import { CIPHER_INFO } from '../lib/ciphers';
+import { LOAD } from '../lib/loadMachine';
 
-export default function ArchiveListPage() {
-  usePageMeta({
-    title: 'Past Puzzles',
-    description: 'Past Cryp-Cross daily cipher crosswords with their answers, decoded clues and leaderboards.',
-    path: '/puzzles',
-  });
-  const [days, setDays] = useState(null);
-  const [error, setError] = useState('');
+const loadDays = (key, signal) => api('/puzzles', { signal });
 
-  useEffect(() => {
-    api('/puzzles').then(setDays, (err) => setError(err.message));
-  }, []);
-
-  return (
-    <SectionWrapper title="Past Puzzles">
-      {error && (
+function Days({ load }) {
+  switch (load.status) {
+    case LOAD.PENDING:
+      return <RowsSkeleton rows={6} label="Loading past puzzles" />;
+    case LOAD.FAILED:
+      return (
         <p className="form-message error" role="alert">
-          {error}
+          {load.error}
         </p>
-      )}
-      {!days && !error && <RowsSkeleton rows={6} label="Loading past puzzles" />}
-      {days && days.length === 0 && (
-        <p>
-          No past puzzles yet. <Link to="/play">Play today&apos;s</Link>.
-        </p>
-      )}
-      {days && days.length > 0 && (
+      );
+    case LOAD.LOADED:
+      if (load.data.length === 0) {
+        return (
+          <p>
+            No past puzzles yet. <Link to="/play">Play today&apos;s</Link>.
+          </p>
+        );
+      }
+      return (
         <ul className="archive-list">
-          {days.map((day) => (
+          {load.data.map((day) => (
             <li key={day.date}>
               <Link to={`/puzzles/${day.date}`}>{day.date}</Link>{' '}
               <span className="muted">{CIPHER_INFO[day.cipher]?.name}</span> ·{' '}
@@ -42,7 +37,23 @@ export default function ArchiveListPage() {
             </li>
           ))}
         </ul>
-      )}
+      );
+    default:
+      throw new Error(`Unknown load status: ${load.status}`);
+  }
+}
+
+export default function ArchiveListPage() {
+  usePageMeta({
+    title: 'Past Puzzles',
+    description: 'Past Cryp-Cross daily cipher crosswords with their answers, decoded clues and leaderboards.',
+    path: '/puzzles',
+  });
+  const load = useLoad(loadDays);
+
+  return (
+    <SectionWrapper title="Past Puzzles">
+      <Days load={load} />
     </SectionWrapper>
   );
 }

@@ -1,49 +1,30 @@
-import { useEffect, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import SectionWrapper from '../components/SectionWrapper';
 import { RowsSkeleton } from '../components/Skeleton';
 import usePageMeta from '../usePageMeta';
-import { api, isAbort } from '../api';
+import useLoad from '../hooks/useLoad';
+import { api } from '../api';
 import { useAuth } from '../auth/authContext';
 import { formatDuration } from '../lib/format';
+import { LOAD } from '../lib/loadMachine';
 
 const DATE = /^\d{4}-\d{2}-\d{2}$/;
 
-export default function LeaderboardPage() {
-  const [params] = useSearchParams();
-  const requested = params.get('date');
-  const date = requested && DATE.test(requested) ? requested : '';
-  usePageMeta({
-    title: date ? `Leaderboard ${date}` : 'Leaderboard',
-    description: "The fastest solvers of today's Cryp-Cross cipher crossword. Sign in, solve and see your rank.",
-    path: date ? undefined : '/leaderboard',
-    noindex: Boolean(date),
-  });
-  const { user } = useAuth();
-  const [result, setResult] = useState({ key: null, board: null, error: '' });
+const loadBoard = (date, signal) => api(`/leaderboard${date ? `?date=${date}` : ''}`, { signal });
 
-  useEffect(() => {
-    // Cancel the request for a date the player has already left.
-    const controller = new AbortController();
-    api(`/leaderboard${date ? `?date=${date}` : ''}`, { signal: controller.signal }).then(
-      (board) => setResult({ key: date, board, error: '' }),
-      (err) => isAbort(err) || setResult({ key: date, board: null, error: err.message }),
-    );
-    return () => controller.abort();
-  }, [date]);
-
-  const loaded = result.key === date;
-  const { board, error } = loaded ? result : { board: null, error: '' };
-
-  return (
-    <SectionWrapper title={board ? `Leaderboard · ${board.date}` : 'Leaderboard'}>
-      {error && (
+function Board({ load, date, user }) {
+  switch (load.status) {
+    case LOAD.PENDING:
+      return <RowsSkeleton label="Loading the leaderboard" />;
+    case LOAD.FAILED:
+      return (
         <p className="form-message error" role="alert">
-          {error}
+          {load.error}
         </p>
-      )}
-      {!loaded && <RowsSkeleton label="Loading the leaderboard" />}
-      {board && (
+      );
+    case LOAD.LOADED: {
+      const board = load.data;
+      return (
         <>
           <p>
             {board.solvers === 0
@@ -82,7 +63,29 @@ export default function LeaderboardPage() {
             </table>
           )}
         </>
-      )}
+      );
+    }
+    default:
+      throw new Error(`Unknown load status: ${load.status}`);
+  }
+}
+
+export default function LeaderboardPage() {
+  const [params] = useSearchParams();
+  const requested = params.get('date');
+  const date = requested && DATE.test(requested) ? requested : '';
+  usePageMeta({
+    title: date ? `Leaderboard ${date}` : 'Leaderboard',
+    description: "The fastest solvers of today's Cryp-Cross cipher crossword. Sign in, solve and see your rank.",
+    path: date ? undefined : '/leaderboard',
+    noindex: Boolean(date),
+  });
+  const { user } = useAuth();
+  const load = useLoad(loadBoard, date);
+
+  return (
+    <SectionWrapper title={load.status === LOAD.LOADED ? `Leaderboard · ${load.data.date}` : 'Leaderboard'}>
+      <Board load={load} date={date} user={user} />
       <p className="archive-link">
         <Link to="/puzzles">Past puzzles and their leaderboards</Link>
       </p>

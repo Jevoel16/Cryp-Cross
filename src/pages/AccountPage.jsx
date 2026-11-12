@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { Link, Navigate, useSearchParams } from 'react-router-dom';
 import SectionWrapper from '../components/SectionWrapper';
 import { RowsSkeleton, TilesSkeleton } from '../components/Skeleton';
@@ -10,71 +10,77 @@ import usePageMeta from '../usePageMeta';
 import { api } from '../api';
 import { useAuth } from '../auth/authContext';
 import { AUTH_STATUS } from '../auth/authMachine';
+import useLoad from '../hooks/useLoad';
 import useSubmitState from '../hooks/useSubmitState';
+import { LOAD } from '../lib/loadMachine';
 import { SUBMIT, idleSubmit } from '../lib/submitMachine';
 import { formatDuration } from '../lib/format';
 
+const loadStats = (key, signal) => api('/me/stats', { signal });
+
 function Stats() {
-  const [stats, setStats] = useState(null);
-  const [error, setError] = useState('');
-
-  useEffect(() => {
-    api('/me/stats').then(setStats, (err) => setError(err.message));
-  }, []);
-
-  if (error)
-    return (
-      <p className="form-message error" role="alert">
-        {error}
-      </p>
-    );
-  if (!stats) return <TilesSkeleton />;
-  return (
-    <>
-      <ul className="stat-tiles">
-        <li>
-          <span className="stat-value">{stats.solves}</span> puzzles solved
-        </li>
-        <li>
-          <span className="stat-value">{stats.currentStreak}</span> day streak
-        </li>
-        <li>
-          <span className="stat-value">{stats.bestStreak}</span> best streak
-        </li>
-        <li>
-          <span className="stat-value">{formatDuration(stats.bestTimeMs)}</span> best time
-        </li>
-      </ul>
-      {stats.history.length === 0 && (
-        <p className="muted">
-          No solves yet. <Link to="/play">Play today&apos;s puzzle</Link> to start a streak.
+  const load = useLoad(loadStats);
+  switch (load.status) {
+    case LOAD.PENDING:
+      return <TilesSkeleton />;
+    case LOAD.FAILED:
+      return (
+        <p className="form-message error" role="alert">
+          {load.error}
         </p>
-      )}
-      {stats.history.length > 0 && (
+      );
+    case LOAD.LOADED: {
+      const stats = load.data;
+      return (
         <>
-          <h2>Recent solves</h2>
-          <table className="leaderboard">
-            <thead>
-              <tr>
-                <th scope="col">Day</th>
-                <th scope="col">Time</th>
-              </tr>
-            </thead>
-            <tbody>
-              {stats.history.map((s) => (
-                <tr key={s.date}>
-                  <td>
-                    <Link to={`/leaderboard?date=${s.date}`}>{s.date}</Link>
-                  </td>
-                  <td>{formatDuration(s.timeMs)}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+          <ul className="stat-tiles">
+            <li>
+              <span className="stat-value">{stats.solves}</span> puzzles solved
+            </li>
+            <li>
+              <span className="stat-value">{stats.currentStreak}</span> day streak
+            </li>
+            <li>
+              <span className="stat-value">{stats.bestStreak}</span> best streak
+            </li>
+            <li>
+              <span className="stat-value">{formatDuration(stats.bestTimeMs)}</span> best time
+            </li>
+          </ul>
+          {stats.history.length === 0 && (
+            <p className="muted">
+              No solves yet. <Link to="/play">Play today&apos;s puzzle</Link> to start a streak.
+            </p>
+          )}
+          {stats.history.length > 0 && (
+            <>
+              <h2>Recent solves</h2>
+              <table className="leaderboard">
+                <thead>
+                  <tr>
+                    <th scope="col">Day</th>
+                    <th scope="col">Time</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {stats.history.map((s) => (
+                    <tr key={s.date}>
+                      <td>
+                        <Link to={`/leaderboard?date=${s.date}`}>{s.date}</Link>
+                      </td>
+                      <td>{formatDuration(s.timeMs)}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </>
+          )}
         </>
-      )}
-    </>
-  );
+      );
+    }
+    default:
+      throw new Error(`Unknown load status: ${load.status}`);
+  }
 }
 
 function UsernameForm({ user, setUser }) {

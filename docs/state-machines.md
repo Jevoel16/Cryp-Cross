@@ -11,6 +11,7 @@ Every flow that moves through steps has one status, one place that changes it, a
 | [Today page](#today-page) | `src/lib/playStatus.js` | `src/lib/playStatus.test.js` |
 | [Puzzle player](#puzzle-player) | `src/lib/playerMachine.js` | `src/lib/playerMachine.test.js` |
 | [Form submit](#form-submit) | `src/lib/submitMachine.js` | `src/lib/submitMachine.test.js` |
+| [Page load](#page-load) | `src/lib/loadMachine.js` | `src/lib/loadMachine.test.js` |
 | [Crossword cursor](#crossword-cursor) | `src/hooks/useCrossword.js` | `src/hooks/useCrossword.test.js` |
 | [OAuth providers](#oauth-providers) | `src/lib/oauth.js` | `src/lib/oauth.test.js` |
 
@@ -128,6 +129,20 @@ States: `idle`, `submitting`, `success` (has `message`), `error` (has `message`)
 | `error` | `submitting` | ignored | ignored | `idle` |
 
 A second submit while one is running is ignored, and buttons are disabled in `submitting`. Typed values are kept on `error`.
+
+## Page load
+
+Shared by Today's puzzle, Past puzzles, a past puzzle, the Leaderboard and the Account stats through `useLoad(fetcher, key)`. The `key` names what is loading (a date, or empty when the page has one thing).
+
+States: `pending`, `loaded` (has `data`), `failed` (has `error`).
+
+| From | `started` (same key) | `started` (new key) | `loaded` | `failed` |
+|------|----------------------|---------------------|----------|----------|
+| `pending` | ignored | `pending` | `loaded` | `failed` |
+| `loaded` | ignored | `pending` | ignored | ignored |
+| `failed` | ignored | `pending` | ignored | ignored |
+
+Leaving a page or changing the date cancels the request, and a cancelled request never reports back, so an old date's result can't replace the one on screen. Each page renders one screen per state: skeleton, error message, content.
 
 ## Crossword cursor
 
