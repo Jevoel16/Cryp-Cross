@@ -56,9 +56,12 @@ const halfConfiguredProviders = () =>
     return Boolean(clientId) !== Boolean(clientSecret);
   });
 
+// Public site origin without a trailing slash; sign-in redirects end up here.
+const appUrl = () => (process.env.APP_URL || 'http://localhost:3000').replace(/\/$/, '');
+
 // The API's public origin. With the Vite proxy (dev) or a same-origin deploy this is APP_URL.
 function callbackUrl(id) {
-  const base = (process.env.API_URL || process.env.APP_URL || 'http://localhost:3000').replace(/\/$/, '');
+  const base = process.env.API_URL ? process.env.API_URL.replace(/\/$/, '') : appUrl();
   return `${base}/api/auth/oauth/${id}/callback`;
 }
 
@@ -140,6 +143,7 @@ module.exports = {
   isEnabled,
   enabledProviders,
   halfConfiguredProviders,
+  appUrl,
   callbackUrl,
   createAttempt,
   authorizeUrl,

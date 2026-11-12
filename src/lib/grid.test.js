@@ -12,9 +12,7 @@ import {
   stepInEntry,
 } from './grid';
 
-// C A T
-// # # O
-// # # P
+// CAT across the top row, TOP down the last column.
 const puzzle = {
   width: 3,
   height: 3,

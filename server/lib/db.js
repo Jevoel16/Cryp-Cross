@@ -2,7 +2,6 @@ const mongoose = require('mongoose');
 const User = require('../models/user');
 const { seedDemoUser } = require('../seed/demo');
 
-// In server/ so mongoose resolves from server/node_modules for every entry point.
 // No query may hold a request longer than this.
 const QUERY_TIMEOUT_MS = 5_000;
 

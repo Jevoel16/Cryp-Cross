@@ -2,9 +2,7 @@ import { describe, expect, test } from 'vitest';
 import { crosswordReducer } from './useCrossword';
 import { buildBoard, emptyLetters } from '../lib/grid';
 
-// C A T
-// # # O
-// # # P
+// CAT across the top row, TOP down the last column.
 const board = buildBoard({
   width: 3,
   height: 3,

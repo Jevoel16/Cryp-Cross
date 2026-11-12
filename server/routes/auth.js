@@ -7,6 +7,7 @@ const { validateLogin, validateUsername, validatePasswordChange } = require('../
 const { createRateLimitStore } = require('../lib/rateLimitStore');
 const { requireAuth, loadSessionUser } = require('../middleware/auth');
 const { createOAuthRouter } = require('./oauth');
+const { appUrl } = require('../lib/oauth');
 const { AUTH_VIA, canSetPasswordWithoutCurrent, signIn } = require('../lib/sessionAuth');
 const { badRequest, handle, ok } = require('../lib/httpError');
 
@@ -38,8 +39,7 @@ const createOAuthLimiter = () =>
     handler: (req, res) => {
       const linking =
         req.query.link === '1' || Boolean(req.session && req.session.oauth && req.session.oauth.linkUserId);
-      const appUrl = (process.env.APP_URL || 'http://localhost:3000').replace(/\/$/, '');
-      res.redirect(302, `${appUrl}${linking ? '/account' : '/login'}?oauth=busy`);
+      res.redirect(302, `${appUrl()}${linking ? '/account' : '/login'}?oauth=busy`);
     },
   });
 
