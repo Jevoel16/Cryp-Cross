@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import SectionWrapper from '../components/SectionWrapper';
 import { BoardSkeleton } from '../components/Skeleton';
 import PuzzleBoard from '../components/PuzzleBoard';
+import Timer from '../components/Timer';
 import usePageMeta from '../usePageMeta';
 import useCrossword from '../hooks/useCrossword';
 import useLoad from '../hooks/useLoad';
@@ -12,6 +13,7 @@ import { buildBoard, entryCells, isFilled, lettersToRows, rowsToLetters } from '
 import { formatDuration } from '../lib/format';
 import { ClockIcon } from '../components/Icons';
 import { fetchTodayPuzzle } from '../lib/todayPuzzle';
+import { readDraft, readGuestClock, writeDraft, writeGuestClock } from '../lib/playStorage';
 import { PHASE, PLAYER_EVENT, initialPlayerState, playerReducer } from '../lib/playerMachine';
 import { PLAY_STATUS, PROGRESS_EVENT, initialProgress, playStatus, progressReducer } from '../lib/playStatus';
 import { LOAD } from '../lib/loadMachine';
@@ -20,61 +22,7 @@ const loadToday = () => fetchTodayPuzzle();
 
 const SAVE_DELAY_MS = 1000;
 const NO_STATUS = {};
-const storageKey = (date) => `cc:grid:${date}`;
-const guestKey = (date) => `cc:guest:${date}`;
-
-// Per-browser draft of the grid, so a refresh doesn't lose typed letters.
-function readDraft(date) {
-  try {
-    return JSON.parse(localStorage.getItem(storageKey(date)));
-  } catch {
-    return null;
-  }
-}
-
-function writeDraft(date, rows) {
-  try {
-    localStorage.setItem(storageKey(date), JSON.stringify(rows));
-  } catch {
-    // Storage blocked: the draft just won't survive a refresh.
-  }
-}
-
-// Guest solves are timed in this browser only; they never reach the server.
-function readGuestClock(date) {
-  try {
-    const saved = JSON.parse(localStorage.getItem(guestKey(date)));
-    return saved && Number.isFinite(saved.startedAt) ? saved : null;
-  } catch {
-    return null;
-  }
-}
-
-function writeGuestClock(date, clock) {
-  try {
-    localStorage.setItem(guestKey(date), JSON.stringify(clock));
-  } catch {
-    // Storage blocked: the guest timer restarts on refresh.
-  }
-}
-
 const hasLetters = (rows) => Array.isArray(rows) && rows.some((row) => /[A-Z]/.test(row));
-
-function Timer({ startedAt, timeMs }) {
-  const [now, setNow] = useState(() => Date.now());
-  useEffect(() => {
-    if (timeMs !== null) return undefined;
-    const id = setInterval(() => setNow(Date.now()), 1000);
-    return () => clearInterval(id);
-  }, [timeMs]);
-  const elapsed = timeMs ?? Math.max(0, now - new Date(startedAt).getTime());
-  return (
-    <span className="timer" aria-label={`Time ${formatDuration(elapsed)}`}>
-      <ClockIcon />
-      {formatDuration(elapsed)}
-    </span>
-  );
-}
 
 // Players rank via a server attempt in `progress`; guests get the same Check and Submit, never stored.
 function PuzzlePlayer({ puzzle, progress, initialRows, ranked = true }) {
