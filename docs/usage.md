@@ -31,6 +31,6 @@ Step-by-step flows for each kind of user. For running the app locally, see the R
 1. **Home** (`/`): introduction to Cryp-Cross.
 2. **How it works** (`/idea`): the three ciphers and the features.
 3. **Team** (`/team`): who built it.
-4. Use the sun/moon button in the header to switch between the dark and light themes. On a phone, the menu button opens the page links.
+4. Use the three theme buttons in the header: System follows your device, Light and Dark stay until you change them. On a phone, the menu button opens the page links.
 
 [Back to README](../README.md)

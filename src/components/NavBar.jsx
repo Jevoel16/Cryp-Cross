@@ -1,7 +1,8 @@
 import { useEffect, useRef, useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../auth/authContext';
-import { MenuIcon, MoonIcon, SunIcon } from './Icons';
+import { MenuIcon, MonitorIcon, MoonIcon, SunIcon } from './Icons';
+import { THEMES } from '../lib/theme';
 
 const NAV_ITEMS = [
   { path: '/play', label: 'Play' },
@@ -11,7 +12,9 @@ const NAV_ITEMS = [
   { path: '/team', label: 'Team' },
 ];
 
-export default function NavBar({ isDark, onToggleTheme }) {
+const THEME_ICONS = { system: MonitorIcon, light: SunIcon, dark: MoonIcon };
+
+export default function NavBar({ theme, onThemeChange }) {
   const location = useLocation();
   const { user, loading } = useAuth();
   const [open, setOpen] = useState(false);
@@ -72,16 +75,24 @@ export default function NavBar({ isDark, onToggleTheme }) {
                 Log in
               </Link>
             ))}
-          <button
-            id="themeToggle"
-            type="button"
-            className="icon-btn"
-            onClick={onToggleTheme}
-            aria-label={isDark ? 'Switch to light theme' : 'Switch to dark theme'}
-            title={isDark ? 'Light theme' : 'Dark theme'}
-          >
-            {isDark ? <SunIcon /> : <MoonIcon />}
-          </button>
+          <div className="theme-picker" role="group" aria-label="Theme">
+            {THEMES.map(({ id, label }) => {
+              const ThemeIcon = THEME_ICONS[id];
+              return (
+                <button
+                  key={id}
+                  type="button"
+                  className="theme-btn"
+                  aria-label={label}
+                  title={label}
+                  aria-pressed={theme === id}
+                  onClick={() => onThemeChange(id)}
+                >
+                  <ThemeIcon />
+                </button>
+              );
+            })}
+          </div>
           <button
             type="button"
             ref={menuButton}

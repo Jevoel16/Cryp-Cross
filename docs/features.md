@@ -21,8 +21,8 @@ The full feature list of Cryp-Cross, frontend and backend.
 - Leaderboard with gold, silver and bronze ranks and your own row highlighted; stat tiles on the Account page
 - Sticky header with a mobile menu, a skip link, visible focus rings and `prefers-reduced-motion` support (animations and team auto-advance off, with a pause button)
 - Loading skeletons that reserve space (no layout shift), plus empty and error states for every async view
-- One SVG icon set (2px strokes, 18px) for the theme toggle, menu, timer and team arrows
-- Dark theme by default with a light theme toggle; the choice is remembered in `localStorage`, and without one the site follows the system setting. `public/theme.js` applies it before the app renders, so there is no flash.
+- One SVG icon set (2px strokes, 18px) for the theme picker, menu, timer and team arrows
+- Three theme buttons in the header: System (follows the device), Light and Dark. Light and Dark are saved in `localStorage`; System clears the saved value. `public/theme.js` applies a saved choice before the first paint, so there is no flash.
 - Client-side routing with React Router and a 404 page
 - SEO: a unique title, description and canonical URL per page, `noindex` on the error page, JSON-LD, Open Graph tags, `llms.txt`, and a `sitemap.xml` + `robots.txt` generated at build time
 - Optimized assets: WebP team photos at display size and correctly sized app icons

@@ -72,4 +72,11 @@ The non-obvious choices in Cryp-Cross: the problem, what was considered, what wa
 - **Choice:** plain CSS with spacing, type, radius and colour tokens in `src/App.css`, one small SVG icon set and self-hosted latin fonts.
 - **Trade-off:** more CSS written by hand. The whole stylesheet is about 6 KB gzipped and the CSP needs no third-party origins.
 
+## Colour tokens with `light-dark()`
+
+- **Problem:** the theme picker has a System option, so the tokens must follow the device when no theme is saved, and follow `data-theme` when one is.
+- **Options:** a dark block, a light block and a copy of one inside `@media (prefers-color-scheme)`; one block of `light-dark(light, dark)` values.
+- **Choice:** one block. `:root` has `color-scheme: light dark`, and `data-theme` narrows it to `light` or `dark`.
+- **Trade-off:** needs a 2024+ browser (Chrome 123, Safari 17.5, Firefox 120). Older browsers would lose the colours, which is acceptable for a game that already needs modern CSS.
+
 [Back to README](../README.md)

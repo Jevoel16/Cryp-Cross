@@ -9,7 +9,7 @@ import PlayPage from './pages/PlayPage';
 import { RowsSkeleton } from './components/Skeleton';
 import AuthProvider from './auth/AuthProvider';
 import ErrorBoundary from './components/ErrorBoundary';
-import { themeColor } from './lib/theme';
+import { parseTheme, resolveTheme, themeColor } from './lib/theme';
 
 const IdeaPage = lazy(() => import('./pages/IdeaPage'));
 const TeamPage = lazy(() => import('./pages/TeamPage'));
@@ -25,23 +25,44 @@ const pageFallback = (
   </section>
 );
 
-// public/theme.js sets data-theme before React loads (saved choice, else the system setting).
-const readTheme = () => (document.documentElement.getAttribute('data-theme') === 'light' ? 'light' : 'dark');
+// public/theme.js already applied a saved choice before React loaded; this reads the same value.
+const readTheme = () => {
+  try {
+    return parseTheme(localStorage.getItem('theme'));
+  } catch {
+    return 'system';
+  }
+};
+
+const darkQuery = () => window.matchMedia?.('(prefers-color-scheme: dark)');
 
 export default function App() {
   const [theme, setTheme] = useState(readTheme);
+  const [systemDark, setSystemDark] = useState(() => darkQuery()?.matches ?? false);
 
   useEffect(() => {
-    document.documentElement.setAttribute('data-theme', theme);
-    document.querySelector('meta[name="theme-color"]')?.setAttribute('content', themeColor(theme));
-  }, [theme]);
+    const query = darkQuery();
+    if (!query) return undefined;
+    const onChange = (e) => setSystemDark(e.matches);
+    query.addEventListener('change', onChange);
+    return () => query.removeEventListener('change', onChange);
+  }, []);
+
+  useEffect(() => {
+    const root = document.documentElement;
+    if (theme === 'system') root.removeAttribute('data-theme');
+    else root.setAttribute('data-theme', theme);
+    document
+      .querySelector('meta[name="theme-color"]')
+      ?.setAttribute('content', themeColor(resolveTheme(theme, systemDark)));
+  }, [theme, systemDark]);
 
   // Theme choice is a per-browser convenience, so localStorage is fine; guarded for blocked storage.
-  const handleToggleTheme = () => {
-    const next = theme === 'dark' ? 'light' : 'dark';
+  const handleThemeChange = (next) => {
     setTheme(next);
     try {
-      localStorage.setItem('theme', next);
+      if (next === 'system') localStorage.removeItem('theme');
+      else localStorage.setItem('theme', next);
     } catch {
       // Storage blocked: the choice just won't persist.
     }
@@ -53,7 +74,7 @@ export default function App() {
         <a className="skip-link" href="#content">
           Skip to content
         </a>
-        <NavBar isDark={theme === 'dark'} onToggleTheme={handleToggleTheme} />
+        <NavBar theme={theme} onThemeChange={handleThemeChange} />
         <main id="content" tabIndex={-1}>
           <ErrorBoundary>
             <Suspense fallback={pageFallback}>
