@@ -73,13 +73,13 @@ Full list: [docs/features.md](docs/features.md).
 |-------|-------|
 | Frontend | React 19.2.0, React Router 7.18.5, Vite 8.3.5 |
 | Tooling | Vitest 5.1.0, ESLint 10.14.0, Prettier 3.9.10 |
-| Backend | Node.js 22.14.0, Express 4.22.3, Mongoose 7.8.13, express-session 1.19.0, connect-mongo 6.0.0, bcryptjs 3.0.3, helmet 8.3.0, express-rate-limit 7.5.1 |
+| Backend | Node.js 26.13.1, Express 4.22.3, Mongoose 7.8.13, express-session 1.19.0, connect-mongo 6.0.0, bcryptjs 3.0.3, helmet 8.3.0, express-rate-limit 7.5.1 |
 | Database | MongoDB (Atlas in production, mongodb-memory-server for tests and local dev) |
 | Hosting | Vercel (static site and serverless API on one origin), Vercel Analytics 2.0.1, GitHub Actions CI |
 
 ## Getting Started
 
-Prerequisites: Node.js 22 (`.nvmrc`), npm and Git. No MongoDB is needed to try it.
+Prerequisites: Node.js 26 (`.nvmrc`), npm and Git. No MongoDB is needed to try it.
 
 ```bash
 git clone https://github.com/Jevoel16/Cryp-Cross.git && cd Cryp-Cross

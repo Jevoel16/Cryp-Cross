@@ -2,7 +2,7 @@
   "name": "app",
   "version": "2.2.2",
   "engines": {
-    "node": "22.x"
+    "node": "26.x"
   },
   "private": true,
   "type": "module",

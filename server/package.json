@@ -2,7 +2,7 @@
   "name": "cryp-cross-api",
   "version": "2.2.2",
   "engines": {
-    "node": "22.x"
+    "node": "26.x"
   },
   "description": "Cryp-Cross API: daily cipher crossword generator, accounts, progress and leaderboard",
   "main": "server.js",
