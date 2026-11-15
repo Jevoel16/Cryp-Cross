@@ -1200,8 +1200,15 @@ input[type='range'] {
   color: var(--text-muted);
 }
 
+.cipher-line {
+  display: block;
+  margin-bottom: var(--space-1);
+  color: var(--cipher);
+}
+
 .cipher-tool code,
 .active-clue code,
+.cipher-line,
 .cipher-text {
   font-family: var(--font-mono);
   overflow-wrap: anywhere;

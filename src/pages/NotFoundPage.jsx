@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom';
+import CipherLine from '../components/CipherLine';
 import SectionWrapper from '../components/SectionWrapper';
 import usePageMeta from '../usePageMeta';
 
@@ -11,7 +12,8 @@ export default function NotFoundPage() {
   return (
     <SectionWrapper title="404 Not Found">
       <p>
-        The page you requested does not exist. <Link to="/">Go Home</Link>
+        <CipherLine text="This page does not exist." />
+        This page does not exist. <Link to="/">Go to Home</Link>
       </p>
     </SectionWrapper>
   );

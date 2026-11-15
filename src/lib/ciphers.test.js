@@ -17,4 +17,9 @@ describe('cipher decoders', () => {
     expect(vigenereDecode('abc', '')).toBeNull();
     expect(vigenereDecode('abc', '12')).toBeNull();
   });
+
+  test('a negative Caesar shift encodes, as CipherLine uses it', () => {
+    expect(caesarDecode('This page does not exist.', -3)).toBe('Wklv sdjh grhv qrw halvw.');
+    expect(caesarDecode(caesarDecode('Nobody yet.', -3), 3)).toBe('Nobody yet.');
+  });
 });

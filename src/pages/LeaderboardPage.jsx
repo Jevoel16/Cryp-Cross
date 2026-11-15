@@ -1,4 +1,5 @@
 import { Link, useSearchParams } from 'react-router-dom';
+import CipherLine from '../components/CipherLine';
 import SectionWrapper from '../components/SectionWrapper';
 import { RowsSkeleton } from '../components/Skeleton';
 import usePageMeta from '../usePageMeta';
@@ -27,6 +28,7 @@ function Board({ load, date, user }) {
       return (
         <>
           <p>
+            {board.solvers === 0 && <CipherLine text="Nobody has solved this puzzle yet." />}
             {board.solvers === 0
               ? 'Nobody has solved this puzzle yet.'
               : `${board.solvers} ${board.solvers === 1 ? 'player has' : 'players have'} solved this puzzle.`}{' '}

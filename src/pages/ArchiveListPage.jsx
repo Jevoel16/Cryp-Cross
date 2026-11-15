@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom';
+import CipherLine from '../components/CipherLine';
 import SectionWrapper from '../components/SectionWrapper';
 import { RowsSkeleton } from '../components/Skeleton';
 import usePageMeta from '../usePageMeta';
@@ -23,6 +24,7 @@ function Days({ load }) {
       if (load.data.length === 0) {
         return (
           <p>
+            <CipherLine text="No past puzzles yet." />
             No past puzzles yet. <Link to="/play">Play today&apos;s</Link>.
           </p>
         );
