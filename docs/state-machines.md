@@ -40,10 +40,10 @@ States: `anonymous`, `password`, `oauthFresh` (GitHub/Google sign-in in the last
 
 | From | Password login | GitHub/Google sign-in | 10 minutes pass | Password saved | Logout or stale session |
 |------|----------------|-----------------------|-----------------|----------------|-------------------------|
-| `anonymous` | `password` | `oauthFresh` | — | — | — |
-| `password` | `password` | `oauthFresh` | — | `password` | `anonymous` |
+| `anonymous` | `password` | `oauthFresh` | (no change) | (no change) | (no change) |
+| `password` | `password` | `oauthFresh` | (no change) | `password` | `anonymous` |
 | `oauthFresh` | `password` | `oauthFresh` | `oauthExpired` | `password` | `anonymous` |
-| `oauthExpired` | `password` | `oauthFresh` | — | `password` | `anonymous` |
+| `oauthExpired` | `password` | `oauthFresh` | (no change) | `password` | `anonymous` |
 
 Only `oauthFresh` may set a password without the current one. Saving a password moves the session to `password`, which closes that window. A session becomes stale when the password changed after it signed in.
 

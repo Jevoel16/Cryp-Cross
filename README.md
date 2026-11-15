@@ -8,22 +8,26 @@
   <p><strong>A daily cryptographic crossword: decode the encrypted clues, fill the grid, keep your streak.</strong></p>
 
   <p>
-    <img src="https://img.shields.io/badge/version-2.2.2-green?style=flat" alt="Version 2.2.2" />
-    <a href="LICENSE"><img src="https://img.shields.io/badge/license-Sprucetrap%20Source--Available-orange?style=flat" alt="License: Sprucetrap Source-Available" /></a>
     <a href="https://github.com/Jevoel16/Cryp-Cross/actions/workflows/ci.yml"><img src="https://img.shields.io/github/actions/workflow/status/Jevoel16/Cryp-Cross/ci.yml?branch=main&amp;label=CI&amp;style=flat" alt="CI status" /></a>
+    <img src="https://img.shields.io/badge/version-2.2.2-green?style=flat" alt="Version 2.2.2" />
     <img src="https://img.shields.io/badge/platform-web-lightgrey?style=flat" alt="Platform: web" />
+    <img src="https://img.shields.io/badge/React-19-61dafb?style=flat" alt="React 19" />
   </p>
 </div>
 
 <p align="center">
-  <a href="#about">About</a> · <a href="#screenshots">Screenshots</a> · <a href="#features">Features</a> · <a href="#tech-stack">Tech Stack</a> · <a href="#getting-started">Getting Started</a> · <a href="#configuration">Configuration</a> · <a href="#usage">Usage</a> · <a href="#more">More</a> · <a href="#contributing">Contributing</a> · <a href="#license">License</a> · <a href="#author">Author</a>
+  <img src="docs/images/hero.png" width="100%" alt="Play page with today's encrypted crossword and the decoder beside it" />
+</p>
+
+<p align="center">
+  <a href="#about">About</a> · <a href="#screenshots">Screenshots</a> · <a href="#features">Features</a> · <a href="#tech-stack">Tech Stack</a> · <a href="#architecture">Architecture</a> · <a href="#getting-started">Getting Started</a> · <a href="#configuration">Configuration</a> · <a href="#usage">Usage</a> · <a href="#more">More</a>
 </p>
 
 ---
 
 ## About
 
-Cryp-Cross is a free daily crossword where every clue is encrypted. Each day the server generates one grid for everyone and hides its clues behind a classical cipher (Caesar, Atbash or Vigenère). Players crack the cipher with a built-in decoder, fill the grid, and check and submit their answers. Guests play unranked; with a free account, solves are timed by the server and climb the leaderboard. It is a MERN app (MongoDB, Express, React, Node.js). Play it at [cryp-cross.jevoelorbilla.dev](https://cryp-cross.jevoelorbilla.dev) (the Log in page has a demo account), and read [why it is built this way](docs/decisions.md).
+Cryp-Cross is a free daily crossword where every clue is encrypted. Each day the server generates one grid for everyone and hides its clues behind a classical cipher (Caesar, Atbash or Vigenère). Players crack the cipher with a built-in decoder, fill the grid, and check and submit their answers. Guests play unranked; with a free account, solves are timed by the server and climb the leaderboard. It is a MERN app (MongoDB, Express, React, Node.js); [docs/decisions.md](docs/decisions.md) explains why it is built this way.
 
 ## Screenshots
 
@@ -77,15 +81,27 @@ Full list: [docs/features.md](docs/features.md).
 | Database | MongoDB (Atlas in production, mongodb-memory-server for tests and local dev) |
 | Hosting | Vercel (static site and serverless API on one origin), Vercel Analytics 2.0.1, GitHub Actions CI |
 
+## Architecture
+
+```mermaid
+flowchart LR
+  Browser --> Frontend[React + Vite SPA]
+  Frontend -->|/api, same origin| API[Express API on Vercel]
+  API --> Services[Services: attempts, accounts, puzzles]
+  Services --> DB[(MongoDB Atlas)]
+  API --> OAuth[GitHub / Google OAuth]
+```
+
+Routes call services, services call the Mongoose models; sessions live in MongoDB. Details: [docs/architecture.md](docs/architecture.md).
+
 ## Getting Started
 
 Prerequisites: Node.js 26 (`.nvmrc`), npm and Git. No MongoDB is needed to try it.
 
 ```bash
 git clone https://github.com/Jevoel16/Cryp-Cross.git && cd Cryp-Cross
-npm install && npm install --prefix server
-npm run dev:memory --prefix server   # API on :5000 with an in-memory database
-npm start                            # in a second terminal: site on http://localhost:3000
+npm install
+npm run dev   # API on :5000 with an in-memory database, site on http://localhost:3000
 ```
 
 With a real database, copy the Local block of `server/.env.example` into `server/.env`, set `DATABASE_URL`, and run `npm start --prefix server` instead. To deploy, see [docs/deployment.md](docs/deployment.md).
@@ -122,7 +138,7 @@ Defaults and details: [docs/configuration.md](docs/configuration.md).
 2. Pick a clue and decode it: move the Caesar slider, read the Atbash output, or solve the Vigenère key clue and type the keyword.
 3. Type the answer. Tab or Enter jumps to the next clue.
 4. **Check** marks each clue right or wrong. **Submit** records your time once the grid is full.
-5. Sign in with GitHub or Google before you start to save progress and get ranked on the **Leaderboard**.
+5. Sign in with GitHub or Google before you start to save progress and get ranked on the **Leaderboard**. To look around without an account, use the demo account on the **Log in** page.
 
 More: [player and account flows](docs/usage.md), [API reference](docs/api.md), [architecture notes](docs/architecture.md), [state machines](docs/state-machines.md), [security](docs/security.md), [performance](docs/performance.md), [deployment](docs/deployment.md), [troubleshooting](docs/troubleshooting.md).
 
@@ -149,7 +165,7 @@ Cryp-Cross/
 
 | Script | Description |
 |--------|-------------|
-| `npm run dev` | API on port 5000 (in-memory MongoDB) and site on port 3000 together; installs `server/` deps on first run |
+| `npm run dev` | API on port 5000 (in-memory MongoDB) and site on port 3000 together; runs `npm ci` in `server/` on first run |
 | `npm start` | Vite dev server only, on port 3000 (proxies `/api` to port 5000) |
 | `npm run build` | Production build into `build/`, plus `sitemap.xml` and `robots.txt` |
 | `npm run serve` | Serve `build/` with the `serve.json` headers |
@@ -160,17 +176,5 @@ Cryp-Cross/
 | `npm test --prefix server` | Backend tests |
 
 </details>
-
-## Contributing
-
-Branches: `feat/short-description` or `fix/short-description`. Commits follow [Conventional Commits](https://www.conventionalcommits.org/) e.g. `feat: add CSV export`. The SemVer version is bumped once per release (`chore: release vX.Y.Z` plus a tag), not per commit. Update this README with every change. SEO ideas: [docs/backlinks.md](docs/backlinks.md).
-
-## License
-
-[Sprucetrap Source-Available License 1.0](LICENSE): non-commercial use with visible credit; commercial use needs written permission.
-
-## Author
-
-**Sprucetrap** ([@Jevoel16](https://github.com/Jevoel16)), for CCC181 Lab Activity Final (Orbilla team).
 
 <p align="right"><a href="#top">Back to top</a></p>
