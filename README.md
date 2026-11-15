@@ -149,7 +149,8 @@ Cryp-Cross/
 
 | Script | Description |
 |--------|-------------|
-| `npm start` | Vite dev server on port 3000 (proxies `/api` to port 5000) |
+| `npm run dev` | API on port 5000 (in-memory MongoDB) and site on port 3000 together; installs `server/` deps on first run |
+| `npm start` | Vite dev server only, on port 3000 (proxies `/api` to port 5000) |
 | `npm run build` | Production build into `build/`, plus `sitemap.xml` and `robots.txt` |
 | `npm run serve` | Serve `build/` with the `serve.json` headers |
 | `npm run lint` / `npm run format` | ESLint / Prettier |

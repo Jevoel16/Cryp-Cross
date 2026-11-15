@@ -4,7 +4,7 @@ Common problems when running or deploying [Cryp-Cross](../README.md), with their
 
 | Problem | Cause | Fix |
 |---------|-------|-----|
-| `ECONNREFUSED` on `/api` requests | API not running, or the wrong API URL | Start it with `npm start --prefix server`; check `VITE_API_URL` / `src/config.js` |
+| `ECONNREFUSED` on `/api` requests | API not running, or the wrong API URL | Run `npm run dev` (starts both), or `npm start --prefix server` for the API alone; check `VITE_API_URL` / `src/config.js` |
 | API URL or site URL from `.env` is ignored | Variables still use the old Create React App `REACT_APP_` prefix | Rename them to `VITE_API_URL` / `VITE_SITE_URL` (v0.3.0+) and restart or rebuild |
 | `Database connection error` | Wrong `DATABASE_URL` or IP not allowed | Check `server/.env`; add your IP to the MongoDB Atlas access list |
 | `DATABASE_URL is not set` on startup | Missing `server/.env` | Copy the Local block of `server/.env.example` into `server/.env` and fill it in |

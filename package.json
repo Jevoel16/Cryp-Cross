@@ -9,7 +9,7 @@
   "license": "SEE LICENSE IN LICENSE",
   "scripts": {
     "start": "vite",
-    "dev": "vite",
+    "dev": "node scripts/dev.js",
     "build": "vite build",
     "postbuild": "node scripts/generate-seo.js",
     "preview": "vite preview",
