@@ -9,7 +9,8 @@ const root = path.join(path.dirname(fileURLToPath(import.meta.url)), '..');
 const npm = (args, opts) => ({ cmd: 'npm', args, opts: { cwd: root, stdio: 'inherit', shell: true, ...opts } });
 
 if (!existsSync(path.join(root, 'server', 'node_modules'))) {
-  const install = npm(['install', '--prefix', 'server']);
+  // Run inside server/: `npm install --prefix server` from the root adds the root package as a dependency.
+  const install = npm(['ci'], { cwd: path.join(root, 'server') });
   const result = spawnSync(install.cmd, install.args, install.opts);
   if (result.status !== 0) process.exit(result.status ?? 1);
 }
