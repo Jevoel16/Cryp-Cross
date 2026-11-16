@@ -46,6 +46,7 @@ No email address, real name, profile picture or access token is stored. GitHub i
 | 27 | Secret scanning | Done | gitleaks scans the full history in CI. The demo account's public credentials are allow-listed in `.gitleaks.toml`. |
 | 28 | Least privilege and minimal data | Partly yours | The app needs `readWrite` on its one database and nothing else; create the Atlas user with only that role. Data collected is listed above. |
 | 29 | This document | Done | Linked from the README. |
+| 30 | Modern Web Guidance security guides | Applies to future work | No user HTML is rendered and sign-in is already built. The `security/` guides (passkeys, Trusted Types, sanitizing HTML) get checked before the next change to sign-in. |
 
 ## The demo account
 

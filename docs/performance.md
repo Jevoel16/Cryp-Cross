@@ -4,16 +4,26 @@ Budgets: Lighthouse 90 or higher in every category on mobile, LCP under 2.5s, IN
 
 ## Lighthouse (mobile)
 
-Measured on 2026-11-11 with Lighthouse 12.8.2 (simulated slow 4G, 4x CPU slowdown) against the production build served locally by `vite preview` with the in-memory API. `vite preview` doesn't compress responses, so the deployed site should load a little faster.
+Measured on 2026-11-17 with Lighthouse 12.8.2 (simulated slow 4G, 4x CPU slowdown) against the production build served locally by `vite preview` with the in-memory API. `vite preview` doesn't compress responses, so the deployed site should load a little faster.
 
 | Page | Performance | Accessibility | Best Practices | SEO | FCP | LCP | TBT | CLS |
 |------|-------------|---------------|----------------|-----|-----|-----|-----|-----|
-| Home (`/`) | 97 | 100 | 96 | 100 | 1.8s | 2.4s | 0ms | 0.003 |
-| Play (`/play`) | 97 | 100 | 96 | 100 | 1.5s | 2.4s | 0ms | 0.003 |
+| Home (`/`) | 97 | 100 | 96 | 100 | 1.7s | 2.3s | 120ms | 0 |
+| Play (`/play`) | 97 | 100 | 96 | 100 | 1.6s | 2.6s | 10ms | 0.022 |
+| Leaderboard (`/leaderboard`) | 97 | 100 | 96 | 100 | 1.7s | 2.4s | 20ms | 0.004 |
+| Past puzzles (`/puzzles`) | 98 | 100 | 96 | 100 | 1.7s | 2.3s | 0ms | 0.004 |
+| How it works (`/idea`) | 98 | 100 | 96 | 100 | 1.7s | 2.2s | 10ms | 0.004 |
+| Team (`/team`) | 98 | 100 | 96 | 100 | 1.7s | 2.2s | 10ms | 0.004 |
+| Accessibility (`/accessibility`) | 98 | 100 | 96 | 100 | 1.7s | 2.2s | 10ms | 0.004 |
+| Log in (`/login`) | 97 | 100 | 96 | 66 | 1.7s | 2.5s | 0ms | 0.004 |
+| 404 | 98 | 100 | 96 | 66 | 1.7s | 2.3s | 0ms | 0.004 |
 
+axe-core 4.14 found no violations on any of these pages in either theme.
+
+- Play's LCP sits at 2.4 to 2.6s between runs, right on the 2.5s budget. The LCP element is the guest hint above the grid, which renders only after `/api/puzzles/today` answers.
 - Best Practices loses points to one console error: `/_vercel/insights/script.js` is 404 locally because Vercel Web Analytics only exists on Vercel.
 - TBT (0ms) stands in for INP, which needs real interactions to measure.
-- The Log in page is `noindex` on purpose, so its SEO score is not a target.
+- The Log in and 404 pages are `noindex` on purpose, so their SEO score is not a target.
 
 Run it again:
 
@@ -29,9 +39,9 @@ npx lighthouse http://localhost:3000/ --view
 
 | File | Raw | Gzipped |
 |------|-----|---------|
-| Initial JavaScript (`index-*.js`) | 268 KB | 85.4 KB |
-| Stylesheet (`index-*.css`) | 27 KB | 6.0 KB |
-| Route chunks, loaded on demand (Account, Archive, How it works, Leaderboard, Log in, Team) | 1–8 KB each | 0.6–2.6 KB each |
+| Initial JavaScript (`index-*.js`) | 270 KB | 87.0 KB |
+| Stylesheet (`index-*.css`) | 28.5 KB | 6.0 KB |
+| Route chunks, loaded on demand (Accessibility, Account, Archive, How it works, Leaderboard, Log in, Team) | 1–8 KB each | 0.6–2.6 KB each |
 
 Home and Play are in the initial bundle; every other route is lazy-loaded.
 
@@ -52,6 +62,7 @@ Two families, self-hosted, latin subset only, `font-display: swap`. The two Spac
 | Lazy-loaded routes | 90.5 KB gzipped initial JS | 85.4 KB |
 | Preload the heading and body fonts | LCP 2.6s, Performance 95 | LCP 2.4s, Performance 97 |
 | README logo moved out of the site | 308 KB shipped in `build/` | 0 (95 KB copy in `docs/images/`) |
+| Footer renders with the page, not before it | CLS 0.103 on How it works, 0.099 on Accessibility | 0.004 |
 | Shared requests | `/api/puzzles/today` fetched by Home and again by Play; `/api/auth/providers` fetched twice on Log in | Once each |
 
 ## Server and database
