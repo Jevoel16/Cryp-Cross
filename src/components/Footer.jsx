@@ -7,6 +7,7 @@ export default function Footer() {
         <nav className="footer-links" aria-label="About Cryp-Cross">
           <NavLink to="/idea">How it works</NavLink>
           <NavLink to="/team">Team</NavLink>
+          <NavLink to="/accessibility">Accessibility</NavLink>
         </nav>
         <p className="footer-credit">
           Built by <a href="https://github.com/Jevoel16">Sprucetrap</a>.{' '}

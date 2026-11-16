@@ -11,6 +11,7 @@ const PUBLIC_ROUTES = [
   { path: '/puzzles', priority: '0.5' },
   { path: '/idea', priority: '0.8' },
   { path: '/team', priority: '0.6' },
+  { path: '/accessibility', priority: '0.3' },
 ];
 
 function main() {

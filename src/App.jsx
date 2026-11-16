@@ -13,6 +13,7 @@ import { parseTheme, resolveTheme, themeColor } from './lib/theme';
 
 const IdeaPage = lazy(() => import('./pages/IdeaPage'));
 const TeamPage = lazy(() => import('./pages/TeamPage'));
+const AccessibilityPage = lazy(() => import('./pages/AccessibilityPage'));
 const LoginPage = lazy(() => import('./pages/LoginPage'));
 const AccountPage = lazy(() => import('./pages/AccountPage'));
 const LeaderboardPage = lazy(() => import('./pages/LeaderboardPage'));
@@ -89,6 +90,7 @@ export default function App() {
                 <Route path="/puzzles/:date" element={<ArchivePage />} />
                 <Route path="/idea" element={<IdeaPage />} />
                 <Route path="/team" element={<TeamPage />} />
+                <Route path="/accessibility" element={<AccessibilityPage />} />
                 <Route path="/login" element={<LoginPage />} />
                 {/* Accounts are created by GitHub/Google sign-in on the login page; old links land there. */}
                 <Route path="/signup" element={<Navigate to="/login" replace />} />

@@ -10,6 +10,7 @@
 - [Past puzzles](/puzzles): Earlier days with answers
 - [How it works](/idea): The three ciphers and the features
 - [Team](/team): The people building Cryp-Cross
+- [Accessibility](/accessibility): The WCAG 2.2 AA target, known gaps and how to report a problem
 
 ## Source
 
