@@ -19,10 +19,13 @@ const LeaderboardPage = lazy(() => import('./pages/LeaderboardPage'));
 const ArchiveListPage = lazy(() => import('./pages/ArchiveListPage'));
 const ArchivePage = lazy(() => import('./pages/ArchivePage'));
 
+// The footer waits with the page, so a short skeleton never puts it on screen only to push it down (CLS).
 const pageFallback = (
-  <section className="tab-content">
-    <RowsSkeleton rows={4} label="Loading the page" />
-  </section>
+  <main id="content" tabIndex={-1}>
+    <section className="tab-content">
+      <RowsSkeleton rows={4} label="Loading the page" />
+    </section>
+  </main>
 );
 
 // public/theme.js already applied a saved choice before React loaded; this reads the same value.
@@ -75,9 +78,9 @@ export default function App() {
           Skip to content
         </a>
         <NavBar theme={theme} onThemeChange={handleThemeChange} />
-        <main id="content" tabIndex={-1}>
-          <ErrorBoundary>
-            <Suspense fallback={pageFallback}>
+        <Suspense fallback={pageFallback}>
+          <main id="content" tabIndex={-1}>
+            <ErrorBoundary>
               <Routes>
                 <Route path="/" element={<HomePage />} />
                 <Route path="/play" element={<PlayPage />} />
@@ -92,10 +95,10 @@ export default function App() {
                 <Route path="/account" element={<AccountPage />} />
                 <Route path="*" element={<NotFoundPage />} />
               </Routes>
-            </Suspense>
-          </ErrorBoundary>
-        </main>
-        <Footer />
+            </ErrorBoundary>
+          </main>
+          <Footer />
+        </Suspense>
       </AuthProvider>
     </BrowserRouter>
   );
