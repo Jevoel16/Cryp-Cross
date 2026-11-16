@@ -280,7 +280,7 @@ ol {
 }
 
 .tab-item a.active {
-  color: var(--accent);
+  color: var(--accent-strong);
   background: var(--accent-soft);
 }
 
